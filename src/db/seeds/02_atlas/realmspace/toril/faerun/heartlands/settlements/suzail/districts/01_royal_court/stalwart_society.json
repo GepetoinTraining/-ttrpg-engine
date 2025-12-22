@@ -1,0 +1,54 @@
+{
+  "context": { "districtId": "dist_suzail_royal" },
+  "nodes": [
+    {
+      "//": "--- THE CLUBHOUSE ---",
+      "id": "bldg_stalwart_society",
+      "type": "guildhall",
+      "name": "The Society of Stalwart Adventurers",
+      "parentId": "dist_suzail_royal",
+      "dataStatic": {
+        "description": "A manor house converted into a gentleman's club. Trophy heads of dragons and beholders line the walls.",
+        "tags": ["Social Hub", "Quest Hub"],
+        "function": {
+          "type": "club",
+          "entry_fee": "500gp/year",
+          "requirement": "Must have a Royal Charter"
+        },
+        "culture": { "vibe": "Competitive, Arrogant, Wealthy" }
+      }
+    },
+    {
+      "//": "--- NPC: THE LEGEND ---",
+      "id": "npc_sir_isteval",
+      "type": "npc",
+      "name": "Sir Isteval",
+      "parentId": "bldg_stalwart_society",
+      "dataStatic": {
+        "description": "A retired Paladin of Lathander, limping from an old dragon wound. The moral compass of the city.",
+        "role": "Mentor / Quest Giver",
+        "stats": { "class": "Paladin", "level": 15 },
+        "personality": {
+          "archetype": "The Old Soldier",
+          "trait": "Believes in redemption, even for Zhents."
+        }
+      }
+    },
+    {
+      "//": "--- ROOM: THE MAP ROOM ---",
+      "id": "room_stalwart_maps",
+      "type": "room",
+      "name": "The Map Room",
+      "parentId": "bldg_stalwart_society",
+      "dataStatic": {
+        "description": "Walls covered in maps of the Stonelands and the Haunted Halls, marked with 'X's where parties died.",
+        "hooks": [
+          {
+            "title": "The Lost Patrol",
+            "description": "Sir Isteval needs a team to recover the bodies of a patrol in the Hullack Forest."
+          }
+        ]
+      }
+    }
+  ]
+}

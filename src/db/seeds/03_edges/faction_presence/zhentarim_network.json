@@ -1,0 +1,40 @@
+{
+  "edges": [
+    {
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-zhentarim-0000-0000-0000-000000000001",
+      "targetId": "city_waterdeep",
+      "properties": {
+        "faction": {
+          "visibility": "underground",
+          "role": "Mercenaries",
+          "influence": 40
+        }
+      }
+    },
+    {
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-zhentarim-0000-0000-0000-000000000001",
+      "targetId": "city_baldurs_gate",
+      "properties": {
+        "faction": {
+          "visibility": "open",
+          "role": "Trade Partner",
+          "influence": 60
+        }
+      }
+    },
+    {
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-zhentarim-0000-0000-0000-000000000001",
+      "targetId": "city_menzoberranzan",
+      "properties": {
+        "faction": {
+          "visibility": "secret",
+          "role": "Slave Traders",
+          "influence": 20
+        }
+      }
+    }
+  ]
+}

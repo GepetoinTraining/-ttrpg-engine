@@ -1,0 +1,36 @@
+{
+  "context": {
+    "sphereId": "550e8400-e29b-41d4-a716-446655440000",
+    "planetId": "550e8400-e29b-41d4-a716-446655440001"
+  },
+  "nodes": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440400",
+      "type": "continent",
+      "name": "Maztica",
+      "canonicalName": "maztica",
+      "parentId": "550e8400-e29b-41d4-a716-446655440001",
+      "dataStatic": {
+        "description": "The True World. A land of jungle empires, living gods, and primal magic.",
+        "culture": {
+          "techLevel": "stone_age",
+          "socialStructure": { "type": "theocratic_tribal" },
+          "economy": {
+            "currency": "Cocoa Beans",
+            "tradeGoods": ["Gold", "Feathers"]
+          },
+          "religion": {
+            "type": "cult_sacrificial",
+            "dominantFaiths": ["Cult of Zaltec", "Cult of Qotal"]
+          }
+        },
+        "physics": {
+          "magic": {
+            "source": "Life Force",
+            "specialRules": ["Pluma (Feather) Magic", "Hisma (Blood) Magic"]
+          }
+        }
+      }
+    }
+  ]
+}

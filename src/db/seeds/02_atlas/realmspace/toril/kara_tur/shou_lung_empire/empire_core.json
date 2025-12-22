@@ -1,0 +1,36 @@
+{
+  "context": {
+    "continentId": "550e8400-e29b-41d4-a716-446655440200"
+  },
+  "nodes": [
+    {
+      "id": "nation_shou_lung",
+      "type": "empire",
+      "name": "Shou Lung",
+      "canonicalName": "shou_lung",
+      "parentId": "550e8400-e29b-41d4-a716-446655440200",
+      "dataStatic": {
+        "description": "The Dragon Empire. The oldest and most powerful civilization in the East.",
+        "government": {
+          "type": "imperial_bureaucracy",
+          "rulerTitle": "Son of Heaven"
+        },
+        "culture": {
+          "honorSystem": { "enabled": true, "name": "Face" },
+          "law": { "system": "code_of_li", "corruption": "high_bureaucratic" }
+        },
+        "magic": { "specialRules": ["Imperial Magic License Required"] }
+      }
+    },
+    {
+      "id": "prov_ching_tung",
+      "type": "province",
+      "name": "Ch'ing Tung Province",
+      "parentId": "nation_shou_lung",
+      "dataStatic": {
+        "description": "The Imperial Seat. Home to the Forbidden City.",
+        "population": { "wealthLevel": "aristocratic" }
+      }
+    }
+  ]
+}

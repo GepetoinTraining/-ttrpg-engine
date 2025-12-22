@@ -1,0 +1,41 @@
+{
+  "context": {
+    "sphereId": "550e8400-e29b-41d4-a716-446655440000"
+  },
+  "nodes": [
+    {
+      "id": "loc_the_rock_of_bral",
+      "type": "asteroid_city",
+      "name": "The Rock of Bral",
+      "canonicalName": "rock_of_bral",
+      "parentId": "550e8400-e29b-41d4-a716-446655440000",
+      "dataStatic": {
+        "description": "The crossroads of Realmspace. An asteroid city controlled by Prince Andru.",
+        "physics": {
+          "gravity": { "type": "standard_plane" },
+          "atmosphere": { "type": "envelope_fresh" }
+        },
+        "culture": {
+          "law": {
+            "system": "benevolent_dictatorship",
+            "enforcement": "moderate"
+          }
+        },
+        "economy": {
+          "type": "trade_hub",
+          "exports": ["Food", "Water", "Ship Repairs"]
+        }
+      }
+    },
+    {
+      "id": "loc_tears_of_selune",
+      "type": "asteroid_cluster",
+      "name": "The Tears of Selûne",
+      "parentId": "550e8400-e29b-41d4-a716-446655440000",
+      "dataStatic": {
+        "description": "A trail of hundreds of asteroids following Selûne. Home to dragons, beholders, and hidden bases.",
+        "tags": ["Pirate Base", "Monster Lair"]
+      }
+    }
+  ]
+}

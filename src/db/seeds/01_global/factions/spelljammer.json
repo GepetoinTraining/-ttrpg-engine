@@ -1,0 +1,26 @@
+{
+  "factions": [
+    {
+      "id": "fac_arcane_consortium",
+      "name": "The Arcane Consortium",
+      "type": "mercantile_guild",
+      "scope": "cosmic",
+      "data": {
+        "description": "The blue-skinned giants who monopolize the sale of Spelljamming Helms.",
+        "goals": { "public": ["Profit", "Neutrality"] },
+        "resources": { "wealth": 100, "tech": "exclusive_helms" }
+      }
+    },
+    {
+      "id": "fac_imperial_elven_navy",
+      "name": "The Imperial Elven Navy (IEN)",
+      "type": "military",
+      "scope": "cosmic",
+      "data": {
+        "description": "The massive armada of the Elven nations connecting all spheres.",
+        "goals": { "public": ["Protect elven interests", "Hunt Neogi"] },
+        "resources": { "military": 100, "ships": ["Man-o-War", "Armada"] }
+      }
+    }
+  ]
+}

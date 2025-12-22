@@ -1,0 +1,105 @@
+{
+  "context": {
+    "hamletId": "hamlet_tyrluk",
+    "notes": "This file hydrates the INTERIOR of Tyrluk."
+  },
+  "nodes": [
+    {
+      "//": "--- THE ECONOMIC ENGINE: THURBRAND'S SMITHY ---",
+      "id": "bldg_tyrluk_smithy",
+      "type": "building",
+      "name": "Thurbrand's Smithy",
+      "parentId": "hamlet_tyrluk",
+      "dataStatic": {
+        "description": "A soot-stained stone building. The ringing of the anvil is the hamlet's heartbeat.",
+        "function": { "type": "shop", "subType": "blacksmith" },
+        "goods": {
+          "specialty": "Horseshoes (High Quality)",
+          "inventory": ["Pony Shoes", "Wagon Axles", "Simple Daggers"]
+        }
+      }
+    },
+    {
+      "//": "--- THE NPC: THURBRAND ---",
+      "id": "npc_thurbrand",
+      "type": "npc",
+      "name": "Thurbrand Ironhand",
+      "parentId": "bldg_tyrluk_smithy",
+      "dataStatic": {
+        "description": "A balding, muscular human with burn scars on his arms.",
+        "role": "Master Smith",
+        "personality": {
+          "archetype": "The Grumpy Perfectionist",
+          "trait": "Hates adventurers who haggle.",
+          "voice": "Deep, raspy, short sentences."
+        },
+        "stats": { "class": "Expert", "level": 4 },
+        "secrets": [
+          {
+            "secret": "He is smuggling weapons to the rebels in Arabel.",
+            "trigger": "Found a crate with false bottom."
+          }
+        ]
+      }
+    },
+    {
+      "//": "--- THE SOCIAL HUB: THE SHOULDERING BOARD ---",
+      "id": "bldg_tyrluk_inn",
+      "type": "building",
+      "name": "The Shouldering Board",
+      "parentId": "hamlet_tyrluk",
+      "dataStatic": {
+        "description": "A low-ceilinged tavern smelling of wet wool and roasted onions.",
+        "function": { "type": "tavern", "quality": "poor" },
+        "services": {
+          "lodging": "Common Room (2cp/night)",
+          "food": "Onion Soup, Hard Bread"
+        }
+      }
+    },
+    {
+      "//": "--- THE NPC: ALANA ---",
+      "id": "npc_alana",
+      "type": "npc",
+      "name": "Alana 'The Ear'",
+      "parentId": "bldg_tyrluk_inn",
+      "dataStatic": {
+        "description": "A sharp-eyed woman who wipes tables but watches everyone.",
+        "role": "Innkeeper / Informant",
+        "personality": {
+          "archetype": "The Gossip Broker",
+          "quirk": "Always humming.",
+          "motivation": "Protecting her son."
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "//": "--- THE CONNECTION (NPC -> FACTION) ---",
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-harpers-0000-0000-0000-000000000001",
+      "targetId": "npc_alana",
+      "properties": {
+        "faction": {
+          "influence": 20,
+          "visibility": "secret",
+          "role": "Low-level Informant",
+          "currentAgenda": "Report any Zhentarim agents passing through."
+        }
+      }
+    },
+    {
+      "//": "--- THE RELATIONSHIP (NPC <-> NPC) ---",
+      "type": "CULTURAL_TIE",
+      "sourceId": "npc_thurbrand",
+      "targetId": "npc_alana",
+      "properties": {
+        "political": {
+          "nature": "debt",
+          "note": "Thurbrand owes Alana money for gambling debts."
+        }
+      }
+    }
+  ]
+}

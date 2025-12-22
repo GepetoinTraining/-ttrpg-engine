@@ -1,0 +1,75 @@
+{
+  "context": {
+    "continentId": "550e8400-e29b-41d4-a716-446655440100"
+  },
+  "nodes": [
+    {
+      "id": "reg_underdark_north",
+      "type": "region_subterranean",
+      "name": "The Northdark",
+      "canonicalName": "underdark_north",
+      "parentId": "550e8400-e29b-41d4-a716-446655440100",
+      "dataStatic": {
+        "description": "The vast network of caverns beneath the Sword Coast. Eternal night, bioluminescent fungi, and lethal politics.",
+        "physics": {
+          "gravity": { "type": "standard" },
+          "atmosphere": { "type": "stagnant" },
+          "magic": {
+            "specialRules": [
+              "Faerzress radiation interferes with teleportation."
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "city_menzoberranzan",
+      "type": "city",
+      "name": "Menzoberranzan",
+      "canonicalName": "menzoberranzan",
+      "parentId": "reg_underdark_north",
+      "dataStatic": {
+        "description": "The City of Spiders. Home of the Drow and the worship of Lolth.",
+        "population": {
+          "count": 20000,
+          "demographics": { "drow": 90, "slave_races": 10 }
+        },
+        "culture": {
+          "socialStructure": {
+            "type": "theocratic_matriarchy",
+            "hierarchy": [
+              "Matron Mothers",
+              "Female Clerics",
+              "Male Wizards",
+              "Male Fighters",
+              "Slaves"
+            ]
+          },
+          "law": {
+            "system": "lolthite_chaos",
+            "enforcement": "lethal_if_caught"
+          },
+          "religion": { "dominantFaiths": ["Lolth"] }
+        },
+        "landmarks": [
+          {
+            "name": "Tier Breche",
+            "type": "academy",
+            "description": "The academy of Melee-Magthere, Sorcere, and Arach-Tinilith."
+          }
+        ]
+      }
+    },
+    {
+      "id": "city_blingdenstone",
+      "type": "city",
+      "name": "Blingdenstone",
+      "canonicalName": "blingdenstone",
+      "parentId": "reg_underdark_north",
+      "dataStatic": {
+        "description": "The Deep Gnome (Svirfneblin) city. Fortified, pragmatic, and constantly besieged.",
+        "culture": { "attitudes": { "towardsOutsiders": "cautious" } }
+      }
+    }
+  ]
+}

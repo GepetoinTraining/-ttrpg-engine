@@ -1,0 +1,32 @@
+{
+  "factions": [
+    {
+      "id": "fac_harmonium",
+      "name": "The Harmonium",
+      "type": "planar_faction",
+      "scope": "planar",
+      "data": {
+        "description": "The Hardheads. Believers in peace through absolute order.",
+        "goals": {
+          "public": ["Enforce law in Sigil", "Spread order to the planes"]
+        },
+        "headquarters": "The Barracks (Sigil)",
+        "philosophy": "Peace requires a single truth."
+      }
+    },
+    {
+      "id": "fac_doomguard",
+      "name": "The Doomguard",
+      "type": "planar_faction",
+      "scope": "planar",
+      "data": {
+        "description": "Believers in entropy. They see decay as the highest natural state.",
+        "goals": {
+          "public": ["Protect the Armory", "Ensure things end properly"]
+        },
+        "headquarters": "The Armory (Sigil)",
+        "philosophy": "Everything crumbles. We just watch the show."
+      }
+    }
+  ]
+}

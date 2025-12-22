@@ -1,0 +1,101 @@
+{
+  "context": {
+    "continentId": "550e8400-e29b-41d4-a716-446655440100",
+    "regionId": "reg_sword_coast"
+  },
+  "nodes": [
+    {
+      "id": "reg_sword_coast",
+      "type": "region",
+      "name": "The Sword Coast",
+      "canonicalName": "sword_coast",
+      "parentId": "550e8400-e29b-41d4-a716-446655440100",
+      "dataStatic": {
+        "description": "A perilous coastal region of independent city-states, wild forests, and ancient dungeons.",
+        "culture": {
+          "socialStructure": { "type": "independent_city_states" },
+          "law": {
+            "system": "lords_alliance_charter",
+            "enforcement": "varied"
+          },
+          "economy": {
+            "type": "mercantile",
+            "tradeGoods": ["Timber", "Ore", "Mercenaries"]
+          }
+        }
+      }
+    },
+    {
+      "id": "city_waterdeep",
+      "type": "metropolis",
+      "name": "Waterdeep",
+      "canonicalName": "waterdeep",
+      "parentId": "reg_sword_coast",
+      "dataStatic": {
+        "description": "The City of Splendors. The most cosmopolitan and powerful city in the North.",
+        "population": {
+          "count": 130000,
+          "description": "Over 1 million in summer months."
+        },
+        "government": {
+          "type": "oligarchy",
+          "rulingBody": "Masked Lords of Waterdeep",
+          "ruler": "Open Lord Laeral Silverhand"
+        },
+        "culture": {
+          "wealthLevel": "very_wealthy",
+          "law": { "enforcement": "strict", "corruption": "low" }
+        },
+        "landmarks": [
+          { "name": "Castle Waterdeep", "type": "castle" },
+          {
+            "name": "The Yawning Portal",
+            "type": "tavern",
+            "description": "Entrance to Undermountain."
+          }
+        ]
+      }
+    },
+    {
+      "id": "city_baldurs_gate",
+      "type": "city",
+      "name": "Baldur's Gate",
+      "canonicalName": "baldurs_gate",
+      "parentId": "reg_sword_coast",
+      "dataStatic": {
+        "description": "A gritty city of trade and crime. Everything has a price.",
+        "government": { "type": "plutocracy", "rulingBody": "Council of Four" },
+        "culture": {
+          "wealthLevel": "wealthy",
+          "law": {
+            "enforcement": "corrupt",
+            "notes": "Flaming Fist mercenaries enforce the law."
+          }
+        },
+        "landmarks": [
+          { "name": "The Seatower of Balduran", "type": "fortress" }
+        ]
+      }
+    },
+    {
+      "id": "city_neverwinter",
+      "type": "city",
+      "name": "Neverwinter",
+      "canonicalName": "neverwinter",
+      "parentId": "reg_sword_coast",
+      "dataStatic": {
+        "description": "The Jewel of the North. Rebuilding after the eruption of Mt. Hotenow.",
+        "government": {
+          "type": "monarchy_benevolent",
+          "ruler": "Lord Protector Dagult Neverember"
+        },
+        "physics": {
+          "atmosphere": {
+            "temperature": "warm",
+            "notes": "Heated by the river flowing from the volcano."
+          }
+        }
+      }
+    }
+  ]
+}

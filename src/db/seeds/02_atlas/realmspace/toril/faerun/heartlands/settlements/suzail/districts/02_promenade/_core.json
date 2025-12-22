@@ -1,0 +1,58 @@
+{
+  "context": {
+    "cityId": "city_suzail",
+    "districtId": "dist_suzail_promenade",
+    "notes": "The center of high commerce. The safest and most expensive part of the city."
+  },
+  "nodes": [
+    {
+      "id": "dist_suzail_promenade",
+      "type": "district",
+      "name": "The Promenade",
+      "parentId": "city_suzail",
+      "dataStatic": {
+        "description": "A sweeping crescent of white stone and manicured trees separating the Royal Court from the common city. The air smells of ozone and expensive perfume.",
+        "tags": ["Luxury", "Banking", "Magic Trade"],
+        "culture": {
+          "wealthLevel": "wealthy",
+          "law": {
+            "enforcement": "high",
+            "patrolFrequency": "10_minutes",
+            "notes": "Purple Dragons here are 'Honor Guards' - elite veterans (CR 3+).",
+            "crimes": {
+              "theft": "5 years hard labor in the Hullack Forest",
+              "public_magic_use": "Immediate confiscation of arcane focus"
+            }
+          },
+          "attitudes": {
+            "towardsAdventurers": "customers_only",
+            "towardsPoor": "hostile_removal"
+          }
+        },
+        "population": {
+          "demographics": {
+            "human_merchant": 50,
+            "dwarf_banker": 20,
+            "guard": 20,
+            "other": 10
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "//": "--- CONNECTION TO MARKET ---",
+      "type": "PHYSICAL_CONNECTION",
+      "sourceId": "dist_suzail_promenade",
+      "targetId": "dist_suzail_market",
+      "properties": {
+        "name": "The Merchant's Gate",
+        "access": {
+          "type": "open",
+          "note": "Guards check wagons entering the Promenade for contraband."
+        }
+      }
+    }
+  ]
+}

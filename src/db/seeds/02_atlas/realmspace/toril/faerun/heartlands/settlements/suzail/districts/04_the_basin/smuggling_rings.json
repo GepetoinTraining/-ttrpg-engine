@@ -1,0 +1,105 @@
+{
+  "context": {
+    "cityId": "city_suzail",
+    "districtId": "dist_suzail_basin",
+    "notes": "The logistical layer of the criminal underworld."
+  },
+  "nodes": [
+    {
+      "//": "--- THE LOCAL GANG (Sub-Faction) ---",
+      "id": "gang_broken_oar",
+      "type": "organization",
+      "name": "The Broken Oar Crew",
+      "parentId": "dist_suzail_basin",
+      "dataStatic": {
+        "description": "A loose collective of dockworkers and sailors who handle contraband. They answer to the Zhentarim but operate semi-autonomously.",
+        "tags": ["Gang", "Smugglers"],
+        "culture": {
+          "codes": [
+            "Never open the package",
+            "Payment is upfront",
+            "Snitches feed the crabs"
+          ],
+          "signals": {
+            "safe": "Green lantern on the pier",
+            "danger": "Red scarf on the piling"
+          }
+        }
+      }
+    },
+    {
+      "//": "--- THE DROP POINT (Mechanical Node) ---",
+      "id": "loc_rotting_piling",
+      "type": "landmark",
+      "name": "Pier 4: The Rotting Piling",
+      "parentId": "dist_suzail_basin",
+      "dataStatic": {
+        "description": "A condemned section of the docks. The wood is spongy and treacherous.",
+        "function": { "type": "dead_drop" },
+        "mechanics": {
+          "concealment": "Hollowed-out tuna carcasses",
+          "pickup_time": "3:00 AM - 4:00 AM",
+          "guard": "Giant Octopus (Trained)"
+        }
+      }
+    },
+    {
+      "//": "--- THE FENCE (Business Front) ---",
+      "id": "bldg_salties_fish",
+      "type": "shop",
+      "name": "Salty's Fish & Chum",
+      "parentId": "dist_suzail_basin",
+      "dataStatic": {
+        "description": "A legitimate-looking fish market that smells truly awful.",
+        "tags": ["Fence", "Front"],
+        "services": [
+          {
+            "name": "Laundering",
+            "rate": "30% fee to turn stolen goods into gold"
+          },
+          { "name": "Corpse Disposal", "cost": "50gp (No questions)" }
+        ]
+      }
+    },
+    {
+      "//": "--- THE HANDLER (NPC) ---",
+      "id": "npc_gutter_tom",
+      "type": "npc",
+      "name": "Gutter Tom",
+      "parentId": "gang_broken_oar",
+      "dataStatic": {
+        "role": "Logistics Chief",
+        "description": "A rat-faced man who tracks shipments in a grease-stained ledger.",
+        "stats": { "class": "Rogue (Mastermind)", "level": 5 },
+        "personality": {
+          "archetype": "The Cowardly Accountant",
+          "quirk": "Constantly wipes his sweaty hands."
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "//": "--- UPSTREAM CONNECTION ---",
+      "type": "VASSAL_OF",
+      "sourceId": "gang_broken_oar",
+      "targetId": "fac-zhentarim-0000-0000-0000-000000000001",
+      "properties": {
+        "political": {
+          "nature": "subservient",
+          "tribute": "20% of all profits"
+        }
+      }
+    },
+    {
+      "//": "--- THE SUPPLY LINE ---",
+      "type": "LOGISTICAL_ROUTE",
+      "sourceId": "loc_rotting_piling",
+      "targetId": "dist_suzail_undercity",
+      "properties": {
+        "name": "The Sluice Run",
+        "method": "Small watertight barrels pushed through the sewer grate."
+      }
+    }
+  ]
+}

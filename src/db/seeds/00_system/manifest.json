@@ -1,0 +1,94 @@
+{
+  "id": "seed-core-realms-001",
+  "name": "Forgotten Realms: Core Set",
+  "version": "1.0.0",
+  "type": "world",
+  "description": "The foundational seed for Realmspace, Toril, and the Heartlands.",
+
+  "registry": {
+    "comment": "REGISTRY OF CONSTANT UUIDS FOR SEEDING REFERENCE",
+    "spheres": {
+      "realmspace": "550e8400-e29b-41d4-a716-446655440000",
+      "greyspace": "550e8400-e29b-41d4-a716-446655440099"
+    },
+    "bodies": {
+      "toril": "550e8400-e29b-41d4-a716-446655440001",
+      "selune": "550e8400-e29b-41d4-a716-446655440002"
+    },
+    "continents": {
+      "faerun": "550e8400-e29b-41d4-a716-446655440100",
+      "kara_tur": "550e8400-e29b-41d4-a716-446655440200",
+      "zakhara": "550e8400-e29b-41d4-a716-446655440300",
+      "maztica": "550e8400-e29b-41d4-a716-446655440400",
+      "anchorome": "550e8400-e29b-41d4-a716-446655440500"
+    },
+    "global_factions": {
+      "harpers": "fac-harpers-0000-0000-0000-000000000001",
+      "zhentarim": "fac-zhentarim-0000-0000-0000-000000000001",
+      "emerald_enclave": "fac-emerald-0000-0000-0000-000000000001",
+      "lords_alliance": "fac-lordsall-0000-0000-0000-000000000001",
+      "celestial_bureaucracy": "fac-celestbur-0000-0000-0000-000000000001"
+    }
+  },
+
+  "files": {
+    "factions": [
+      "../01_global/factions/faerun_western.json",
+      "../01_global/factions/kara_tur.json",
+      "../01_global/factions/cormyr_regional.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/factions_local.json"
+    ],
+    "deities": [],
+    "nodes": [
+      "../02_atlas/realmspace/sphere.json",
+      "../02_atlas/realmspace/toril/planet.json",
+
+      "../02_atlas/realmspace/toril/faerun/continent.json",
+      "../02_atlas/realmspace/toril/kara_tur/continent.json",
+      "../02_atlas/realmspace/toril/zakhara/continent.json",
+      "../02_atlas/realmspace/toril/maztica/continent.json",
+      "../02_atlas/realmspace/toril/anchorome/continent.json",
+
+      "../02_atlas/realmspace/toril/faerun/the_north/sword_coast.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/cormyr.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/cormyr_towns.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/cormyr_villages.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/cormyr_hamlets.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/cormyr_stubs.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/hamlets/tyrluk_full_map.json",
+
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/_city_manifest.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/city_core.json",
+
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/01_royal_court/_core.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/01_royal_court/palace_complex.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/01_royal_court/noble_estates.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/01_royal_court/stalwart_society.json",
+
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/02_promenade/_core.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/02_promenade/dragoneye_coster.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/02_promenade/coin_coster.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/02_promenade/luxury_services.json",
+
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/03_market_ward/_core.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/03_market_ward/six_candles.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/03_market_ward/temple_tymora.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/03_market_ward/trade_stalls.json",
+
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/04_the_basin/_core.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/04_the_basin/leaning_boot.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/04_the_basin/harbormaster.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/04_the_basin/warehouses.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/04_the_basin/smuggling_rings.json",
+
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/05_undercity/_core.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/05_undercity/beggars_court.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/05_undercity/sewer_network.json",
+      "../02_atlas/realmspace/toril/faerun/heartlands/settlements/suzail/districts/05_undercity/hidden_shrines.json"
+    ],
+    "edges": [
+      "../03_edges/political/continental_relations.json",
+      "../03_edges/trade_routes/cormyr_roads.json"
+    ]
+  }
+}

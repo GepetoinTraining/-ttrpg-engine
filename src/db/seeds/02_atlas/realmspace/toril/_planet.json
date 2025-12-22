@@ -1,0 +1,54 @@
+{
+  "context": {
+    "sphereId": "550e8400-e29b-41d4-a716-446655440000",
+    "planetId": "550e8400-e29b-41d4-a716-446655440001"
+  },
+  "nodes": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "type": "planet",
+      "name": "Toril",
+      "canonicalName": "toril",
+      "parentId": "550e8400-e29b-41d4-a716-446655440000",
+      "dataStatic": {
+        "description": "The primary world of the Forgotten Realms, home to Faerûn, Kara-Tur, and Maztica.",
+        "physics": {
+          "gravity": { "type": "standard", "strength": 1.0 },
+          "atmosphere": { "type": "standard" },
+          "magic": { "level": "high", "source": "The Weave" },
+          "time": { "flow": "standard", "ratio": "1:1" }
+        },
+        "celestial": {
+          "bodyType": "terrestrial",
+          "orbitPeriod": "365 days",
+          "moons": 1,
+          "inhabitants": "diverse"
+        }
+      }
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "type": "moon",
+      "name": "Selûne",
+      "canonicalName": "selune",
+      "parentId": "550e8400-e29b-41d4-a716-446655440001",
+      "dataStatic": {
+        "description": "The single large moon of Toril. Trails the Tears of Selûne.",
+        "physics": {
+          "gravity": { "type": "low", "strength": 0.16 },
+          "atmosphere": { "type": "thin", "envelope": { "enabled": true } }
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "type": "ORBIT",
+      "sourceId": "550e8400-e29b-41d4-a716-446655440002",
+      "targetId": "550e8400-e29b-41d4-a716-446655440001",
+      "properties": {
+        "orbit": { "period": "30 days", "distance": "Standard Lunar Orbit" }
+      }
+    }
+  ]
+}

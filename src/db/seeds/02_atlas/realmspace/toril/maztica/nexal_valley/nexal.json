@@ -1,0 +1,26 @@
+{
+  "context": {
+    "continentId": "550e8400-e29b-41d4-a716-446655440400"
+  },
+  "nodes": [
+    {
+      "id": "nation_nexal",
+      "type": "nation",
+      "name": "Nexal",
+      "parentId": "550e8400-e29b-41d4-a716-446655440400",
+      "dataStatic": {
+        "description": "A militaristic empire built on conquest and tribute.",
+        "culture": {
+          "socialStructure": { "type": "warrior_caste" },
+          "religion": { "practices": ["Human Sacrifice"] }
+        },
+        "physics": {
+          "magic": {
+            "source": "Hisma",
+            "notes": "Spells cost HP to cast here."
+          }
+        }
+      }
+    }
+  ]
+}

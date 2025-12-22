@@ -1,0 +1,61 @@
+{
+  "context": {
+    "description": "Macro-political relationships between continents and major empires."
+  },
+  "edges": [
+    {
+      "//": "--- THE COLONIAL WAR (Faerûn vs Maztica) ---",
+      "type": "AT_WAR_WITH",
+      "sourceId": "550e8400-e29b-41d4-a716-446655440150",
+      "targetId": "550e8400-e29b-41d4-a716-446655440400",
+      "properties": {
+        "political": {
+          "nature": "colonial_invasion",
+          "since": "1361 DR",
+          "stability": "volatile",
+          "terms": ["Resource Extraction", "Forced Conversion"]
+        }
+      }
+    },
+    {
+      "//": "--- THE UNENDING WAR (Kara-Tur Civil War) ---",
+      "type": "AT_WAR_WITH",
+      "sourceId": "nation_shou_lung",
+      "targetId": "nation_tu_lung",
+      "properties": {
+        "political": {
+          "nature": "dynastic_feud",
+          "since": "centuries",
+          "stability": "cold_war",
+          "terms": ["Border Skirmishes", "Spy Networks"]
+        }
+      }
+    },
+    {
+      "//": "--- THE GOLDEN WAY (Trade Connection) ---",
+      "type": "TRADE_PARTNER",
+      "sourceId": "550e8400-e29b-41d4-a716-446655440100",
+      "targetId": "550e8400-e29b-41d4-a716-446655440200",
+      "properties": {
+        "trade": {
+          "volume": "high",
+          "goods": ["Silk", "Spices", "Magic"],
+          "dangerLevel": "extreme",
+          "controlledBy": "The Tuigan Hordes"
+        },
+        "political": { "nature": "neutral_mercantile" }
+      }
+    },
+    {
+      "//": "--- THE ENLIGHTENED BOND (Zakhara Isolation) ---",
+      "type": "CULTURAL_TIE",
+      "sourceId": "550e8400-e29b-41d4-a716-446655440300",
+      "targetId": "550e8400-e29b-41d4-a716-446655440100",
+      "political": {
+        "nature": "isolationist",
+        "stability": "stable",
+        "terms": ["Outsiders are 'Ajami' (Barbarians)"]
+      }
+    }
+  ]
+}

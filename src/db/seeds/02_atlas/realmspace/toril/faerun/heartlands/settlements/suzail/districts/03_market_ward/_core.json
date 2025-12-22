@@ -1,0 +1,53 @@
+{
+  "context": {
+    "cityId": "city_suzail",
+    "districtId": "dist_suzail_market",
+    "notes": "The chaotic heart of the city. A maze of stalls, workshops, and tenements."
+  },
+  "nodes": [
+    {
+      "id": "dist_suzail_market",
+      "type": "district",
+      "name": "The Market Ward",
+      "parentId": "city_suzail",
+      "dataStatic": {
+        "description": "The smell of roasted nuts, unwashed bodies, and forge smoke is constant. Carts jam every intersection.",
+        "tags": ["Trade", "Residential", "Crafts"],
+        "culture": {
+          "wealthLevel": "modest",
+          "law": {
+            "enforcement": "moderate",
+            "patrolFrequency": "30_minutes",
+            "notes": "Patrols stick to the main thoroughfares. Alleys are unpoliced."
+          },
+          "attitudes": {
+            "towardsAdventurers": "pragmatic",
+            "note": "They are seen as big spenders but trouble magnets."
+          }
+        },
+        "population": {
+          "count": 25000,
+          "demographics": {
+            "human_commoner": 80,
+            "halfling": 10,
+            "dwarf": 5,
+            "other": 5
+          },
+          "vibe": "Busy, loud, pragmatic."
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "//": "--- CONNECTION TO BASIN ---",
+      "type": "PHYSICAL_CONNECTION",
+      "sourceId": "dist_suzail_market",
+      "targetId": "dist_suzail_basin",
+      "properties": {
+        "name": "Fishmonger's Hill",
+        "description": "A steep, cobbled street that gets slippery with fish slime."
+      }
+    }
+  ]
+}

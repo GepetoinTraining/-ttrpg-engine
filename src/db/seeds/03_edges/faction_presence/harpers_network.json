@@ -1,0 +1,29 @@
+{
+  "edges": [
+    {
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-harpers-0000-0000-0000-000000000001",
+      "targetId": "city_waterdeep",
+      "properties": {
+        "faction": {
+          "visibility": "secret",
+          "role": "Protectors",
+          "headquarters": "Blackstaff Tower (Allied)",
+          "influence": 80
+        }
+      }
+    },
+    {
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-harpers-0000-0000-0000-000000000001",
+      "targetId": "city_neverwinter",
+      "properties": {
+        "faction": {
+          "visibility": "secret",
+          "role": "Advisors",
+          "influence": 50
+        }
+      }
+    }
+  ]
+}

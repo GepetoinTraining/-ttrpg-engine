@@ -1,0 +1,62 @@
+{
+  "context": {
+    "cityId": "city_suzail",
+    "districtId": "dist_suzail_undercity",
+    "notes": "The subterranean layer. A mix of sewers, ancient elven ruins, and smuggler tunnels."
+  },
+  "nodes": [
+    {
+      "id": "dist_suzail_undercity",
+      "type": "district",
+      "name": "The Undercity (The Drains)",
+      "parentId": "city_suzail",
+      "dataStatic": {
+        "description": "A sprawling network of wet tunnels. The sound of dripping water is constant. The air burns the lungs.",
+        "tags": ["Dungeon", "Criminal Hub", "Hazardous"],
+        "culture": {
+          "wealthLevel": "destitute",
+          "law": {
+            "enforcement": "none",
+            "notes": "Purple Dragons do not come down here. Justice is decided by the blade."
+          },
+          "socialStructure": {
+            "hierarchy": [
+              "The King of Rats",
+              "Guildmasters",
+              "Smugglers",
+              "Scavengers"
+            ]
+          }
+        },
+        "physics": {
+          "atmosphere": {
+            "type": "toxic",
+            "effect": "Con Save (DC 10) per hour or gain Poisoned condition."
+          },
+          "lighting": "darkness"
+        },
+        "population": {
+          "count": 1200,
+          "demographics": {
+            "human_outcast": 40,
+            "wererat": 20,
+            "goblin": 20,
+            "otyugh": 5
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "//": "--- EXIT TO WILDERNESS ---",
+      "type": "PHYSICAL_CONNECTION",
+      "sourceId": "dist_suzail_undercity",
+      "targetId": "loc_sewer_outfall",
+      "properties": {
+        "name": "The Dragon's Maw",
+        "description": "Where the sewage dumps into the Lake of Dragons."
+      }
+    }
+  ]
+}

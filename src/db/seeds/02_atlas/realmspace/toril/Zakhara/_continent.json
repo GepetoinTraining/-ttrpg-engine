@@ -1,0 +1,42 @@
+{
+  "context": {
+    "sphereId": "550e8400-e29b-41d4-a716-446655440000",
+    "planetId": "550e8400-e29b-41d4-a716-446655440001"
+  },
+  "nodes": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440300",
+      "type": "continent",
+      "name": "Zakhara",
+      "canonicalName": "zakhara",
+      "parentId": "550e8400-e29b-41d4-a716-446655440001",
+      "dataStatic": {
+        "description": "The Land of Fate. A unified culture bound by the Law of the Loregiver.",
+        "culture": {
+          "techLevel": "golden_age",
+          "customs": {
+            "fate_mechanic": { "enabled": true, "name": "Fate Points" }
+          },
+          "socialStructure": {
+            "type": "enlightened_meritocracy",
+            "hierarchy": ["Caliph", "Grand Vizier", "Citizen"]
+          },
+          "religion": {
+            "type": "monolatry",
+            "dominantFaiths": ["The Loregiver"],
+            "tolerance": "high"
+          },
+          "attitudes": {
+            "towardsMagic": "commonplace",
+            "towardsOutsiders": "accepted_if_enlightened"
+          }
+        },
+        "physics": {
+          "magic": {
+            "schoolModifiers": { "elemental": { "modifier": "enhanced" } }
+          }
+        }
+      }
+    }
+  ]
+}

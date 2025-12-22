@@ -1,0 +1,31 @@
+{
+  "edges": [
+    {
+      "//": "--- THE KING'S ROAD (Suzail -> Arabel) ---",
+      "type": "ROAD",
+      "sourceId": "city_suzail",
+      "targetId": "city_arabel",
+      "properties": {
+        "name": "The Calantar's Way",
+        "trade": {
+          "travelTime": "2 days (Horse)",
+          "dangerLevel": "low",
+          "goods": ["Coal", "Food"]
+        }
+      }
+    },
+    {
+      "//": "--- THE COASTAL RUN (Suzail -> Marsember) ---",
+      "type": "SEA_ROUTE",
+      "sourceId": "city_suzail",
+      "targetId": "city_marsember",
+      "properties": {
+        "trade": {
+          "travelTime": "1 day (Ship)",
+          "dangerLevel": "low",
+          "goods": ["Spices", "Luxury Goods"]
+        }
+      }
+    }
+  ]
+}

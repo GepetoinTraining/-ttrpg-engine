@@ -1,0 +1,81 @@
+{
+  "context": { "districtId": "dist_suzail_royal" },
+  "nodes": [
+    {
+      "//": "--- THE FORTRESS ---",
+      "id": "bldg_faerlthann_palace",
+      "type": "castle",
+      "name": "The Palace of the Purple Dragon",
+      "parentId": "dist_suzail_royal",
+      "dataStatic": {
+        "description": "A sprawling fortress of white marble flying the Purple Dragon standard. It creates its own weather shadow.",
+        "tags": ["Government", "Fortress"],
+        "security": {
+          "level": "maximum",
+          "wards": ["Anti-Teleport", "Zone of Truth (Throne Room)"]
+        }
+      }
+    },
+    {
+      "//": "--- ROOM 1: THE DRAGON THRONE (Public-ish) ---",
+      "id": "room_palace_throne",
+      "type": "room",
+      "name": "The Chamber of the Purple Dragon",
+      "parentId": "bldg_faerlthann_palace",
+      "dataStatic": {
+        "description": "A cavernous hall dominated by the Dragon Throne. The floor is a mosaic of the map of Cormyr.",
+        "encounters": [
+          "King Azoun Obarskyr",
+          "Royal Magician Vangerdahast (or successor)",
+          "12 Purple Dragon Knights"
+        ],
+        "physics": { "magic": { "effect": "Zone of Truth", "dc": 20 } }
+      }
+    },
+    {
+      "//": "--- ROOM 2: THE WAR ROOM (Strategic) ---",
+      "id": "room_palace_war",
+      "type": "room",
+      "name": "The High Marshal's Chamber",
+      "parentId": "bldg_faerlthann_palace",
+      "dataStatic": {
+        "description": "Filled with sand tables and magical projections of the border forts.",
+        "secrets": [
+          {
+            "secret": "One map shows a planned invasion route into Sembia.",
+            "type": "Political Intel"
+          }
+        ]
+      }
+    },
+    {
+      "//": "--- ROOM 3: THE ROYAL LIBRARY (Lore) ---",
+      "id": "room_palace_library",
+      "type": "library",
+      "name": "The Royal Archives",
+      "parentId": "bldg_faerlthann_palace",
+      "dataStatic": {
+        "description": "Contains the genealogy of every noble house and the original Charter of Cormyr.",
+        "loot": [
+          "Scroll of Legend Lore",
+          "Genealogy Records (Worth 500gp to blackmailers)"
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "//": "--- THE SECRET ESCAPE ---",
+      "type": "PHYSICAL_CONNECTION",
+      "sourceId": "room_palace_throne",
+      "targetId": "dist_suzail_undercity",
+      "properties": {
+        "name": "The King's Escape",
+        "access": {
+          "type": "magically_sealed",
+          "note": "Only opens for Obarskyr blood."
+        }
+      }
+    }
+  ]
+}

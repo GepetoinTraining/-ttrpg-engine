@@ -1,0 +1,17 @@
+{
+  "edges": [
+    {
+      "type": "TRADE_ROUTE",
+      "sourceId": "city_waterdeep",
+      "targetId": "city_baldurs_gate",
+      "properties": {
+        "name": "The Trade Way",
+        "trade": {
+          "goods": ["Everything"],
+          "travelTime": "20 days (Caravan)",
+          "dangerLevel": "moderate"
+        }
+      }
+    }
+  ]
+}

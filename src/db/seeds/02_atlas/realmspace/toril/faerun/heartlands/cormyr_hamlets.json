@@ -1,0 +1,102 @@
+{
+  "context": {
+    "continentId": "550e8400-e29b-41d4-a716-446655440100",
+    "regionId": "550e8400-e29b-41d4-a716-446655440120"
+  },
+  "nodes": [
+    {
+      "//": "--- ESPAR (The Royal Retreat) ---",
+      "id": "hamlet_espar",
+      "type": "hamlet",
+      "name": "Espar",
+      "canonicalName": "espar",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "A quiet stone hamlet of 200 souls. Famous only because the King owns a hunting lodge here.",
+        "population": {
+          "count": 220,
+          "description": "Mostly humans, a few halfling farmers."
+        },
+        "culture": {
+          "socialStructure": {
+            "type": "communal",
+            "hierarchy": ["Village Elder", "Lodge Warden"]
+          },
+          "law": {
+            "enforcement": "low",
+            "notes": "Disputes settled by the Elder. Warden intervenes only for poaching."
+          }
+        },
+        "economy": {
+          "type": "subsistence",
+          "resources": ["Wild Game", "Herbs"],
+          "wealthLevel": "poor_but_stable"
+        },
+        "landmarks": [
+          {
+            "name": "Royal Hunting Lodge",
+            "type": "estate",
+            "description": "Heavily guarded by Purple Dragons when the King is in town."
+          },
+          {
+            "name": "The Watchful Eye",
+            "type": "tavern",
+            "description": "Run by a retired ranger who knows the forest paths."
+          }
+        ]
+      }
+    },
+    {
+      "//": "--- TYRLUK (The Pony Stop) ---",
+      "id": "hamlet_tyrluk",
+      "type": "hamlet",
+      "name": "Tyrluk",
+      "canonicalName": "tyrluk",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "A muddy crossroads of 150 people centered around a smithy and a horse trader.",
+        "population": { "count": 150 },
+        "economy": {
+          "type": "service",
+          "exports": ["Pony Breeding", "Horseshoes"],
+          "notes": "Vital stopover for caravans heading to High Horn."
+        },
+        "hooks": [
+          {
+            "title": "The Missing Foal",
+            "description": "A prize pony vanished last night. Goblin tracks found."
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "//": "--- THE DEPENDENCY LOOP ---",
+      "type": "TRADE_PARTNER",
+      "sourceId": "hamlet_tyrluk",
+      "targetId": "city_arabel",
+      "properties": {
+        "trade": {
+          "goods": ["Mounts"],
+          "volume": "low",
+          "notes": "Arabel's cavalry relies on Tyrluk ponies."
+        }
+      }
+    },
+    {
+      "//": "--- LOCAL HERO (Faction Presence) ---",
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-harpers-0000-0000-0000-000000000001",
+      "targetId": "hamlet_espar",
+      "properties": {
+        "faction": {
+          "influence": 10,
+          "visibility": "secret",
+          "notableMembers": [{ "name": "Hezom the Miller", "role": "Watcher" }],
+          "currentAgenda": "Watching who enters the Royal Lodge."
+        }
+      }
+    }
+  ]
+}

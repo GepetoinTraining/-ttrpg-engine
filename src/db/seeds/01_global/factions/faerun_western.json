@@ -1,0 +1,72 @@
+{
+  "context": { "continentId": "550e8400-e29b-41d4-a716-446655440100" },
+  "factions": [
+    {
+      "id": "fac-harpers-0000-0000-0000-000000000001",
+      "name": "The Harpers",
+      "type": "SPY_NETWORK",
+      "scope": "global",
+      "data": {
+        "description": "A semi-secret organization dedicated to promoting good, preserving history, and maintaining balance.",
+        "motto": "One can never have too much information.",
+        "goals": {
+          "public": ["Oppose Tyranny", "Preserve Knowledge"],
+          "secret": ["Prevent any one empire from growing too strong"]
+        },
+        "structure": { "type": "cell_network", "leaderTitle": "High Harper" },
+        "resources": { "information": 95, "magical": 70 }
+      }
+    },
+    {
+      "id": "fac-zhentarim-0000-0000-0000-000000000001",
+      "name": "The Zhentarim",
+      "alternateNames": ["The Black Network"],
+      "type": "MERCENARY_COMPANY",
+      "scope": "global",
+      "data": {
+        "description": "A shadow network seeking to control trade routes and sell their services to the highest bidder.",
+        "goals": {
+          "public": ["Provide Mercenaries", "Secure Trade"],
+          "secret": ["Dominate the Sword Coast economy"]
+        },
+        "structure": { "type": "hierarchy", "leaderTitle": "Pereghost" },
+        "resources": { "wealth": 90, "military": 85 }
+      }
+    },
+    {
+      "id": "fac-lordsall-0000-0000-0000-000000000001",
+      "name": "The Lords' Alliance",
+      "type": "POLITICAL_COALITION",
+      "scope": "regional",
+      "data": {
+        "description": "A partnership of merchant cities sworn to defend the North from chaos.",
+        "goals": { "public": ["Mutual Defense", "Safe Trade"] },
+        "structure": { "type": "council", "leaderTitle": "Open Lord" },
+        "resources": { "political": 100, "wealth": 80 }
+      }
+    },
+    {
+      "id": "fac-emerald-0000-0000-0000-000000000001",
+      "name": "The Emerald Enclave",
+      "type": "DRUIDIC_CIRCLE",
+      "scope": "global",
+      "data": {
+        "description": "Gatekeepers of the vast wilderness who walk the line between civilization and nature.",
+        "goals": {
+          "public": ["Restore the Natural Order", "Destroy Unnatural Threats"]
+        }
+      }
+    },
+    {
+      "id": "fac-cultdragon-0000-0000-0000-000000000001",
+      "name": "The Cult of the Dragon",
+      "type": "CULT",
+      "scope": "global",
+      "data": {
+        "description": "Fanatics who believe undead dragons (Dracoliches) should rule the world.",
+        "goals": { "secret": ["Raise Tiamat", "Create Dracoliches"] },
+        "resources": { "magical": 80, "wealth": 60 }
+      }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "context": {
+    "continentId": "550e8400-e29b-41d4-a716-446655440200"
+  },
+  "nodes": [
+    {
+      "id": "nation_kozakura",
+      "type": "nation",
+      "name": "Kozakura",
+      "canonicalName": "kozakura",
+      "parentId": "550e8400-e29b-41d4-a716-446655440200",
+      "dataStatic": {
+        "description": "The Island Kingdom. A land of cherry blossoms, stoic samurai, and mischievous spirits.",
+        "culture": {
+          "honorSystem": { "enabled": true, "name": "Face" },
+          "socialStructure": { "type": "shogunate" },
+          "law": {
+            "system": "imperial_decree",
+            "punishment": ["Execution", "Seppuku"]
+          }
+        }
+      }
+    },
+    {
+      "id": "city_dojo_echo",
+      "type": "monastery",
+      "name": "Dojo of the Echo",
+      "parentId": "nation_kozakura",
+      "dataStatic": {
+        "description": "A remote mountain monastery where the Kensai (Sword Saints) train.",
+        "tags": ["Training Ground", "Spiritual"]
+      }
+    }
+  ]
+}

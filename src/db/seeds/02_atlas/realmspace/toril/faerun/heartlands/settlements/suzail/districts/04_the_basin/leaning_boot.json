@@ -1,0 +1,81 @@
+{
+  "context": { "districtId": "dist_suzail_basin" },
+  "nodes": [
+    {
+      "//": "--- THE TAVERN ---",
+      "id": "bldg_leaning_boot",
+      "type": "tavern",
+      "name": "The Leaning Boot",
+      "parentId": "dist_suzail_basin",
+      "dataStatic": {
+        "description": "A three-story wooden structure that leans 15 degrees toward the water. Patrons have to hold their mugs to keep them from sliding.",
+        "tags": ["Wretched Hive", "Zhent Front"],
+        "function": {
+          "type": "tavern",
+          "quality": "poor",
+          "cost": "3sp/night"
+        },
+        "menu": ["Black Grog (1cp - Causes Blindness)", "Fried Rat-on-a-stick"],
+        "physics": {
+          "terrain": "difficult_terrain",
+          "note": "Dexterity save (DC 10) to run across the slanted floor."
+        }
+      }
+    },
+    {
+      "//": "--- THE CELLAR (Smuggling Hub) ---",
+      "id": "room_leaning_cellar",
+      "type": "room",
+      "name": "The Wet Cellar",
+      "parentId": "bldg_leaning_boot",
+      "dataStatic": {
+        "description": "Flooded with 6 inches of seawater at high tide. Crates are stacked on pallets.",
+        "hidden": true,
+        "contents": [
+          "Crates marked 'Fish' (Actually Poison)",
+          "Crates marked 'Wool' (Actually Crossbows)"
+        ]
+      }
+    },
+    {
+      "//": "--- THE SEA CAVE (Submarine Dock) ---",
+      "id": "room_leaning_seacave",
+      "type": "dock",
+      "name": "The Smuggler's Drop",
+      "parentId": "bldg_leaning_boot",
+      "dataStatic": {
+        "description": "A natural cavern beneath the cellar that opens directly into the harbor underwater.",
+        "function": "Submarine docking for small boats.",
+        "encounters": ["2 Merrow Guards (Bribed)"]
+      }
+    },
+    {
+      "//": "--- THE BARKEEP ---",
+      "id": "npc_one_eye_jareth",
+      "type": "npc",
+      "name": "'One-Eye' Jareth",
+      "parentId": "bldg_leaning_boot",
+      "dataStatic": {
+        "role": "Barkeep / Spy Master",
+        "description": "An ex-pirate with a jagged scar over his missing eye.",
+        "personality": {
+          "archetype": "The Thug Leader",
+          "motivation": "Greed and fear of the Zhentarim Inner Circle."
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "//": "--- SECRET ENTRANCE ---",
+      "type": "PHYSICAL_CONNECTION",
+      "sourceId": "bldg_leaning_boot",
+      "targetId": "room_leaning_cellar",
+      "properties": {
+        "name": "The Trapdoor",
+        "type": "hidden_door",
+        "trigger": "Pulling the third tap handle behind the bar."
+      }
+    }
+  ]
+}

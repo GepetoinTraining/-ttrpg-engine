@@ -1,0 +1,37 @@
+{
+  "context": { "districtId": "dist_suzail_undercity" },
+  "nodes": [
+    {
+      "//": "--- TEMPLE OF SHADOWS ---",
+      "id": "temple_masked_shrine",
+      "type": "temple",
+      "name": "The Altar of Mask",
+      "parentId": "dist_suzail_undercity",
+      "dataStatic": {
+        "description": "A hidden shrine to the Lord of Shadows built inside a collapsed noble crypt. The altar is made of stolen obsidian.",
+        "tags": ["Religious", "Thieves Guild"],
+        "services": [
+          "Sanctuary for criminals",
+          "Blessing of Stealth (Advantage on Stealth for 24h)"
+        ],
+        "secrets": [
+          {
+            "secret": "The altar slides back to reveal the vault of the Fire Knives assassin guild."
+          }
+        ]
+      }
+    },
+    {
+      "//": "--- THE FIRE KNIVES HQ (Deep Secret) ---",
+      "id": "hq_fire_knives",
+      "type": "guildhall",
+      "name": "The Ember Vault",
+      "parentId": "temple_masked_shrine",
+      "dataStatic": {
+        "description": "The secret headquarters of the assassins who killed Azoun II.",
+        "hidden": true,
+        "security": { "level": "extreme", "guards": "Assassins" }
+      }
+    }
+  ]
+}

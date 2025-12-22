@@ -1,0 +1,74 @@
+{
+  "context": { "districtId": "dist_suzail_promenade" },
+  "nodes": [
+    {
+      "//": "--- THE MAGIC SHOP ---",
+      "id": "bldg_dragoneye_coster",
+      "type": "shop",
+      "name": "The Dragoneye Dealing Coster",
+      "parentId": "dist_suzail_promenade",
+      "dataStatic": {
+        "description": "A fortress of commerce. Iron golems flank the doors.",
+        "function": {
+          "type": "shop",
+          "subType": "magic",
+          "quality": "legendary"
+        },
+        "security": {
+          "level": "extreme",
+          "traps": ["Glyph of Warding (Fire)", "Anti-Magic Field in Vault"]
+        },
+        "inventory": {
+          "specialties": [
+            "Potions",
+            "Scrolls",
+            "Wondrous Items (Common/Uncommon)"
+          ],
+          "rareStock": ["Wand of Fireballs (1 in stock)", "Bag of Holding"],
+          "policy": "No refunds. Identification services: 100gp."
+        }
+      }
+    },
+    {
+      "//": "--- THE BANK ---",
+      "id": "bldg_coin_coster",
+      "type": "guildhall",
+      "name": "The Coin Coster",
+      "parentId": "dist_suzail_promenade",
+      "dataStatic": {
+        "description": "The financial heart of the kingdom. Windowless and imposing.",
+        "tags": ["Bank", "Exchange"],
+        "services": [
+          { "name": "Currency Exchange", "rate": "2%" },
+          { "name": "Secure Vault", "cost": "10gp/month" },
+          {
+            "name": "Letter of Credit",
+            "note": "Accepted in Waterdeep and Sembia"
+          }
+        ]
+      }
+    },
+    {
+      "//": "--- THE LUXURY CLOTHIER ---",
+      "id": "bldg_gaunt_gowns",
+      "type": "shop",
+      "name": "Gaunt's Gowns",
+      "parentId": "dist_suzail_promenade",
+      "dataStatic": {
+        "description": "The premier tailor for courtly attire.",
+        "function": {
+          "type": "shop",
+          "subType": "clothing",
+          "quality": "aristocratic"
+        },
+        "inventory": {
+          "specialties": [
+            "Silk Doublets",
+            "Gem-studded Capes",
+            "Glamoured Armor"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "context": {
+    "cityId": "city_suzail",
+    "districtId": "dist_suzail_basin",
+    "notes": "The harbor district. Rough, industrial, and crime-ridden."
+  },
+  "nodes": [
+    {
+      "id": "dist_suzail_basin",
+      "type": "district",
+      "name": "The Basin",
+      "parentId": "city_suzail",
+      "dataStatic": {
+        "description": "The deepwater harbor. The air is thick with the smell of tar, fish guts, and sea salt. Fog rolls in every evening.",
+        "tags": ["Docks", "Crime", "Trade"],
+        "culture": {
+          "wealthLevel": "poor",
+          "law": {
+            "enforcement": "moderate",
+            "corruption": "high",
+            "notes": "The Purple Dragons patrol in groups of 4. Bribery is common (DC 15 Persuasion)."
+          },
+          "attitudes": {
+            "towardsNobles": "hostile",
+            "towardsCriminals": "protective"
+          }
+        },
+        "population": {
+          "count": 8000,
+          "demographics": {
+            "human_sailor": 60,
+            "half_orc": 15,
+            "dwarf": 10,
+            "ratfolk": 5
+          }
+        },
+        "physics": {
+          "atmosphere": { "weather": "foggy_humid", "visibility": "poor" }
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "//": "--- CONNECTION TO UNDERCITY ---",
+      "type": "PHYSICAL_CONNECTION",
+      "sourceId": "dist_suzail_basin",
+      "targetId": "dist_suzail_undercity",
+      "properties": {
+        "name": "The Sluice Gate",
+        "access": {
+          "type": "barred_gate",
+          "note": "Often left unlocked by smugglers."
+        }
+      }
+    }
+  ]
+}

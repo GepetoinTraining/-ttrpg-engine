@@ -1,0 +1,25 @@
+{
+  "pantheon": "Celestial Bureaucracy",
+  "deities": [
+    {
+      "id": "god_jade_emperor",
+      "name": "The Jade Emperor",
+      "rank": "overdeity",
+      "alignment": "LN",
+      "data": {
+        "portfolio": ["Everything under Heaven", "Order", "Bureaucracy"],
+        "symbol": "A jade tablet"
+      }
+    },
+    {
+      "id": "god_kwan_ying",
+      "name": "Kwan Ying",
+      "rank": "intermediate",
+      "alignment": "LG",
+      "data": {
+        "portfolio": ["Compassion", "Mercy"],
+        "symbol": "A lotus flower"
+      }
+    }
+  ]
+}

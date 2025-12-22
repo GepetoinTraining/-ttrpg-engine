@@ -1,0 +1,66 @@
+{
+  "context": {
+    "cityId": "city_suzail",
+    "districtId": "dist_suzail_royal",
+    "notes": "The high-security zone. Access is restricted."
+  },
+  "nodes": [
+    {
+      "id": "dist_suzail_royal",
+      "type": "district",
+      "name": "The Royal Court",
+      "parentId": "city_suzail",
+      "dataStatic": {
+        "description": "The walled inner city containing the palace and noble estates. The streets are paved with white marble and silence is enforced.",
+        "tags": ["Noble Quarter", "Restricted Access"],
+        "culture": {
+          "wealthLevel": "aristocratic",
+          "socialStructure": {
+            "hierarchy": [
+              "Royalty",
+              "High Nobility",
+              "War Wizards",
+              "Chartered Heroes"
+            ]
+          },
+          "law": {
+            "enforcement": "extreme",
+            "patrolFrequency": "5_minutes",
+            "crimes": {
+              "trespassing": "Immediate Arrest",
+              "drawing_weapons": "Death or Exile",
+              "magic_use": "Strictly Prohibited (War Wizard Monitored)"
+            }
+          },
+          "attitudes": {
+            "towardsCommoners": "invisible",
+            "towardsAdventurers": "suspicious"
+          }
+        },
+        "population": {
+          "count": 2500,
+          "demographics": {
+            "human_noble": 60,
+            "human_servant": 30,
+            "guard": 10
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "//": "--- THE GATEWAY (Checkpoint) ---",
+      "type": "PHYSICAL_CONNECTION",
+      "sourceId": "dist_suzail_royal",
+      "targetId": "dist_suzail_promenade",
+      "properties": {
+        "name": "The Dragon's Jaws (Gate)",
+        "access": {
+          "type": "guarded_checkpoint",
+          "requirements": ["Noble Writ", "Adventuring Charter", "Royal Summons"]
+        }
+      }
+    }
+  ]
+}

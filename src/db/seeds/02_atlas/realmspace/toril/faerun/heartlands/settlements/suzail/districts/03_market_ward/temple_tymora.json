@@ -1,0 +1,41 @@
+{
+  "context": { "districtId": "dist_suzail_market" },
+  "nodes": [
+    {
+      "//": "--- THE TEMPLE ---",
+      "id": "bldg_tower_luck",
+      "type": "temple",
+      "name": "The Tower of Luck (Tymora)",
+      "parentId": "dist_suzail_market",
+      "dataStatic": {
+        "description": "A spiraling stone tower with an open roof. A large fountain in the courtyard is filled with copper and silver coins.",
+        "tags": ["Religious", "Social Hub"],
+        "services": [
+          {
+            "name": "Blessing of the Coin",
+            "cost": "10gp",
+            "effect": "Advantage on next skill check"
+          },
+          {
+            "name": "Remove Curse",
+            "cost": "100gp",
+            "note": "Requires 1 hour ritual"
+          },
+          { "name": "Holy Water", "cost": "25gp" }
+        ]
+      }
+    },
+    {
+      "//": "--- THE HIGH PRIEST ---",
+      "id": "npc_luckbringer",
+      "type": "npc",
+      "name": "Luckbringer Olan",
+      "parentId": "bldg_tower_luck",
+      "dataStatic": {
+        "role": "High Priest",
+        "description": "A jovial man who decides temple policy by flipping a platinum coin.",
+        "stats": { "class": "Cleric", "level": 9 }
+      }
+    }
+  ]
+}

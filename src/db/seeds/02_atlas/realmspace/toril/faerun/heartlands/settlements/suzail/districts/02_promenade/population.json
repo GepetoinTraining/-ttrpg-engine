@@ -1,0 +1,52 @@
+{
+  "context": { "districtId": "dist_suzail_promenade" },
+  "nodes": [
+    {
+      "//": "--- NAMED NPC: THE PROPRIETOR ---",
+      "id": "npc_ildool",
+      "type": "npc",
+      "name": "Ildool",
+      "parentId": "bldg_dragoneye_coster",
+      "dataStatic": {
+        "role": "Shopkeeper",
+        "description": "A human merchant with a magical monocle that reveals alignment auras.",
+        "stats": { "class": "Wizard", "level": 5 },
+        "personality": {
+          "archetype": "The Bureaucrat",
+          "motivation": "Profit and abiding by War Wizard regulations.",
+          "voice": "Nasal, precise, impatient."
+        }
+      }
+    },
+    {
+      "//": "--- NAMED NPC: THE BANKER ---",
+      "id": "npc_mortha",
+      "type": "npc",
+      "name": "Mortha the Golden",
+      "parentId": "bldg_coin_coster",
+      "dataStatic": {
+        "role": "Head Banker",
+        "description": "A Gold Dwarf matron who weighs coins by hand, never using a scale.",
+        "personality": {
+          "archetype": "The Iron Lady",
+          "trait": "Absolutely incorruptible."
+        }
+      }
+    },
+    {
+      "//": "--- GENERIC POPULATION (For Procedural Generation) ---",
+      "id": "template_promenade_patrol",
+      "type": "template_npc",
+      "name": "Purple Dragon Honor Guard",
+      "parentId": "dist_suzail_promenade",
+      "dataStatic": {
+        "description": "Elites in polished plate armor.",
+        "stats": {
+          "cr": 3,
+          "equipment": ["Plate Armor", "Greatsword", "Potion of Healing"]
+        },
+        "behavior": "Polite but lethal. Will not accept bribes."
+      }
+    }
+  ]
+}

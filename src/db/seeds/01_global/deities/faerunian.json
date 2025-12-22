@@ -1,0 +1,42 @@
+{
+  "pantheon": "Faerûnian",
+  "deities": [
+    {
+      "id": "god_mystra",
+      "name": "Mystra",
+      "rank": "greater",
+      "alignment": "NG",
+      "data": {
+        "portfolio": ["Magic", "The Weave"],
+        "symbol": "Seven stars circling a red mist"
+      }
+    },
+    {
+      "id": "god_tyr",
+      "name": "Tyr",
+      "rank": "greater",
+      "alignment": "LG",
+      "data": {
+        "portfolio": ["Justice"],
+        "symbol": "Balanced scales resting on a warhammer"
+      }
+    },
+    {
+      "id": "god_bane",
+      "name": "Bane",
+      "rank": "greater",
+      "alignment": "LE",
+      "data": {
+        "portfolio": ["Tyranny", "Fear"],
+        "symbol": "A black hand clutching a green face"
+      }
+    },
+    {
+      "id": "god_lathander",
+      "name": "Lathander",
+      "rank": "greater",
+      "alignment": "NG",
+      "data": { "portfolio": ["Dawn", "Renewal"], "symbol": "A sun rising" }
+    }
+  ]
+}

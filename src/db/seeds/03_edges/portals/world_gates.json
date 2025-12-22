@@ -1,0 +1,27 @@
+{
+  "edges": [
+    {
+      "type": "PORTAL",
+      "sourceId": "city_waterdeep",
+      "targetId": "loc_the_rock_of_bral",
+      "properties": {
+        "name": "The Celestial Stairway",
+        "portal": {
+          "type": "permanent",
+          "key": "A diamond worth 5000gp (consumed)",
+          "location": "Top of Blackstaff Tower"
+        }
+      }
+    },
+    {
+      "type": "PLANAR_GATE",
+      "sourceId": "city_menzoberranzan",
+      "targetId": "fac_harmonium",
+      "properties": {
+        "name": "The Demonweb Pit",
+        "note": "Connects to the Abyss (Lolth's Layer), treated here as a faction/plane node for simplicity.",
+        "portal": { "type": "variable", "key": "Blood sacrifice" }
+      }
+    }
+  ]
+}

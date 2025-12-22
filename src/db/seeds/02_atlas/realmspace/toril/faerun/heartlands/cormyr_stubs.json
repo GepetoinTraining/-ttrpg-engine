@@ -1,0 +1,218 @@
+{
+  "context": {
+    "continentId": "550e8400-e29b-41d4-a716-446655440100",
+    "regionId": "550e8400-e29b-41d4-a716-446655440120"
+  },
+  "nodes": [
+    {
+      "//": "==================================================================",
+      "//": "SUB-REGION: THE WEST (The High Road & King's Forest)",
+      "//": "==================================================================",
+      "id": "loc_high_horn",
+      "type": "fortress",
+      "name": "High Horn",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "The massive fortress complex guarding the High Road pass into the West.",
+        "tags": ["Military HQ", "Anti-Dragon Defenses"],
+        "population": {
+          "count": 400,
+          "description": "Purple Dragons and War Wizards."
+        }
+      }
+    },
+    {
+      "id": "hamlet_eagle_peak",
+      "type": "hamlet",
+      "name": "Eagle Peak",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "A tiny hamlet perched on a cliff edge. Famous for caravans that didn't make the turn.",
+        "tags": ["Dangerous Roads", "Griffon Sightings"]
+      }
+    },
+    {
+      "id": "village_dhedluk",
+      "type": "village",
+      "name": "Dhedluk",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "A woodcutter's community deep in the King's Forest. They maintain the Royal Preserves.",
+        "tags": ["Forestry", "Rangers"]
+      }
+    },
+
+    {
+      "//": "==================================================================",
+      "//": "SUB-REGION: THE CENTRAL HEARTLANDS (Wyvernwater)",
+      "//": "==================================================================",
+      "id": "town_wheloon",
+      "type": "town",
+      "name": "Wheloon",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "Known for its bright green slate roofs. A ferry town on the Wyvernwater.",
+        "tags": ["Boat Building", "Pottery", "Prison City (4e Era)"]
+      }
+    },
+    {
+      "id": "hamlet_yeoman_bridge",
+      "type": "hamlet",
+      "name": "Yeoman Bridge",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "The connection point between the King's Forest and the open farmland.",
+        "tags": ["Miller", "Textiles"]
+      }
+    },
+    {
+      "id": "hamlet_sunset_hill",
+      "type": "hamlet",
+      "name": "Sunset Hill",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "A cluster of estates owned by retired War Wizards.",
+        "tags": ["High Magic", "Retirement Community"]
+      }
+    },
+
+    {
+      "//": "==================================================================",
+      "//": "SUB-REGION: THE EAST (Thunder Peaks Border)",
+      "//": "==================================================================",
+      "id": "town_thunderstone",
+      "type": "town",
+      "name": "Thunderstone",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "The alchemist's haven. The air always smells of sulfur and failed experiments.",
+        "tags": ["Alchemy", "Mining Support"],
+        "economy": { "exports": ["Potions", "Acid", "Thunderstones"] }
+      }
+    },
+    {
+      "id": "hamlet_hultail",
+      "type": "hamlet",
+      "name": "Hultail",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "A secretive village known for breeding the finest horses in the East.",
+        "tags": ["Horse Breeding", "Secretive"]
+      }
+    },
+    {
+      "id": "loc_hullack_forest",
+      "type": "wilderness_site",
+      "name": "The Hullack Forest",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "A dense, ancient forest rumored to be haunted by a lich.",
+        "tags": ["Dangerous", "Ruins", "Undead"],
+        "physics": { "magic": { "level": "wild" } }
+      }
+    },
+
+    {
+      "//": "==================================================================",
+      "//": "SUB-REGION: THE NORTH (Stonelands Border)",
+      "//": "==================================================================",
+      "id": "ruin_tilverton",
+      "type": "ruin",
+      "name": "Tilverton (Scar)",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "Once a major city, now a crater filled with shadows and wild magic (post-1372 DR).",
+        "tags": ["Shadowfell Leak", "Dangerous", "Forbidden Zone"]
+      }
+    },
+    {
+      "id": "hamlet_minroe",
+      "type": "hamlet",
+      "name": "Minroe",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "A fortified hamlet constantly raiding the Goblin Marches.",
+        "tags": ["Militarized", "Bounty Hunting"]
+      }
+    },
+    {
+      "id": "hamlet_glade_unicorn",
+      "type": "site",
+      "name": "Glade of the Unicorn",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "A sacred grove protected by the Emerald Enclave.",
+        "tags": ["Sanctuary", "Druidic"]
+      }
+    },
+    {
+      "id": "loc_castle_crag",
+      "type": "fortress",
+      "name": "Castle Crag",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "Purple Dragon fortress watching the Stonelands.",
+        "tags": ["Military", "High Alert"]
+      }
+    },
+
+    {
+      "//": "==================================================================",
+      "//": "SUB-REGION: THE COAST (Dragonmere)",
+      "//": "==================================================================",
+      "id": "village_dawngleam",
+      "type": "village",
+      "name": "Dawngleam",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "A peaceful fishing village with a lighthouse blessed by Lathander.",
+        "tags": ["Fishing", "Religious Site"]
+      }
+    },
+    {
+      "id": "hamlet_monksblade",
+      "type": "hamlet",
+      "name": "Monksblade",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "A hamlet without a lord, run by a council of retired adventurers.",
+        "tags": ["Lawless", "Adventurer Friendly"]
+      }
+    },
+
+    {
+      "//": "==================================================================",
+      "//": "NOTABLE DUNGEONS & SITES",
+      "//": "==================================================================",
+      "id": "dungeon_haunted_halls",
+      "type": "dungeon",
+      "name": "The Haunted Halls of Eveningstar",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "A classic dungeon complex north of Eveningstar. Bandits in the front, horrors in the back.",
+        "tags": ["Low Level", "Classic"],
+        "adventure": { "levels": "1-5" }
+      }
+    },
+    {
+      "id": "dungeon_vast_swamp",
+      "type": "wilderness_site",
+      "name": "The Vast Swamp",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "Separates Cormyr from Sembia. Home to lizardfolk and black dragons.",
+        "tags": ["Hostile", "Dragon Lair"]
+      }
+    },
+    {
+      "id": "loc_thunder_peaks",
+      "type": "wilderness_site",
+      "name": "The Thunder Peaks",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "Mountain range plagued by violent storms and hill giants.",
+        "physics": { "weather": "perpetual_storm" }
+      }
+    }
+  ]
+}

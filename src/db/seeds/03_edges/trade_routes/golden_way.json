@@ -1,0 +1,18 @@
+{
+  "edges": [
+    {
+      "type": "TRADE_ROUTE",
+      "sourceId": "reg_sword_coast",
+      "targetId": "nation_shou_lung",
+      "properties": {
+        "name": "The Golden Way",
+        "trade": {
+          "goods": ["Silk", "Spices", "Magic Items"],
+          "travelTime": "6 months (Caravan)",
+          "dangerLevel": "extreme",
+          "stops": ["The Endless Waste", "Rashemen"]
+        }
+      }
+    }
+  ]
+}

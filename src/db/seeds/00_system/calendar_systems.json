@@ -1,0 +1,61 @@
+{
+  "calendars": [
+    {
+      "id": "cal_harptos",
+      "name": "Calendar of Harptos",
+      "type": "solar",
+      "months": [
+        "Hammer (Deepwinter)",
+        "Alturiak (The Claw of Winter)",
+        "Ches (The Claw of Sunsets)",
+        "Tarsakh (The Claw of Storms)",
+        "Mirtul (The Melting)",
+        "Kythorn (The Time of Flowers)",
+        "Flamerule (Summertide)",
+        "Eleasis (Highsun)",
+        "Eleint (The Fading)",
+        "Marpenoth (Leaffall)",
+        "Uktar (The Rotting)",
+        "Nightal (The Drawing Down)"
+      ],
+      "holidays": [
+        "Midwinter",
+        "Greengrass",
+        "Midsummer",
+        "Highharvestide",
+        "Feast of the Moon"
+      ],
+      "weekLength": 10,
+      "notes": "Used throughout Faerûn."
+    },
+    {
+      "id": "cal_kozukara",
+      "name": "Kozakuran Calendar",
+      "type": "lunar_imperial",
+      "months": [
+        "First Moon",
+        "Second Moon",
+        "Third Moon",
+        "Fourth Moon",
+        "Fifth Moon",
+        "Sixth Moon",
+        "Seventh Moon",
+        "Eighth Moon",
+        "Ninth Moon",
+        "Tenth Moon",
+        "Eleventh Moon",
+        "Twelfth Moon"
+      ],
+      "currentYear": 2664,
+      "yearName": "Year of the Iron Monkey",
+      "notes": "Years are counted from the founding of the Empire."
+    },
+    {
+      "id": "cal_barovian",
+      "name": "Barovian Calendar",
+      "type": "lunar",
+      "currentYear": 735,
+      "notes": "Time flows strangely. The moon has phases but never sets completely."
+    }
+  ]
+}

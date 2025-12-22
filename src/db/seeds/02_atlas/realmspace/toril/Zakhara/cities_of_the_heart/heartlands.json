@@ -1,0 +1,31 @@
+{
+  "context": {
+    "continentId": "550e8400-e29b-41d4-a716-446655440300"
+  },
+  "nodes": [
+    {
+      "id": "region_zakhara_heart",
+      "type": "region",
+      "name": "The High Desert",
+      "parentId": "550e8400-e29b-41d4-a716-446655440300",
+      "dataStatic": {
+        "description": "The golden sands and oasis cities of the Enlightened.",
+        "culture": {
+          "customs": { "hospitality": "sacred_duty" },
+          "religion": { "tolerance": "absolute" }
+        }
+      }
+    },
+    {
+      "id": "city_huzuz",
+      "type": "metropolis",
+      "name": "Huzuz",
+      "canonicalName": "huzuz",
+      "parentId": "region_zakhara_heart",
+      "dataStatic": {
+        "description": "The City of Delights. The spiritual and cultural capital of Zakhara.",
+        "alternateNames": ["Gem of the Enlightened"]
+      }
+    }
+  ]
+}

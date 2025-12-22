@@ -1,0 +1,36 @@
+{
+  "context": { "districtId": "dist_suzail_basin" },
+  "nodes": [
+    {
+      "//": "--- THE OFFICE ---",
+      "id": "bldg_harbormaster_tower",
+      "type": "government",
+      "name": "Harbormaster's Tower",
+      "parentId": "dist_suzail_basin",
+      "dataStatic": {
+        "description": "A stone tower overlooking the docks. The line of angry captains waiting to pay taxes stretches out the door.",
+        "tags": ["Customs", "Tax Collection"],
+        "services": [
+          { "name": "Docking Permit", "cost": "5gp/day" },
+          { "name": "Cargo Inspection", "cost": "Variable (or Bribe)" }
+        ]
+      }
+    },
+    {
+      "//": "--- THE RECORDS ROOM (Heist Target) ---",
+      "id": "room_harbor_records",
+      "type": "room",
+      "name": "The Ledger Room",
+      "parentId": "bldg_harbormaster_tower",
+      "dataStatic": {
+        "description": "Stacks of paper detailing every ship and cargo crate that enters Suzail.",
+        "secrets": [
+          {
+            "secret": "The Harbormaster keeps a 'Black Ledger' of ships he let pass without inspection.",
+            "value": "High Blackmail Material"
+          }
+        ]
+      }
+    }
+  ]
+}

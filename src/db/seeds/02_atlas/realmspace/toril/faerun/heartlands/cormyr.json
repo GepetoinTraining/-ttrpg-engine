@@ -1,0 +1,108 @@
+{
+  "context": {
+    "continentId": "550e8400-e29b-41d4-a716-446655440100",
+    "regionId": "550e8400-e29b-41d4-a716-446655440120"
+  },
+  "nodes": [
+    {
+      "//": "--- THE NATION (Parent Container) ---",
+      "id": "550e8400-e29b-41d4-a716-446655440120",
+      "type": "nation",
+      "name": "Cormyr",
+      "canonicalName": "cormyr",
+      "parentId": "550e8400-e29b-41d4-a716-446655440100",
+      "dataStatic": {
+        "description": "The Forest Kingdom. A civilized land of law, order, and chivalry.",
+        "alternateNames": ["The Land of the Purple Dragon"],
+        "government": {
+          "type": "monarchy",
+          "ruler": "King Azoun Obarskyr V",
+          "rulingBody": "The Crown"
+        },
+        "culture": {
+          "law": {
+            "system": "Code of Cormyr",
+            "enforcement": "strict",
+            "punishment": ["Exile", "Hard Labor"],
+            "corruption": "low"
+          },
+          "customs": {
+            "adventuring_charter": {
+              "required": true,
+              "cost": "1000 gp",
+              "penalty": "Confiscation of loot and arrest"
+            }
+          },
+          "attitudes": {
+            "towardsMagic": "regulated",
+            "towardsOutsiders": "suspicious_without_papers"
+          }
+        },
+        "population": {
+          "demographics": { "human": 85, "half_elf": 10, "elf": 4 }
+        }
+      }
+    },
+    {
+      "//": "--- THE CAPITAL CITY ---",
+      "id": "city_suzail",
+      "type": "metropolis",
+      "name": "Suzail",
+      "canonicalName": "suzail",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "The royal capital. A clean, wealthy port city where the King sits.",
+        "economy": {
+          "type": "trade_hub",
+          "exports": ["Armor", "Weapons", "Timber"],
+          "wealthLevel": "wealthy"
+        },
+        "landmarks": [
+          { "name": "The Royal Palace", "type": "castle" },
+          { "name": "The Promenade", "type": "market" }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "//": "--- THE ARMY IS HERE ---",
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-purpledrag-0000-0000-0000-000000000001",
+      "targetId": "city_suzail",
+      "properties": {
+        "faction": {
+          "influence": 100,
+          "visibility": "dominant",
+          "currentAgenda": "Preparing for the royal wedding / Hunting smugglers."
+        }
+      }
+    },
+    {
+      "//": "--- THE HARPERS ARE WATCHING ---",
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-harpers-0000-0000-0000-000000000001",
+      "targetId": "city_suzail",
+      "properties": {
+        "faction": {
+          "influence": 40,
+          "visibility": "hidden",
+          "currentAgenda": "Ensuring the War Wizards don't abuse power."
+        }
+      }
+    },
+    {
+      "//": "--- THE ZHENTARIM ARE SMUGGLING ---",
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-zhentarim-0000-0000-0000-000000000001",
+      "targetId": "city_suzail",
+      "properties": {
+        "faction": {
+          "influence": 20,
+          "visibility": "secret",
+          "currentAgenda": "Smuggling untaxed timber out of the port."
+        }
+      }
+    }
+  ]
+}

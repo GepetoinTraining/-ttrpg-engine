@@ -1,0 +1,64 @@
+{
+  "context": { "districtId": "dist_suzail_promenade" },
+  "nodes": [
+    {
+      "//": "--- THE UPSCALE INN ---",
+      "id": "bldg_wailing_wheel",
+      "type": "tavern",
+      "name": "The Wailing Wheel",
+      "parentId": "dist_suzail_promenade",
+      "dataStatic": {
+        "description": "Clean, quiet, and expensive. The sign depicts a wagon wheel being tortured (a joke about bad travel).",
+        "function": {
+          "type": "inn",
+          "quality": "wealthy",
+          "cost": "2gp/night"
+        },
+        "services": {
+          "bath": "Hot water included",
+          "meals": "Exotic meats (Cockatrice, Wyvern)"
+        },
+        "hooks": [
+          {
+            "title": "The Noble's Dalliance",
+            "description": "A masked noble is meeting a Zhentarim agent in Room 4."
+          }
+        ]
+      }
+    },
+    {
+      "//": "--- THE NOBLE CLOTHIER (Disguises) ---",
+      "id": "bldg_gaunt_gowns",
+      "type": "shop",
+      "name": "Gaunt's Gowns",
+      "parentId": "dist_suzail_promenade",
+      "dataStatic": {
+        "description": "The premier tailor for courtly attire. Mannequins move on their own.",
+        "function": {
+          "type": "shop",
+          "subType": "clothing",
+          "quality": "aristocratic"
+        },
+        "inventory": {
+          "specialties": [
+            "Silk Doublets (50gp)",
+            "Gem-studded Capes (200gp)",
+            "Glamoured Armor (500gp)"
+          ],
+          "mechanic": "Wearing a Gaunt outfit grants Advantage on Persuasion checks vs. Cormyrean Nobles."
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "//": "--- HARPER SECRET ---",
+      "type": "SECRET_CONNECTION",
+      "sourceId": "bldg_gaunt_gowns",
+      "targetId": "fac-harpers-0000-0000-0000-000000000001",
+      "properties": {
+        "note": "Gaunt stitches Harper codes into the embroidery of specific noble outfits to pass messages."
+      }
+    }
+  ]
+}

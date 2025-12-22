@@ -1,0 +1,57 @@
+{
+  "context": {
+    "continentId": "550e8400-e29b-41d4-a716-446655440100",
+    "regionId": "550e8400-e29b-41d4-a716-446655440110"
+  },
+  "nodes": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440110",
+      "type": "region",
+      "name": "The Sword Coast",
+      "canonicalName": "sword_coast",
+      "parentId": "550e8400-e29b-41d4-a716-446655440100",
+      "dataStatic": {
+        "description": "A perilous coastal region of independent city-states, wild forests, and ancient dungeons.",
+        "culture": {
+          "socialStructure": { "type": "independent_city_states" },
+          "law": {
+            "system": "lords_alliance_charter",
+            "enforcement": "varied"
+          },
+          "economy": {
+            "type": "mercantile",
+            "tradeGoods": ["Timber", "Ore", "Mercenaries"]
+          }
+        },
+        "physics": {
+          "atmosphere": { "type": "standard", "weather": "temperate_rainy" }
+        }
+      }
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440111",
+      "type": "subregion",
+      "name": "The Savage Frontier",
+      "parentId": "550e8400-e29b-41d4-a716-446655440110",
+      "dataStatic": {
+        "description": "The untamed wildlands between the coastal cities.",
+        "population": {
+          "description": "Sparse. Barbarian tribes and orc hordes."
+        },
+        "culture": { "attitudes": { "towardsOutsiders": "hostile" } }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-lordsall-0000-0000-0000-000000000001",
+      "targetId": "550e8400-e29b-41d4-a716-446655440110",
+      "faction": {
+        "influence": 80,
+        "visibility": "dominant",
+        "currentAgenda": "Maintain trade stability against orc raids."
+      }
+    }
+  ]
+}

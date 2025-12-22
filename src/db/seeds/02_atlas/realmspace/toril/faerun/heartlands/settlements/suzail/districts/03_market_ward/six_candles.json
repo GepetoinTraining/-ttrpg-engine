@@ -1,0 +1,60 @@
+{
+  "context": { "districtId": "dist_suzail_market" },
+  "nodes": [
+    {
+      "//": "--- THE TAVERN ---",
+      "id": "bldg_six_candles",
+      "type": "tavern",
+      "name": "The Six Candles",
+      "parentId": "dist_suzail_market",
+      "dataStatic": {
+        "description": "A dim, sturdy tavern known for privacy. Six enchanted candles float above the bar; they turn red if magic is cast.",
+        "tags": ["Mercenary Hub", "Info Brokerage"],
+        "function": {
+          "type": "tavern",
+          "quality": "modest",
+          "cost": "5sp/night"
+        },
+        "services": { "food": "Lamb Stew", "drink": "Purple Dragon Ale" }
+      }
+    },
+    {
+      "//": "--- THE PROPRIETOR ---",
+      "id": "npc_pharess",
+      "type": "npc",
+      "name": "Pharess the Silent",
+      "parentId": "bldg_six_candles",
+      "dataStatic": {
+        "role": "Bartender / Fence",
+        "description": "A retired rogue with a missing ear. She buys 'found' items no questions asked.",
+        "personality": {
+          "archetype": "The Secret Keeper",
+          "trait": "Speaks in thieves' cant to those who know it."
+        }
+      }
+    },
+    {
+      "//": "--- RUMOR BOARD ---",
+      "id": "obj_rumor_board",
+      "type": "object",
+      "name": "The Job Board",
+      "parentId": "bldg_six_candles",
+      "dataStatic": {
+        "hooks": [
+          {
+            "title": "Rat Problem",
+            "description": "The Royal Granary is infested. 10gp per tail."
+          },
+          {
+            "title": "Missing Apprentice",
+            "description": "Alchemist seeks wayward apprentice. Last seen near the Basin."
+          },
+          {
+            "title": "Caravan Guard",
+            "description": "Guards needed for trip to Arabel. 25gp/head."
+          }
+        ]
+      }
+    }
+  ]
+}

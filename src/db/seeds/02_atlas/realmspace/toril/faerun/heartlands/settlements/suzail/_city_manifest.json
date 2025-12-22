@@ -1,0 +1,28 @@
+{
+  "city": {
+    "name": "Suzail",
+    "id": "city_suzail",
+    "parentId": "550e8400-e29b-41d4-a716-446655440120"
+  },
+  "districts": {
+    "royal_court": "dist_suzail_royal",
+    "promenade": "dist_suzail_promenade",
+    "market_ward": "dist_suzail_market",
+    "basin": "dist_suzail_basin",
+    "undercity": "dist_suzail_undercity"
+  },
+  "key_locations": {
+    "palace": "bldg_faerlthann_palace",
+    "dragoneye_coster": "bldg_dragoneye_coster",
+    "coin_coster": "bldg_coin_coster",
+    "six_candles": "bldg_six_candles",
+    "leaning_boot": "bldg_leaning_boot",
+    "beggars_court": "loc_beggars_court"
+  },
+  "local_factions": {
+    "purple_dragons": "fac-purpledrag-0000-0000-0000-000000000001",
+    "war_wizards": "fac-warwizards-0000-0000-0000-000000000001",
+    "broken_oar": "gang_broken_oar",
+    "fire_knives": "hq_fire_knives"
+  }
+}

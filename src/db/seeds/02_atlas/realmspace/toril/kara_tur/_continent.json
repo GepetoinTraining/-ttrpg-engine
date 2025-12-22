@@ -1,0 +1,45 @@
+{
+  "context": {
+    "sphereId": "550e8400-e29b-41d4-a716-446655440000",
+    "planetId": "550e8400-e29b-41d4-a716-446655440001"
+  },
+  "nodes": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440200",
+      "type": "continent",
+      "name": "Kara-Tur",
+      "canonicalName": "kara_tur",
+      "parentId": "550e8400-e29b-41d4-a716-446655440001",
+      "dataStatic": {
+        "description": "The Eastern Realms. A land governed by celestial bureaucracy, spirits, and honor.",
+        "culture": {
+          "techLevel": "medieval_eastern",
+          "calendarSystem": { "name": "Imperial Calendar" },
+          "socialStructure": { "type": "caste_system", "mobility": "low" },
+          "honorSystem": {
+            "enabled": true,
+            "name": "Face",
+            "mechanics": {
+              "gainedBy": ["Duty", "Piety"],
+              "lostBy": ["Public Failure", "Disrespect"]
+            }
+          },
+          "religion": {
+            "type": "celestial_bureaucracy",
+            "dominantFaiths": ["The Path of Enlightenment"]
+          },
+          "attitudes": {
+            "towardsMagic": "respectful_fear",
+            "towardsOutsiders": "distrustful"
+          }
+        },
+        "physics": {
+          "magic": {
+            "source": "Spirits/Lung Dragons",
+            "specialRules": ["Spirit Bribes Allowed"]
+          }
+        }
+      }
+    }
+  ]
+}

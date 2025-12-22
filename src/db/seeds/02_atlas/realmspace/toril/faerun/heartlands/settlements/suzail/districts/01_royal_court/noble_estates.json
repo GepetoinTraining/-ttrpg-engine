@@ -1,0 +1,36 @@
+{
+  "context": { "districtId": "dist_suzail_royal" },
+  "nodes": [
+    {
+      "//": "--- HOUSE BLETH MANOR (The Antagonists) ---",
+      "id": "estate_house_bleth",
+      "type": "estate",
+      "name": "House Bleth Manor",
+      "parentId": "dist_suzail_royal",
+      "dataStatic": {
+        "description": "Opulent, gaudy, and heavily guarded. Rumored to be a front for the Fire Knives.",
+        "tags": ["Noble House", "Intrigue", "Dungeon Potential"],
+        "security": {
+          "level": "high",
+          "guards": "Mercenaries (Not Purple Dragons)"
+        }
+      }
+    },
+    {
+      "//": "--- HOUSE CORMAERIL MANOR (The Exiles) ---",
+      "id": "estate_house_cormaeril",
+      "type": "estate",
+      "name": "House Cormaeril Manor",
+      "parentId": "dist_suzail_royal",
+      "dataStatic": {
+        "description": "An ancient, somewhat dilapidated estate. The family is wealthy but politically isolated.",
+        "tags": ["Noble House", "Secretive"],
+        "secrets": [
+          {
+            "secret": "They are hiding a legitimate heir to the throne in the attic."
+          }
+        ]
+      }
+    }
+  ]
+}

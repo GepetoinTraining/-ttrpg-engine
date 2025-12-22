@@ -1,0 +1,607 @@
+import {
+  query,
+  queryOne,
+  queryAll,
+  transaction,
+  parseJson,
+  toJson,
+  uuid,
+  now,
+  NotFoundError,
+  ConflictError,
+} from "../client";
+import type { CampaignRole } from "../../auth/types";
+
+// ============================================
+// CAMPAIGN QUERIES
+// ============================================
+
+// ============================================
+// TYPES
+// ============================================
+
+export interface Campaign {
+  id: string;
+  name: string;
+  tagline?: string;
+  description?: string;
+  primaryWorldId?: string;
+  startingRegionId?: string;
+  isSpelljammer: boolean;
+  accessibleWorlds: string[];
+  accessibleSpheres: string[];
+  settings: Record<string, any>;
+  status: "planning" | "active" | "hiatus" | "completed" | "abandoned";
+  currentDate?: string;
+  currentArcId?: string;
+  sessionsPlayed: number;
+  ownerId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  lastSessionAt?: Date;
+  version: number;
+}
+
+export interface CampaignMembership {
+  id: string;
+  userId: string;
+  campaignId: string;
+  role: CampaignRole;
+  permissions: Record<string, boolean>;
+  status: "active" | "inactive" | "banned";
+  joinedAt: Date;
+  lastActiveAt?: Date;
+  invitedBy?: string;
+  invitedAt?: Date;
+  acceptedAt?: Date;
+}
+
+export interface CampaignInvite {
+  id: string;
+  campaignId: string;
+  code: string;
+  defaultRole: CampaignRole;
+  createdBy: string;
+  createdAt: Date;
+  expiresAt?: Date;
+  maxUses?: number;
+  usedCount: number;
+  active: boolean;
+  usedBy: Array<{ userId: string; usedAt: string }>;
+}
+
+export interface CreateCampaignInput {
+  name: string;
+  tagline?: string;
+  description?: string;
+  primaryWorldId?: string;
+  startingRegionId?: string;
+  isSpelljammer?: boolean;
+  settings?: Record<string, any>;
+  ownerId: string;
+}
+
+export interface UpdateCampaignInput {
+  name?: string;
+  tagline?: string;
+  description?: string;
+  primaryWorldId?: string;
+  startingRegionId?: string;
+  settings?: Record<string, any>;
+  status?: Campaign["status"];
+  currentDate?: string;
+  currentArcId?: string;
+}
+
+// ============================================
+// ROW CONVERTERS
+// ============================================
+
+function rowToCampaign(row: any): Campaign {
+  return {
+    id: row.id,
+    name: row.name,
+    tagline: row.tagline || undefined,
+    description: row.description || undefined,
+    primaryWorldId: row.primaryWorldId || undefined,
+    startingRegionId: row.startingRegionId || undefined,
+    isSpelljammer: row.isSpelljammer === 1,
+    accessibleWorlds: parseJson(row.accessibleWorlds) || [],
+    accessibleSpheres: parseJson(row.accessibleSpheres) || [],
+    settings: parseJson(row.settings) || {},
+    status: row.status,
+    currentDate: row.currentDate || undefined,
+    currentArcId: row.currentArcId || undefined,
+    sessionsPlayed: row.sessionsPlayed,
+    ownerId: row.ownerId,
+    createdAt: new Date(row.createdAt),
+    updatedAt: new Date(row.updatedAt),
+    lastSessionAt: row.lastSessionAt ? new Date(row.lastSessionAt) : undefined,
+    version: row.version,
+  };
+}
+
+function rowToMembership(row: any): CampaignMembership {
+  return {
+    id: row.id,
+    userId: row.userId,
+    campaignId: row.campaignId,
+    role: row.role,
+    permissions: parseJson(row.permissions) || {},
+    status: row.status,
+    joinedAt: new Date(row.joinedAt),
+    lastActiveAt: row.lastActiveAt ? new Date(row.lastActiveAt) : undefined,
+    invitedBy: row.invitedBy || undefined,
+    invitedAt: row.invitedAt ? new Date(row.invitedAt) : undefined,
+    acceptedAt: row.acceptedAt ? new Date(row.acceptedAt) : undefined,
+  };
+}
+
+function rowToInvite(row: any): CampaignInvite {
+  return {
+    id: row.id,
+    campaignId: row.campaignId,
+    code: row.code,
+    defaultRole: row.defaultRole,
+    createdBy: row.createdBy,
+    createdAt: new Date(row.createdAt),
+    expiresAt: row.expiresAt ? new Date(row.expiresAt) : undefined,
+    maxUses: row.maxUses || undefined,
+    usedCount: row.usedCount,
+    active: row.active === 1,
+    usedBy: parseJson(row.usedBy) || [],
+  };
+}
+
+// ============================================
+// CAMPAIGN CRUD
+// ============================================
+
+export async function createCampaign(
+  input: CreateCampaignInput,
+): Promise<Campaign> {
+  const id = uuid();
+  const timestamp = now();
+
+  await query(
+    `INSERT INTO campaigns
+     (id, name, tagline, description, primary_world_id, starting_region_id,
+      is_spelljammer, accessible_worlds, accessible_spheres, settings,
+      status, owner_id, created_at, updated_at, version)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      input.name,
+      input.tagline || null,
+      input.description || null,
+      input.primaryWorldId || null,
+      input.startingRegionId || null,
+      input.isSpelljammer ? 1 : 0,
+      "[]",
+      "[]",
+      toJson(input.settings || {}),
+      "planning",
+      input.ownerId,
+      timestamp,
+      timestamp,
+      1,
+    ],
+  );
+
+  // Add owner as member
+  await addMember(id, input.ownerId, "owner");
+
+  return getCampaignById(id) as Promise<Campaign>;
+}
+
+export async function getCampaignById(id: string): Promise<Campaign | null> {
+  const row = await queryOne("SELECT * FROM campaigns WHERE id = ?", [id]);
+  return row ? rowToCampaign(row) : null;
+}
+
+export async function getCampaignByIdOrThrow(id: string): Promise<Campaign> {
+  const campaign = await getCampaignById(id);
+  if (!campaign) throw new NotFoundError("Campaign", id);
+  return campaign;
+}
+
+export async function getCampaignsForUser(userId: string): Promise<Campaign[]> {
+  const rows = await queryAll(
+    `SELECT c.* FROM campaigns c
+     JOIN campaign_memberships m ON m.campaign_id = c.id
+     WHERE m.user_id = ? AND m.status = 'active'
+     ORDER BY c.updated_at DESC`,
+    [userId],
+  );
+
+  return rows.map(rowToCampaign);
+}
+
+export async function updateCampaign(
+  id: string,
+  input: UpdateCampaignInput,
+): Promise<Campaign> {
+  const existing = await getCampaignById(id);
+  if (!existing) throw new NotFoundError("Campaign", id);
+
+  const updates: string[] = ["updated_at = ?", "version = version + 1"];
+  const params: any[] = [now()];
+
+  if (input.name !== undefined) {
+    updates.push("name = ?");
+    params.push(input.name);
+  }
+  if (input.tagline !== undefined) {
+    updates.push("tagline = ?");
+    params.push(input.tagline);
+  }
+  if (input.description !== undefined) {
+    updates.push("description = ?");
+    params.push(input.description);
+  }
+  if (input.primaryWorldId !== undefined) {
+    updates.push("primary_world_id = ?");
+    params.push(input.primaryWorldId);
+  }
+  if (input.startingRegionId !== undefined) {
+    updates.push("starting_region_id = ?");
+    params.push(input.startingRegionId);
+  }
+  if (input.settings !== undefined) {
+    updates.push("settings = ?");
+    params.push(toJson({ ...existing.settings, ...input.settings }));
+  }
+  if (input.status !== undefined) {
+    updates.push("status = ?");
+    params.push(input.status);
+  }
+  if (input.currentDate !== undefined) {
+    updates.push("current_date = ?");
+    params.push(input.currentDate);
+  }
+  if (input.currentArcId !== undefined) {
+    updates.push("current_arc_id = ?");
+    params.push(input.currentArcId);
+  }
+
+  params.push(id);
+
+  await query(
+    `UPDATE campaigns SET ${updates.join(", ")} WHERE id = ?`,
+    params,
+  );
+
+  return getCampaignByIdOrThrow(id);
+}
+
+export async function deleteCampaign(id: string): Promise<void> {
+  await transaction(async (tx) => {
+    // Delete related data
+    await tx.query("DELETE FROM campaign_invites WHERE campaign_id = ?", [id]);
+    await tx.query("DELETE FROM campaign_memberships WHERE campaign_id = ?", [
+      id,
+    ]);
+    // TODO: Delete parties, characters, sessions, etc.
+    await tx.query("DELETE FROM campaigns WHERE id = ?", [id]);
+  });
+}
+
+// ============================================
+// MEMBERSHIP
+// ============================================
+
+export async function addMember(
+  campaignId: string,
+  userId: string,
+  role: CampaignRole,
+  invitedBy?: string,
+): Promise<CampaignMembership> {
+  const id = uuid();
+  const timestamp = now();
+
+  // Check if already member
+  const existing = await getMembership(campaignId, userId);
+  if (existing) {
+    throw new ConflictError("User is already a member of this campaign");
+  }
+
+  await query(
+    `INSERT INTO campaign_memberships
+     (id, user_id, campaign_id, role, permissions, status, joined_at, invited_by, invited_at, accepted_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      userId,
+      campaignId,
+      role,
+      "{}",
+      "active",
+      timestamp,
+      invitedBy || null,
+      invitedBy ? timestamp : null,
+      timestamp,
+    ],
+  );
+
+  return getMembershipById(id) as Promise<CampaignMembership>;
+}
+
+export async function getMembership(
+  campaignId: string,
+  userId: string,
+): Promise<CampaignMembership | null> {
+  const row = await queryOne(
+    "SELECT * FROM campaign_memberships WHERE campaign_id = ? AND user_id = ?",
+    [campaignId, userId],
+  );
+
+  return row ? rowToMembership(row) : null;
+}
+
+export async function getMembershipById(
+  id: string,
+): Promise<CampaignMembership | null> {
+  const row = await queryOne(
+    "SELECT * FROM campaign_memberships WHERE id = ?",
+    [id],
+  );
+  return row ? rowToMembership(row) : null;
+}
+
+export async function getCampaignMembers(
+  campaignId: string,
+): Promise<CampaignMembership[]> {
+  const rows = await queryAll(
+    `SELECT * FROM campaign_memberships
+     WHERE campaign_id = ? AND status = 'active'
+     ORDER BY role, joined_at`,
+    [campaignId],
+  );
+
+  return rows.map(rowToMembership);
+}
+
+export async function updateMemberRole(
+  campaignId: string,
+  userId: string,
+  newRole: CampaignRole,
+): Promise<CampaignMembership> {
+  await query(
+    `UPDATE campaign_memberships
+     SET role = ?, last_active_at = ?
+     WHERE campaign_id = ? AND user_id = ?`,
+    [newRole, now(), campaignId, userId],
+  );
+
+  const membership = await getMembership(campaignId, userId);
+  if (!membership)
+    throw new NotFoundError("CampaignMembership", `${campaignId}/${userId}`);
+  return membership;
+}
+
+export async function updateMemberPermissions(
+  campaignId: string,
+  userId: string,
+  permissions: Record<string, boolean>,
+): Promise<CampaignMembership> {
+  const existing = await getMembership(campaignId, userId);
+  if (!existing)
+    throw new NotFoundError("CampaignMembership", `${campaignId}/${userId}`);
+
+  await query(
+    `UPDATE campaign_memberships
+     SET permissions = ?, last_active_at = ?
+     WHERE campaign_id = ? AND user_id = ?`,
+    [
+      toJson({ ...existing.permissions, ...permissions }),
+      now(),
+      campaignId,
+      userId,
+    ],
+  );
+
+  return getMembership(campaignId, userId) as Promise<CampaignMembership>;
+}
+
+export async function removeMember(
+  campaignId: string,
+  userId: string,
+): Promise<void> {
+  await query(
+    `UPDATE campaign_memberships
+     SET status = 'inactive'
+     WHERE campaign_id = ? AND user_id = ?`,
+    [campaignId, userId],
+  );
+}
+
+export async function banMember(
+  campaignId: string,
+  userId: string,
+): Promise<void> {
+  await query(
+    `UPDATE campaign_memberships
+     SET status = 'banned'
+     WHERE campaign_id = ? AND user_id = ?`,
+    [campaignId, userId],
+  );
+}
+
+export async function touchMemberActivity(
+  campaignId: string,
+  userId: string,
+): Promise<void> {
+  await query(
+    `UPDATE campaign_memberships
+     SET last_active_at = ?
+     WHERE campaign_id = ? AND user_id = ?`,
+    [now(), campaignId, userId],
+  );
+}
+
+// ============================================
+// INVITES
+// ============================================
+
+function generateInviteCode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 8; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+}
+
+export async function createInvite(
+  campaignId: string,
+  createdBy: string,
+  options: {
+    defaultRole?: CampaignRole;
+    expiresAt?: Date;
+    maxUses?: number;
+  } = {},
+): Promise<CampaignInvite> {
+  const id = uuid();
+  const code = generateInviteCode();
+  const timestamp = now();
+
+  await query(
+    `INSERT INTO campaign_invites
+     (id, campaign_id, code, default_role, created_by, created_at, expires_at, max_uses, used_count, active, used_by)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      campaignId,
+      code,
+      options.defaultRole || "player",
+      createdBy,
+      timestamp,
+      options.expiresAt?.toISOString() || null,
+      options.maxUses || null,
+      0,
+      1,
+      "[]",
+    ],
+  );
+
+  return getInviteById(id) as Promise<CampaignInvite>;
+}
+
+export async function getInviteById(
+  id: string,
+): Promise<CampaignInvite | null> {
+  const row = await queryOne("SELECT * FROM campaign_invites WHERE id = ?", [
+    id,
+  ]);
+  return row ? rowToInvite(row) : null;
+}
+
+export async function getInviteByCode(
+  code: string,
+): Promise<CampaignInvite | null> {
+  const row = await queryOne(
+    "SELECT * FROM campaign_invites WHERE code = ? AND active = 1",
+    [code.toUpperCase()],
+  );
+  return row ? rowToInvite(row) : null;
+}
+
+export async function getCampaignInvites(
+  campaignId: string,
+): Promise<CampaignInvite[]> {
+  const rows = await queryAll(
+    "SELECT * FROM campaign_invites WHERE campaign_id = ? ORDER BY created_at DESC",
+    [campaignId],
+  );
+  return rows.map(rowToInvite);
+}
+
+export async function useInvite(
+  code: string,
+  userId: string,
+): Promise<{ campaign: Campaign; membership: CampaignMembership }> {
+  const invite = await getInviteByCode(code);
+
+  if (!invite) {
+    throw new NotFoundError("CampaignInvite", code);
+  }
+
+  // Check expiration
+  if (invite.expiresAt && new Date() > invite.expiresAt) {
+    throw new ConflictError("Invite has expired");
+  }
+
+  // Check max uses
+  if (invite.maxUses && invite.usedCount >= invite.maxUses) {
+    throw new ConflictError("Invite has reached maximum uses");
+  }
+
+  // Check if already member
+  const existingMembership = await getMembership(invite.campaignId, userId);
+  if (existingMembership) {
+    throw new ConflictError("Already a member of this campaign");
+  }
+
+  // Add member and update invite
+  const membership = await addMember(
+    invite.campaignId,
+    userId,
+    invite.defaultRole,
+    invite.createdBy,
+  );
+
+  // Update invite usage
+  const usedBy = [...invite.usedBy, { userId, usedAt: now() }];
+  await query(
+    `UPDATE campaign_invites
+     SET used_count = used_count + 1, used_by = ?
+     WHERE id = ?`,
+    [toJson(usedBy), invite.id],
+  );
+
+  const campaign = await getCampaignByIdOrThrow(invite.campaignId);
+
+  return { campaign, membership };
+}
+
+export async function deactivateInvite(id: string): Promise<void> {
+  await query("UPDATE campaign_invites SET active = 0 WHERE id = ?", [id]);
+}
+
+// ============================================
+// STATS
+// ============================================
+
+export async function getCampaignStats(campaignId: string): Promise<{
+  memberCount: number;
+  partyCount: number;
+  characterCount: number;
+  sessionCount: number;
+}> {
+  const [members, parties, characters, sessions] = await Promise.all([
+    queryOne<{ count: number }>(
+      `SELECT COUNT(*) as count FROM campaign_memberships
+       WHERE campaign_id = ? AND status = 'active'`,
+      [campaignId],
+    ),
+    queryOne<{ count: number }>(
+      "SELECT COUNT(*) as count FROM parties WHERE campaign_id = ?",
+      [campaignId],
+    ),
+    queryOne<{ count: number }>(
+      "SELECT COUNT(*) as count FROM characters WHERE campaign_id = ?",
+      [campaignId],
+    ),
+    queryOne<{ count: number }>(
+      "SELECT COUNT(*) as count FROM sessions WHERE campaign_id = ?",
+      [campaignId],
+    ),
+  ]);
+
+  return {
+    memberCount: members?.count || 0,
+    partyCount: parties?.count || 0,
+    characterCount: characters?.count || 0,
+    sessionCount: sessions?.count || 0,
+  };
+}

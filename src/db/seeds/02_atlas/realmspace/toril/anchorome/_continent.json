@@ -1,0 +1,29 @@
+{
+  "context": {
+    "sphereId": "550e8400-e29b-41d4-a716-446655440000",
+    "planetId": "550e8400-e29b-41d4-a716-446655440001"
+  },
+  "nodes": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440500",
+      "type": "continent",
+      "name": "Anchorome",
+      "canonicalName": "anchorome",
+      "parentId": "550e8400-e29b-41d4-a716-446655440001",
+      "dataStatic": {
+        "description": "The untamed north. Home to the Azuposi, ancient elven ruins, and roaming monsters.",
+        "culture": {
+          "techLevel": "tribal",
+          "socialStructure": { "type": "nomadic" },
+          "attitudes": { "towardsOutsiders": "hostile" }
+        },
+        "physics": {
+          "magic": {
+            "level": "wild",
+            "notes": "Magic is unpredictable near ruins."
+          }
+        }
+      }
+    }
+  ]
+}

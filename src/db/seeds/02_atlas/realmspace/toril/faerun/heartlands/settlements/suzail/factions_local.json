@@ -1,0 +1,66 @@
+{
+  "context": {
+    "cityId": "city_suzail"
+  },
+  "edges": [
+    {
+      "//": "--- THE RULING POWER ---",
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-purpledrag-0000-0000-0000-000000000001",
+      "targetId": "city_suzail",
+      "properties": {
+        "faction": {
+          "influence": 100,
+          "visibility": "dominant",
+          "currentAgenda": "Enforcing the Royal Charter laws and preparing for the Wedding.",
+          "role": "Law Enforcement"
+        }
+      }
+    },
+    {
+      "//": "--- THE SECRET POLICE ---",
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-warwizards-0000-0000-0000-000000000001",
+      "targetId": "city_suzail",
+      "properties": {
+        "faction": {
+          "influence": 95,
+          "visibility": "prominent",
+          "currentAgenda": "Monitoring all unregistered arcane magic use within the walls.",
+          "role": "Magical Police"
+        }
+      }
+    },
+    {
+      "//": "--- THE HARPER CELL ---",
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-harpers-0000-0000-0000-000000000001",
+      "targetId": "city_suzail",
+      "properties": {
+        "faction": {
+          "influence": 40,
+          "visibility": "secret",
+          "currentAgenda": "Ensuring the nobility does not abuse the common folk.",
+          "role": "Watchers",
+          "notableMembers": [
+            { "name": "Alana 'The Ear'", "role": "Informant Handler" }
+          ]
+        }
+      }
+    },
+    {
+      "//": "--- THE ZHENTARIM INFILTRATION ---",
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-zhentarim-0000-0000-0000-000000000001",
+      "targetId": "city_suzail",
+      "properties": {
+        "faction": {
+          "influence": 30,
+          "visibility": "underground",
+          "currentAgenda": "Smuggling weapons through the Basin to rebels in the countryside.",
+          "role": "Smugglers"
+        }
+      }
+    }
+  ]
+}

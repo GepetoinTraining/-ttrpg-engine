@@ -1,0 +1,71 @@
+{
+  "context": {
+    "continentId": "550e8400-e29b-41d4-a716-446655440100",
+    "regionId": "550e8400-e29b-41d4-a716-446655440120"
+  },
+  "nodes": [
+    {
+      "//": "--- IMMERSEA (The Noble's Playground) ---",
+      "id": "village_immersea",
+      "type": "village",
+      "name": "Immersea",
+      "canonicalName": "immersea",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "A picturesque village on the Wyvernwater. Summer home to many noble families.",
+        "population": {
+          "count": 600,
+          "description": "Inflates to 1000 in summer."
+        },
+        "culture": {
+          "socialStructure": { "type": "aristocratic_service" },
+          "law": { "enforcement": "high_private_security" }
+        },
+        "economy": {
+          "type": "luxury_service",
+          "tradeGoods": ["Fine Wine", "Gossip"],
+          "wealthLevel": "wealthy"
+        },
+        "landmarks": [
+          {
+            "name": "Redstone Castle",
+            "type": "keep",
+            "description": "Ancestral seat of the Wyvernspur family."
+          },
+          {
+            "name": "The Five Fine Fish",
+            "type": "inn",
+            "description": "Famous for not serving fish."
+          }
+        ]
+      }
+    },
+    {
+      "//": "--- WAYMOOT (The Wagon Hub) ---",
+      "id": "village_waymoot",
+      "type": "village",
+      "name": "Waymoot",
+      "canonicalName": "waymoot",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "A massive wagon-stop inside the King's Forest. The logistical heart of the kingdom.",
+        "population": {
+          "count": 900,
+          "description": "Half are transient teamsters."
+        },
+        "economy": {
+          "type": "logistics_hub",
+          "exports": ["Wagon Repair", "Feed", "Barrels"],
+          "notes": "If Waymoot stops, Cormyr stops."
+        },
+        "landmarks": [
+          {
+            "name": "The Old Man's Face",
+            "type": "inn",
+            "description": "Huge inn built around an ancient oak tree."
+          }
+        ]
+      }
+    }
+  ]
+}

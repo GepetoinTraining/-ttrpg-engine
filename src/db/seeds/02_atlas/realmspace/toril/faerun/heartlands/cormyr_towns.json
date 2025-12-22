@@ -1,0 +1,126 @@
+{
+  "context": {
+    "continentId": "550e8400-e29b-41d4-a716-446655440100",
+    "regionId": "550e8400-e29b-41d4-a716-446655440120"
+  },
+  "nodes": [
+    {
+      "//": "--- MARSEMBER (The Port of Spices) ---",
+      "id": "city_marsember",
+      "type": "city",
+      "name": "Marsember",
+      "canonicalName": "marsember",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "A metropolis of canals built on a bog. Known for spices, smuggling, and sinking buildings.",
+        "alternateNames": ["City of Spices"],
+        "population": {
+          "count": 36000,
+          "description": "Second largest city in Cormyr."
+        },
+        "culture": {
+          "law": {
+            "enforcement": "moderate",
+            "corruption": "high",
+            "notes": "Guards can be bribed here, unlike Suzail."
+          },
+          "economy": {
+            "type": "trade_hub",
+            "imports": ["Spices", "Silk"],
+            "exports": ["Fish", "Ships"]
+          }
+        },
+        "physics": {
+          "atmosphere": {
+            "weather": "foggy_humid",
+            "notes": "Prone to morning mists."
+          }
+        }
+      }
+    },
+    {
+      "//": "--- ARABEL (The Frontier Fort) ---",
+      "id": "city_arabel",
+      "type": "city",
+      "name": "Arabel",
+      "canonicalName": "arabel",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "The eastern defense hub. A rough-and-tumble city of mercenaries and traders.",
+        "culture": {
+          "socialStructure": { "type": "military_meritocracy" },
+          "attitudes": {
+            "towardsOutsiders": "welcoming",
+            "towardsMagic": "pragmatic"
+          }
+        },
+        "economy": {
+          "type": "military_industrial",
+          "exports": ["Coal", "Horses", "Mercenary Contracts"]
+        },
+        "landmarks": [
+          { "name": "The Citadel", "type": "fortress" },
+          {
+            "name": "Dancing Dragon",
+            "type": "tavern",
+            "description": "Famous recruiting ground."
+          }
+        ]
+      }
+    },
+    {
+      "//": "--- EVENINGSTAR (The Rural Ideal) ---",
+      "id": "town_eveningstar",
+      "type": "town",
+      "name": "Eveningstar",
+      "canonicalName": "eveningstar",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "A beautiful, unfortified farming town. The intersection of the King's Road.",
+        "culture": {
+          "law": { "enforcement": "high", "corruption": "none" },
+          "religion": { "dominantFaiths": ["Lathander (Morninglord)"] }
+        },
+        "economy": {
+          "type": "agrarian",
+          "exports": ["Food", "Wool"]
+        },
+        "hooks": [
+          {
+            "title": "The Haunted Halls",
+            "description": "Ancient ruins lie just north of town."
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "//": "--- ZHENTARIM GRIP ON MARSEMBER ---",
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-zhentarim-0000-0000-0000-000000000001",
+      "targetId": "city_marsember",
+      "properties": {
+        "faction": {
+          "influence": 60,
+          "visibility": "known",
+          "currentAgenda": "Control the spice docks.",
+          "assets": [{ "type": "warehouse", "name": "Red Ledger Storage" }]
+        }
+      }
+    },
+    {
+      "//": "--- PURPLE DRAGONS IN ARABEL ---",
+      "type": "FACTION_PRESENCE",
+      "sourceId": "fac-purpledrag-0000-0000-0000-000000000001",
+      "targetId": "city_arabel",
+      "properties": {
+        "faction": {
+          "influence": 90,
+          "visibility": "dominant",
+          "currentAgenda": "Recruiting for the border patrol."
+        }
+      }
+    }
+  ]
+}

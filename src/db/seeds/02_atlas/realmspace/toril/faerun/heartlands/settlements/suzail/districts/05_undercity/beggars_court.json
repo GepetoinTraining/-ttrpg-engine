@@ -1,0 +1,59 @@
+{
+  "context": { "districtId": "dist_suzail_undercity" },
+  "nodes": [
+    {
+      "//": "--- THE HUB ---",
+      "id": "loc_beggars_court",
+      "type": "landmark",
+      "name": "The Beggar's Court",
+      "parentId": "dist_suzail_undercity",
+      "dataStatic": {
+        "description": "A large, dry cistern lit by stolen magical driftglobes. Tents made of rot-proof canvas line the walls.",
+        "tags": ["Safe Zone", "Black Market"],
+        "function": { "type": "market", "subType": "black_market" },
+        "economy": {
+          "exports": [
+            "Poisons (Drow Poison)",
+            "Forged Documents (Royal Charters)",
+            "Dark Magic Components"
+          ],
+          "currency": "Gold or Favors"
+        }
+      }
+    },
+    {
+      "//": "--- THE RULER ---",
+      "id": "npc_king_rats",
+      "type": "npc",
+      "name": "The King of Rats",
+      "parentId": "loc_beggars_court",
+      "dataStatic": {
+        "role": "Crime Lord / Info Broker",
+        "description": "A hunched figure wrapped in rags. Thousands of rats watch from the shadows when he speaks.",
+        "stats": {
+          "class": "Rogue (Arcane Trickster)",
+          "level": 8,
+          "race": "Wererat"
+        },
+        "personality": {
+          "archetype": "The Survivor",
+          "motivation": "Protecting his 'children' (the outcasts and rats)."
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "//": "--- THE ZHENTARIM PACT ---",
+      "type": "ALLIED_WITH",
+      "sourceId": "npc_king_rats",
+      "targetId": "fac-zhentarim-0000-0000-0000-000000000001",
+      "properties": {
+        "political": {
+          "nature": "truce",
+          "terms": "Zhents get free passage; Rats get food."
+        }
+      }
+    }
+  ]
+}

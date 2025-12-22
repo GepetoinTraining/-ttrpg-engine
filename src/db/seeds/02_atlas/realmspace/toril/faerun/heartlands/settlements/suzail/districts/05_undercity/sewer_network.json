@@ -1,0 +1,43 @@
+{
+  "context": { "districtId": "dist_suzail_undercity" },
+  "nodes": [
+    {
+      "//": "--- THE ROT TUNNELS (Hazard Zone) ---",
+      "id": "dungeon_rot_tunnels",
+      "type": "dungeon_zone",
+      "name": "The Rot Tunnels",
+      "parentId": "dist_suzail_undercity",
+      "dataStatic": {
+        "description": "The oldest section of the sewers. Crumbling brickwork and pools of stagnant slime.",
+        "tags": ["Monster Lair", "Transit"],
+        "encounters": [
+          { "enemy": "Carrion Crawler", "chance": "Common" },
+          { "enemy": "Gelatinous Cube (The 'Cleaner')", "chance": "Uncommon" },
+          { "enemy": "Greel (The Otyugh)", "chance": "Unique Boss" }
+        ]
+      }
+    },
+    {
+      "//": "--- TRANSIT NODE: BASIN ACCESS ---",
+      "id": "gate_basin_access",
+      "type": "gate",
+      "name": "Basin Sluice Gate",
+      "parentId": "dist_suzail_undercity",
+      "dataStatic": {
+        "description": "Connects to the Leaning Boot cellar.",
+        "security": { "lock": "DC 20", "key": "Iron Ring" }
+      }
+    },
+    {
+      "//": "--- TRANSIT NODE: PROMENADE ACCESS ---",
+      "id": "gate_promenade_access",
+      "type": "gate",
+      "name": "The Gilded Grate",
+      "parentId": "dist_suzail_undercity",
+      "dataStatic": {
+        "description": "Connects to the alley behind Gaunt's Gowns.",
+        "security": { "lock": "DC 25", "traps": ["Alarm Spell"] }
+      }
+    }
+  ]
+}

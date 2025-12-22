@@ -1,0 +1,37 @@
+{
+  "context": {
+    "continentId": "550e8400-e29b-41d4-a716-446655440200"
+  },
+  "nodes": [
+    {
+      "id": "nation_shou_lung",
+      "type": "empire",
+      "name": "Shou Lung",
+      "canonicalName": "shou_lung",
+      "parentId": "550e8400-e29b-41d4-a716-446655440200",
+      "dataStatic": {
+        "description": "The vast Dragon Empire. The center of culture, bureaucracy, and power in the East.",
+        "government": {
+          "type": "celestial_bureaucracy",
+          "rulerTitle": "Son of Heaven"
+        },
+        "landmarks": [
+          { "name": "The Great Dragon Wall", "type": "fortification" }
+        ]
+      }
+    },
+    {
+      "id": "city_imperial_city",
+      "type": "metropolis",
+      "name": "The Imperial City",
+      "parentId": "nation_shou_lung",
+      "dataStatic": {
+        "description": "The concentric city. At its heart lies the Forbidden City where the Emperor dwells.",
+        "population": {
+          "count": 2000000,
+          "description": "The largest city on Toril."
+        }
+      }
+    }
+  ]
+}

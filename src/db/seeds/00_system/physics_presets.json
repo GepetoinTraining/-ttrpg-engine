@@ -1,0 +1,48 @@
+{
+  "presets": {
+    "standard_toril": {
+      "gravity": { "type": "standard", "strength": 1.0 },
+      "atmosphere": { "type": "standard" },
+      "magic": { "level": "high", "source": "The Weave" },
+      "time": { "flow": "standard", "ratio": "1:1" }
+    },
+    "wildspace_standard": {
+      "gravity": {
+        "type": "plane",
+        "strength": 1.0,
+        "notes": "Gravity plane extends through the ship's deck."
+      },
+      "atmosphere": {
+        "type": "envelope",
+        "envelope": { "enabled": true, "fresh_duration": "variable" }
+      },
+      "magic": { "level": "standard" }
+    },
+    "phlogiston_flow": {
+      "gravity": { "type": "none" },
+      "atmosphere": {
+        "type": "explosive",
+        "notes": "Fire spells cause immediate detonation."
+      },
+      "magic": {
+        "level": "restricted",
+        "specialRules": ["No Planar Travel", "No Conjuration"]
+      }
+    },
+    "earth_node": {
+      "gravity": { "type": "standard" },
+      "magic": {
+        "level": "enhanced",
+        "schoolModifiers": {
+          "transmutation": { "modifier": "doubled_duration" }
+        }
+      }
+    },
+    "dead_magic_zone": {
+      "magic": {
+        "level": "dead",
+        "notes": "No spells or magical items function here."
+      }
+    }
+  }
+}

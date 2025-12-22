@@ -1,0 +1,54 @@
+{
+  "context": { "districtId": "dist_suzail_market" },
+  "nodes": [
+    {
+      "//": "--- THE ROYAL ARMORY FORGE ---",
+      "id": "bldg_royal_armory_forge",
+      "type": "workshop",
+      "name": "Royal Armory Auxiliary Forge",
+      "parentId": "dist_suzail_market",
+      "dataStatic": {
+        "description": "A massive, smoky complex where the Purple Dragon standard gear is mass-produced.",
+        "tags": ["Blacksmith", "Mass Production"],
+        "economy": {
+          "exports": ["Standard Longswords", "Chainmail", "Shields"],
+          "imports": ["Coal (Arabel)", "Iron (High Horn)"]
+        },
+        "inventory": {
+          "specialty": "Standard Gear (Non-magical, high durability)"
+        }
+      }
+    },
+    {
+      "//": "--- THE OPEN MARKET (Aggregate Node) ---",
+      "id": "loc_market_stalls",
+      "type": "market",
+      "name": "The Open Stalls",
+      "parentId": "dist_suzail_market",
+      "dataStatic": {
+        "description": "Acres of canvas tents selling everything from turnips to twine.",
+        "generator_table": [
+          "Halfling Baker (Excellent Meat Pies)",
+          "Gnome Tinker (Broken Clockwork Toys)",
+          "Fishmonger (Fresh Catch from the Basin)",
+          "Spice Merchant (Overpriced Sembian goods)"
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "//": "--- SUPPLY CHAIN ---",
+      "type": "TRADE_PARTNER",
+      "sourceId": "bldg_royal_armory_forge",
+      "targetId": "city_arabel",
+      "properties": {
+        "trade": {
+          "goods": ["Coal"],
+          "volume": "critical",
+          "note": "Forge shuts down if Arabel is besieged."
+        }
+      }
+    }
+  ]
+}

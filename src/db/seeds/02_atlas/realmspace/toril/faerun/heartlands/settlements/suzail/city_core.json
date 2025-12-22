@@ -1,0 +1,54 @@
+{
+  "context": {
+    "regionId": "550e8400-e29b-41d4-a716-446655440120"
+  },
+  "nodes": [
+    {
+      "id": "city_suzail",
+      "type": "metropolis",
+      "name": "Suzail",
+      "canonicalName": "suzail",
+      "parentId": "550e8400-e29b-41d4-a716-446655440120",
+      "dataStatic": {
+        "description": "The Royal Capital of Cormyr. A shining jewel of civilization on the Dragonmere. Known for its purple-roofed buildings, high laws, and the presence of the King.",
+        "alternateNames": ["The Forest City", "Crown of the Dragonmere"],
+        "population": {
+          "count": 45000,
+          "description": "The second largest city in the Heartlands (after Waterdeep/Baldur's Gate).",
+          "demographics": {
+            "human": 85,
+            "half_elf": 10,
+            "dwarf": 3,
+            "halfling": 2
+          }
+        },
+        "government": {
+          "type": "monarchy_seat",
+          "ruler": "King Azoun Obarskyr V",
+          "rulingBody": "The Royal Court"
+        },
+        "culture": {
+          "techLevel": "high_medieval",
+          "law": {
+            "system": "The Code of Cormyr",
+            "enforcement": "strict",
+            "corruption": "low_except_docks",
+            "notes": "Adventurers must register for a Charter (1000gp) or face arrest if caught using magic/weapons."
+          },
+          "wealthDistribution": "highly_stratified"
+        },
+        "economy": {
+          "type": "imperial_capital",
+          "exports": [
+            "Armor",
+            "Weapons",
+            "Shipbuilding",
+            "Ivory",
+            "Spices (Re-export)"
+          ],
+          "currency": "Cormyrean Golden Lion"
+        }
+      }
+    }
+  ]
+}

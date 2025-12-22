@@ -1,0 +1,36 @@
+{
+  "context": { "continentId": "550e8400-e29b-41d4-a716-446655440100" },
+  "factions": [
+    {
+      "id": "fac-purpledrag-0000-0000-0000-000000000001",
+      "name": "The Purple Dragons",
+      "type": "MILITARY_ORDER",
+      "scope": "national",
+      "data": {
+        "description": "The famous field army and city watch of Cormyr. Disciplined, loyal, and heavily armored.",
+        "goals": { "public": ["Enforce the King's Law", "Protect the Realm"] },
+        "resources": { "military": 95, "political": 90 }
+      }
+    },
+    {
+      "id": "fac-warwizards-0000-0000-0000-000000000001",
+      "name": "The War Wizards",
+      "type": "MAGICAL_ORDER",
+      "scope": "national",
+      "data": {
+        "description": "The state-sanctioned battlemages who police all magic use in the kingdom.",
+        "motto": "Magic is a weapon of the Crown.",
+        "goals": {
+          "public": [
+            "Register all arcane casters",
+            "Neutralize magical threats"
+          ]
+        },
+        "structure": {
+          "type": "military_hierarchy",
+          "leaderTitle": "Royal Magician"
+        }
+      }
+    }
+  ]
+}

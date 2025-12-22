@@ -1,0 +1,38 @@
+{
+  "context": { "districtId": "dist_suzail_basin" },
+  "nodes": [
+    {
+      "//": "--- THE ABANDONED WAREHOUSE ---",
+      "id": "loc_warehouse_14",
+      "type": "dungeon_zone",
+      "name": "Warehouse 14",
+      "parentId": "dist_suzail_basin",
+      "dataStatic": {
+        "description": "A rotting timber structure marked with a red 'X'.",
+        "tags": ["Monster Lair", "Squatters"],
+        "encounters": [
+          "Giant Rats",
+          "Wereraver Gang",
+          "Mimic (Disguised as Crate)"
+        ],
+        "loot_table": [
+          "Stolen Silk",
+          "Rotten Grain",
+          " smuggler's stash (Gemstones inside a fish)"
+        ]
+      }
+    },
+    {
+      "//": "--- THE WORKING WAREHOUSE ---",
+      "id": "loc_warehouse_roy",
+      "type": "building",
+      "name": "Royal Navy Provisions",
+      "parentId": "dist_suzail_basin",
+      "dataStatic": {
+        "description": "Heavily guarded storage for the Purple Dragon Navy.",
+        "tags": ["High Security", "Food Storage"],
+        "security": { "guards": "4 Veterans", "locks": "DC 20" }
+      }
+    }
+  ]
+}

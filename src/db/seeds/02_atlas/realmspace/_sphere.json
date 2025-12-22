@@ -1,0 +1,35 @@
+{
+  "context": { "sphereId": "550e8400-e29b-41d4-a716-446655440000" },
+  "nodes": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "type": "crystal_sphere",
+      "name": "Realmspace",
+      "canonicalName": "realmspace",
+      "parentId": null,
+      "dataStatic": {
+        "description": "The crystal sphere containing the Toril solar system.",
+        "physics": {
+          "gravity": {
+            "type": "none",
+            "notes": "Standard Spelljammer Wildspace rules apply."
+          },
+          "atmosphere": { "type": "none", "envelope": { "enabled": true } },
+          "magic": {
+            "level": "standard",
+            "schoolModifiers": {
+              "conjuration": {
+                "modifier": "enhanced",
+                "notes": "Summoning ships is easier here."
+              }
+            }
+          },
+          "spelljammer": {
+            "enabled": true,
+            "phlogiston": { "accessible": true }
+          }
+        }
+      }
+    }
+  ]
+}

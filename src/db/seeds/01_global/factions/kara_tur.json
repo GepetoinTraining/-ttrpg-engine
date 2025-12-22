@@ -1,0 +1,63 @@
+{
+  "context": { "continentId": "550e8400-e29b-41d4-a716-446655440200" },
+  "factions": [
+    {
+      "id": "fac-celestbur-0000-0000-0000-000000000001",
+      "name": "The Celestial Bureaucracy",
+      "type": "COSMIC_GOVERNMENT",
+      "scope": "continental",
+      "data": {
+        "description": "The hierarchy of spirits and gods that manages the universe. Not a religion, but a government.",
+        "goals": {
+          "public": ["Maintain Universal Order", "Process Spirit Petitions"]
+        },
+        "structure": {
+          "type": "bureaucracy",
+          "leaderTitle": "The Celestial Emperor"
+        },
+        "resources": { "political": 100, "magical": 100 }
+      }
+    },
+    {
+      "id": "fac-nineswords-0000-0000-0000-000000000001",
+      "name": "The Nine Golden Swords",
+      "alternateNames": ["The Golden Swords", "The Yakuza"],
+      "type": "CRIME_SYNDICATE",
+      "scope": "continental",
+      "data": {
+        "description": "The shadow government of Kozakura. They control gambling, protection, and illegal magic.",
+        "motto": "Gold shines brightest in the dark.",
+        "goals": { "secret": ["Control the Shogunate from the shadows"] },
+        "structure": { "type": "family_clans", "leaderTitle": "Oyabun" },
+        "resources": { "wealth": 90, "information": 85 }
+      }
+    },
+    {
+      "id": "fac-blackleopard-0000-0000-0000-000000000001",
+      "name": "The Black Leopard Cult",
+      "type": "SECRET_SOCIETY",
+      "scope": "regional",
+      "data": {
+        "description": "An ancient order of assassins (Ninja) who serve the nobility... or kill them.",
+        "goals": {
+          "secret": ["Eliminate political rivals", "Preserve the Balance"]
+        },
+        "structure": { "type": "cells", "leaderTitle": "Grandmaster" },
+        "recruitment": { "requirements": ["Must kill a family member"] }
+      }
+    },
+    {
+      "id": "fac-wu-jen-0000-0000-0000-000000000001",
+      "name": "The Five Elemental Brotherhoods",
+      "type": "MAGICAL_ORDER",
+      "scope": "continental",
+      "data": {
+        "description": "Hermit sorcerers who master the elements through strict taboos.",
+        "goals": { "public": ["Master the Elements", "Enforce Magical Law"] },
+        "custom": {
+          "taboo_mechanic": "Power requires sacrifice (e.g., cannot eat meat)."
+        }
+      }
+    }
+  ]
+}

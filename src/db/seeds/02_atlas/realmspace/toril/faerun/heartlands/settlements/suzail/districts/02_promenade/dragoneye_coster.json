@@ -1,0 +1,68 @@
+{
+  "context": { "districtId": "dist_suzail_promenade" },
+  "nodes": [
+    {
+      "//": "--- THE FORTRESS ---",
+      "id": "bldg_dragoneye_coster",
+      "type": "shop",
+      "name": "The Dragoneye Dealing Coster",
+      "parentId": "dist_suzail_promenade",
+      "dataStatic": {
+        "description": "A squat, windowless block of fused black stone. The only entrance is a set of double iron doors flanked by stone golems.",
+        "tags": ["Magic Shop", "High Security"],
+        "function": {
+          "type": "shop",
+          "subType": "magic",
+          "quality": "legendary"
+        },
+        "security": {
+          "level": "extreme",
+          "features": [
+            "Anti-Teleportation Wards (Cannot teleport in/out)",
+            "Detect Magic Threshold (Alarms on unauthorized active spells)",
+            "2 Stone Golems at entrance"
+          ]
+        }
+      }
+    },
+    {
+      "//": "--- THE INVENTORY ---",
+      "id": "inv_dragoneye_stock",
+      "type": "inventory_list",
+      "name": "Dragoneye Stock",
+      "parentId": "bldg_dragoneye_coster",
+      "dataStatic": {
+        "inventory": {
+          "potions": [
+            "Healing (50gp)",
+            "Greater Healing (150gp)",
+            "Invisibility (300gp)"
+          ],
+          "scrolls": [
+            "Identify (100gp)",
+            "Remove Curse (300gp)",
+            "Fireball (300gp - License Required)"
+          ],
+          "wondrous": ["Bag of Holding", "Driftglobe", "Goggles of Night"],
+          "policy": "No refunds. War Wizard License required for items above Tier 2."
+        }
+      }
+    },
+    {
+      "//": "--- THE PROPRIETOR ---",
+      "id": "npc_ildool",
+      "type": "npc",
+      "name": "Ildool",
+      "parentId": "bldg_dragoneye_coster",
+      "dataStatic": {
+        "role": "Shopkeeper",
+        "description": "A shrewd merchant wearing a monocle that reveals alignment auras.",
+        "personality": {
+          "archetype": "The Bureaucrat",
+          "quirk": "Insists on filling out forms in triplicate."
+        },
+        "stats": { "class": "Wizard", "level": 7 }
+      }
+    }
+  ]
+}

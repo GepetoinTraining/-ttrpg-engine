@@ -1,0 +1,55 @@
+{
+  "context": { "districtId": "dist_suzail_promenade" },
+  "nodes": [
+    {
+      "//": "--- THE BANK ---",
+      "id": "bldg_coin_coster",
+      "type": "guildhall",
+      "name": "The Coin Coster",
+      "parentId": "dist_suzail_promenade",
+      "dataStatic": {
+        "description": "The Royal Bank. Massive bronze doors with no handles (magically operated).",
+        "tags": ["Bank", "Exchange"],
+        "services": [
+          { "name": "Currency Exchange", "rate": "2% fee for foreign coin" },
+          { "name": "Gem Assessment", "cost": "5gp per stone" },
+          { "name": "Vault Rental", "cost": "10gp/month" },
+          {
+            "name": "Letters of Credit",
+            "note": "Accepted in Waterdeep, Sembia, and Baldur's Gate."
+          }
+        ]
+      }
+    },
+    {
+      "//": "--- THE VAULT (Dungeon Node) ---",
+      "id": "dungeon_coin_vault",
+      "type": "vault",
+      "name": "The Deep Vaults",
+      "parentId": "bldg_coin_coster",
+      "dataStatic": {
+        "description": "Located 30 feet underground. Walls lined with lead to block scrying.",
+        "traps": [
+          "Symbol of Sleep (DC 17) on the main door",
+          "Floor sensors trigger falling portcullis"
+        ],
+        "encounters": ["Shield Guardian (The 'Teller')"]
+      }
+    },
+    {
+      "//": "--- THE BANKER ---",
+      "id": "npc_mortha",
+      "type": "npc",
+      "name": "Mortha the Golden",
+      "parentId": "bldg_coin_coster",
+      "dataStatic": {
+        "role": "Head Banker",
+        "description": "A Gold Dwarf matron who can weigh a coin by spinning it on the table.",
+        "personality": {
+          "archetype": "The Iron Lady",
+          "trait": "Absolutely incorruptible."
+        }
+      }
+    }
+  ]
+}

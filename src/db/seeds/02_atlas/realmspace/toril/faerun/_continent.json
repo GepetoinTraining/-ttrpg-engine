@@ -1,0 +1,37 @@
+{
+  "context": {
+    "sphereId": "550e8400-e29b-41d4-a716-446655440000",
+    "planetId": "550e8400-e29b-41d4-a716-446655440001"
+  },
+  "nodes": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440100",
+      "type": "continent",
+      "name": "Faerûn",
+      "canonicalName": "faerun",
+      "parentId": "550e8400-e29b-41d4-a716-446655440001",
+      "dataStatic": {
+        "description": "The cradle of the Realms. A land of high magic, dangerous wilds, and ancient ruins.",
+        "culture": {
+          "techLevel": "medieval",
+          "calendarSystem": {
+            "name": "Calendar of Harptos",
+            "yearName": "Year of the Scarlet Witch"
+          },
+          "socialStructure": { "type": "mixed", "mobility": "high" },
+          "religion": {
+            "type": "polytheistic",
+            "dominantFaiths": ["Faerûnian Pantheon"]
+          },
+          "attitudes": {
+            "towardsMagic": "accepted",
+            "towardsOutsiders": "mixed"
+          }
+        },
+        "physics": {
+          "magic": { "level": "high", "source": "The Weave" }
+        }
+      }
+    }
+  ]
+}
