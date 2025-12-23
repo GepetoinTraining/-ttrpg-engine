@@ -1,54 +1,11 @@
 {
-  "name": "@ttrpg/engine",
-  "version": "0.1.0",
-  "description": "System-agnostic TTRPG game engine with D&D 5e support",
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "name": "ttrpg-engine",
+  "private": true,
+  "workspaces": ["bend", "fend"],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "test": "vitest",
-    "lint": "eslint src --ext .ts"
-  },
-  "dependencies": {
-    "zod": "^3.22.4",
-    "uuid": "^9.0.1"
-  },
-  "devDependencies": {
-    "@types/node": "^20.10.0",
-    "@types/uuid": "^9.0.7",
-    "typescript": "^5.3.0",
-    "vitest": "^1.0.0",
-    "eslint": "^8.55.0",
-    "@typescript-eslint/eslint-plugin": "^6.13.0",
-    "@typescript-eslint/parser": "^6.13.0"
-  },
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./grid": {
-      "import": "./dist/engine/grid/index.js",
-      "types": "./dist/engine/grid/index.d.ts"
-    },
-    "./rules": {
-      "import": "./dist/engine/rules/index.js",
-      "types": "./dist/engine/rules/index.d.ts"
-    },
-    "./combat": {
-      "import": "./dist/engine/combat/index.js",
-      "types": "./dist/engine/combat/index.d.ts"
-    }
-  },
-  "keywords": [
-    "ttrpg",
-    "dnd",
-    "5e",
-    "game-engine",
-    "tabletop",
-    "rpg"
-  ],
-  "license": "MIT"
+    "dev": "turbo run dev",
+    "dev:bend": "cd bend && bun run dev",
+    "dev:fend": "cd fend && bun run dev",
+    "build": "turbo run build"
+  }
 }
