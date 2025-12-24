@@ -1,4 +1,4 @@
-import { Outlet } from '@tanstack/react-router'
+import { Outlet, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { Shell } from '../styles/processors/_internal/organism/shell'
 import { Sidebar, SidebarItem, SidebarSection } from '../styles/processors/_internal/organism/sidebar'
@@ -8,6 +8,7 @@ import { trpc } from '../utils/trpc'
 
 export function RootLayout() {
   const { isSignedIn, isLoaded } = useUser()
+  const navigate = useNavigate()
 
   // Check if user needs onboarding
   const { data: profile, isLoading, refetch } = trpc.user.me.useQuery(undefined, {
@@ -19,6 +20,7 @@ export function RootLayout() {
   const completeOnboarding = trpc.user.completeOnboarding.useMutation({
     onSuccess: () => {
       refetch()  // Refetch profile after completing
+      navigate({ to: '/' })  // Wormhole to campaigns
     },
   })
 

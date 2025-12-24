@@ -24,3 +24,6 @@ export { ToastProvider, useToast, useToastActions, toast } from './toast'
 
 export { RoleCard } from './role_card'
 export type { RoleCardProps } from './role_card'
+
+export { OnboardingForm } from './onboarding_form'
+export type { OnboardingFormProps, OnboardingData, UserRole } from './onboarding_form'

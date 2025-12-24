@@ -404,6 +404,40 @@ export const ONBOARDING_CARD: DefinitionMap = {
 }
 
 // ============================================
+// LINK DEFINITIONS
+// ============================================
+
+export const LINK: DefinitionMap = {
+  default: {
+    physics: {
+      mass: 0.382,
+      density: 'gas',
+      temperature: 'warm',
+      charge: 0.3,
+      friction: 0.2,
+    },
+  },
+  muted: {
+    physics: {
+      mass: 0.3,
+      density: 'gas',
+      temperature: 'cold',
+      charge: 0.2,
+      friction: 0.3,
+    },
+  },
+  action: {
+    physics: {
+      mass: 0.5,
+      density: 'liquid',
+      temperature: 'hot',
+      charge: 0.4,
+      friction: 0.2,
+    },
+  },
+}
+
+// ============================================
 // ALL DEFINITIONS
 // ============================================
 
@@ -418,6 +452,7 @@ export const DEFINITIONS: Record<string, DefinitionMap> = {
   ProgressDot: PROGRESS_DOT,
   OnboardingContainer: ONBOARDING_CONTAINER,
   OnboardingCard: ONBOARDING_CARD,
+  Link: LINK,
 }
 
 /**

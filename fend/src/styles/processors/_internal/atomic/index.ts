@@ -25,3 +25,6 @@ export type { SpinnerProps } from './spinner'
 
 export { ProgressDots } from './progress_dots'
 export type { ProgressDotsProps } from './progress_dots'
+
+export { Link } from './link'
+export type { LinkProps } from './link'

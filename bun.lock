@@ -28,7 +28,7 @@
         "@google/generative-ai": "^0.21.0",
         "@libsql/client": "^0.14.0",
         "@libsql/linux-x64-gnu": "^0.5.22",
-        "@trpc/server": "^10.45.2",
+        "@trpc/server": "^11.8.1",
         "zod": "^3.24.1",
       },
       "devDependencies": {
@@ -942,8 +942,6 @@
     "@ttrpg/bend/@clerk/backend": ["@clerk/backend@1.34.0", "", { "dependencies": { "@clerk/shared": "^3.9.5", "@clerk/types": "^4.59.3", "cookie": "1.0.2", "snakecase-keys": "8.0.1", "tslib": "2.8.1" }, "peerDependencies": { "svix": "^1.62.0" }, "optionalPeers": ["svix"] }, "sha512-9rZ8hQJVpX5KX2bEpiuVXfpjhojQCiqCWADJDdCI0PCeKxn58Ep0JPYiIcczg4VKUc3a7jve9vXylykG2XajLQ=="],
 
     "@ttrpg/bend/@libsql/client": ["@libsql/client@0.14.0", "", { "dependencies": { "@libsql/core": "^0.14.0", "@libsql/hrana-client": "^0.7.0", "js-base64": "^3.7.5", "libsql": "^0.4.4", "promise-limit": "^2.7.0" } }, "sha512-/9HEKfn6fwXB5aTEEoMeFh4CtG0ZzbncBb1e++OCdVpgKZ/xyMsIVYXm0w7Pv4RUel803vE6LwniB3PqD72R0Q=="],
-
-    "@ttrpg/bend/@trpc/server": ["@trpc/server@10.45.3", "", {}, "sha512-CVZM42FdGwqYQxV7vSRwb//AF8REfV60S/fUnwx7xqCnnSDus0FW/UuAOW4eQJ30RQlOPy4MYU8B3dbTAx85Ew=="],
 
     "@ttrpg/bend/zod": ["zod@3.25.76", "", {}, "sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ=="],
 
