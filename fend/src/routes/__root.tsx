@@ -1,13 +1,14 @@
 import { Outlet, useNavigate } from '@tanstack/react-router'
-import { useUser } from '@clerk/clerk-react'
+import { useUser, UserButton } from '@clerk/clerk-react'
 import { Shell } from '../styles/processors/_internal/organism/shell'
 import { Sidebar, SidebarItem, SidebarSection } from '../styles/processors/_internal/organism/sidebar'
 import { Navbar, NavbarBrand } from '../styles/processors/_internal/organism/navbar'
 import { OnboardingWorld } from '../styles/processors/_internal/worlds/OnboardingWorld'
+import { Avatar } from '../styles/processors/_internal/atomic/avatar'
 import { trpc } from '../utils/trpc'
 
 export function RootLayout() {
-  const { isSignedIn, isLoaded } = useUser()
+  const { isSignedIn, isLoaded, user } = useUser()
   const navigate = useNavigate()
 
   // Check if user needs onboarding
@@ -18,8 +19,8 @@ export function RootLayout() {
 
   // Mutation for completing onboarding
   const completeOnboarding = trpc.user.completeOnboarding.useMutation({
-    onSuccess: () => {
-      refetch()  // Refetch profile after completing
+    onSuccess: async () => {
+      await refetch()  // Wait for refetch to complete
       navigate({ to: '/' })  // Wormhole to campaigns
     },
   })
@@ -46,10 +47,10 @@ export function RootLayout() {
     )
   }
 
-  // Normal app with Shell
+  // Normal app with Shell - pass user down through the tree
   return (
     <Shell
-      navbar={<AppNavbar />}
+      navbar={<AppNavbar user={user} profile={profile} />}
       sidebar={<AppSidebar />}
     >
       <Outlet />
@@ -68,9 +69,24 @@ function AppSidebar() {
   )
 }
 
-function AppNavbar() {
+interface AppNavbarProps {
+  user: any
+  profile: any
+}
+
+function AppNavbar({ user, profile }: AppNavbarProps) {
   return (
-    <Navbar logo={<NavbarBrand>TTRPG Engine</NavbarBrand>} />
+    <Navbar
+      logo={<NavbarBrand>TTRPG Engine</NavbarBrand>}
+      actions={
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: '0.875rem', color: '#94a3b8' }}>
+            {profile?.displayName || user?.firstName || 'Adventurer'}
+          </span>
+          <UserButton afterSignOutUrl="/login" />
+        </div>
+      }
+    />
   )
 }
 
