@@ -46,14 +46,22 @@ export const userRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const user = await users.updateUser(ctx.auth.userId, {
-        displayName: input.displayName,
-        preferredRole: input.role,
-        pronouns: input.pronouns,
-        timezone: input.timezone,
-        onboardingComplete: true,
-      });
-      return user;
+      console.log("[completeOnboarding] Starting with input:", JSON.stringify(input));
+      console.log("[completeOnboarding] User ID:", ctx.auth.userId);
+      try {
+        const user = await users.updateUser(ctx.auth.userId, {
+          displayName: input.displayName,
+          preferredRole: input.role,
+          pronouns: input.pronouns,
+          timezone: input.timezone,
+          onboardingComplete: true,
+        });
+        console.log("[completeOnboarding] Success:", JSON.stringify(user));
+        return user;
+      } catch (err) {
+        console.error("[completeOnboarding] Error:", err);
+        throw err;
+      }
     }),
 
   /**
