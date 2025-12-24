@@ -1,7 +1,7 @@
 import path from "path";
-import { closeClient } from "../client";
-import { runMigrations } from "../migrations";
-import { importWithLogging } from "./importer";
+import { closeClient } from "./client";
+import { runMigrations } from "./migrations";
+import { importWithLogging } from "./seeds/importer";
 
 // ============================================
 // MASTER SEED SCRIPT

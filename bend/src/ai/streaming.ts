@@ -522,11 +522,14 @@ export async function consumeSSEStream(
     body: JSON.stringify(body),
   });
 
-  if (!response.ok) {
-    throw new Error(`Stream request failed: ${response.status}`);
+  // Type assertion for Node.js fetch Response compatibility
+  const res = response as { ok: boolean; status: number; body: ReadableStream<Uint8Array> | null };
+
+  if (!res.ok) {
+    throw new Error(`Stream request failed: ${res.status}`);
   }
 
-  const reader = response.body?.getReader();
+  const reader = res.body?.getReader();
   if (!reader) throw new Error("No response body");
 
   const decoder = new TextDecoder();

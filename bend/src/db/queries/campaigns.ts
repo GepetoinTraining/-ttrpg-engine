@@ -103,20 +103,20 @@ function rowToCampaign(row: any): Campaign {
     name: row.name,
     tagline: row.tagline || undefined,
     description: row.description || undefined,
-    primaryWorldId: row.primaryWorldId || undefined,
-    startingRegionId: row.startingRegionId || undefined,
-    isSpelljammer: row.isSpelljammer === 1,
-    accessibleWorlds: parseJson(row.accessibleWorlds) || [],
-    accessibleSpheres: parseJson(row.accessibleSpheres) || [],
+    primaryWorldId: row.primary_world_id || undefined,
+    startingRegionId: row.starting_region_id || undefined,
+    isSpelljammer: row.is_spelljammer === 1,
+    accessibleWorlds: parseJson(row.accessible_worlds) || [],
+    accessibleSpheres: parseJson(row.accessible_spheres) || [],
     settings: parseJson(row.settings) || {},
     status: row.status,
-    currentDate: row.currentDate || undefined,
-    currentArcId: row.currentArcId || undefined,
-    sessionsPlayed: row.sessionsPlayed,
-    ownerId: row.ownerId,
-    createdAt: new Date(row.createdAt),
-    updatedAt: new Date(row.updatedAt),
-    lastSessionAt: row.lastSessionAt ? new Date(row.lastSessionAt) : undefined,
+    currentDate: row.current_date || undefined,
+    currentArcId: row.current_arc_id || undefined,
+    sessionsPlayed: row.sessions_played,
+    ownerId: row.owner_id,
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at),
+    lastSessionAt: row.last_session_at ? new Date(row.last_session_at) : undefined,
     version: row.version,
   };
 }
@@ -124,32 +124,32 @@ function rowToCampaign(row: any): Campaign {
 function rowToMembership(row: any): CampaignMembership {
   return {
     id: row.id,
-    userId: row.userId,
-    campaignId: row.campaignId,
+    userId: row.user_id,
+    campaignId: row.campaign_id,
     role: row.role,
     permissions: parseJson(row.permissions) || {},
     status: row.status,
-    joinedAt: new Date(row.joinedAt),
-    lastActiveAt: row.lastActiveAt ? new Date(row.lastActiveAt) : undefined,
-    invitedBy: row.invitedBy || undefined,
-    invitedAt: row.invitedAt ? new Date(row.invitedAt) : undefined,
-    acceptedAt: row.acceptedAt ? new Date(row.acceptedAt) : undefined,
+    joinedAt: new Date(row.joined_at),
+    lastActiveAt: row.last_active_at ? new Date(row.last_active_at) : undefined,
+    invitedBy: row.invited_by || undefined,
+    invitedAt: row.invited_at ? new Date(row.invited_at) : undefined,
+    acceptedAt: row.accepted_at ? new Date(row.accepted_at) : undefined,
   };
 }
 
 function rowToInvite(row: any): CampaignInvite {
   return {
     id: row.id,
-    campaignId: row.campaignId,
+    campaignId: row.campaign_id,
     code: row.code,
-    defaultRole: row.defaultRole,
-    createdBy: row.createdBy,
-    createdAt: new Date(row.createdAt),
-    expiresAt: row.expiresAt ? new Date(row.expiresAt) : undefined,
-    maxUses: row.maxUses || undefined,
-    usedCount: row.usedCount,
+    defaultRole: row.default_role,
+    createdBy: row.created_by,
+    createdAt: new Date(row.created_at),
+    expiresAt: row.expires_at ? new Date(row.expires_at) : undefined,
+    maxUses: row.max_uses || undefined,
+    usedCount: row.used_count,
     active: row.active === 1,
-    usedBy: parseJson(row.usedBy) || [],
+    usedBy: parseJson(row.used_by) || [],
   };
 }
 
@@ -697,4 +697,148 @@ export async function markInviteUsed(
      WHERE id = ?`,
     [toJson(usedBy), inviteId],
   );
+
 }
+  // ============================================
+  // PARTY TYPES
+  // ============================================
+
+  export interface Party {
+    id: string;
+    campaignId: string;
+    name: string;
+    description?: string;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  }
+
+  export interface PartyMembership {
+    id: string;
+    partyId: string;
+    characterId: string;
+    joinedAt: Date;
+    isActive: boolean;
+  }
+
+  export interface CreatePartyInput {
+    campaignId: string;
+    name: string;
+    description?: string;
+  }
+
+  export interface UpdatePartyInput {
+    name?: string;
+    description?: string;
+    isActive?: boolean;
+  }
+
+  interface PartyRow {
+    id: string;
+    campaign_id: string;
+    name: string;
+    description: string | null;
+    is_active: number;
+    created_at: string;
+    updated_at: string;
+  }
+
+  interface PartyMembershipRow {
+    id: string;
+    party_id: string;
+    character_id: string;
+    joined_at: string;
+    is_active: number;
+  }
+
+  // ============================================
+  // PARTY FUNCTIONS
+  // ============================================
+
+  function rowToParty(row: PartyRow): Party {
+    return {
+      id: row.id,
+      campaignId: row.campaign_id,
+      name: row.name,
+      description: row.description || undefined,
+      isActive: row.is_active === 1,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+    };
+  }
+
+  export async function getParty(id: string): Promise<Party | null> {
+    const row = await queryOne<PartyRow>(
+      "SELECT * FROM parties WHERE id = ?",
+      [id],
+    );
+    return row ? rowToParty(row) : null;
+  }
+
+  export async function getCampaignParties(campaignId: string): Promise<Party[]> {
+    const rows = await queryAll<PartyRow>(
+      "SELECT * FROM parties WHERE campaign_id = ? ORDER BY created_at",
+      [campaignId],
+    );
+    return rows.map(rowToParty);
+  }
+
+  export async function createParty(input: CreatePartyInput): Promise<Party> {
+    const id = uuid();
+    const timestamp = now();
+
+    await query(
+      `INSERT INTO parties (id, campaign_id, name, description, is_active, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [id, input.campaignId, input.name, input.description || null, 1, timestamp, timestamp],
+    );
+
+    const created = await getParty(id);
+    if (!created) throw new NotFoundError("Party", id);
+    return created;
+  }
+
+  export async function updateParty(
+    id: string,
+    input: UpdatePartyInput,
+  ): Promise<Party> {
+    const existing = await getParty(id);
+    if (!existing) throw new NotFoundError("Party", id);
+
+    const updates: string[] = [];
+    const params: any[] = [];
+
+    if (input.name !== undefined) {
+      updates.push("name = ?");
+      params.push(input.name);
+    }
+
+    if (input.description !== undefined) {
+      updates.push("description = ?");
+      params.push(input.description);
+    }
+
+    if (input.isActive !== undefined) {
+      updates.push("is_active = ?");
+      params.push(input.isActive ? 1 : 0);
+    }
+
+    if (updates.length === 0) return existing;
+
+    updates.push("updated_at = ?");
+    params.push(now());
+    params.push(id);
+
+    await query(`UPDATE parties SET ${updates.join(", ")} WHERE id = ?`, params);
+
+    const updated = await getParty(id);
+    if (!updated) throw new NotFoundError("Party", id);
+    return updated;
+  }
+
+  export async function deleteParty(id: string): Promise<void> {
+    return transaction(async (tx) => {
+      await tx.query("DELETE FROM party_memberships WHERE party_id = ?", [id]);
+      await tx.query("DELETE FROM parties WHERE id = ?", [id]);
+    });
+  }

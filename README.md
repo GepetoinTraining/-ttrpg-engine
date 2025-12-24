@@ -1,254 +1,194 @@
 # TTRPG Engine
 
-A full-stack tabletop RPG campaign management system built for the Forgotten Realms and beyond.
+A full-stack tabletop RPG campaign management system. **141k lines of TypeScript** built in 7 hours across 2 commits.
 
-## Architecture Overview
+> **Note:** The game engine library is at `/bend/src/engine/index.ts` - this is the barrel export for all game mechanics (grid, rules, narrative, assets, simulation, etc.)
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              FRONTEND (React + Mantine)                     │
-│                         Gold/Parchment theme, mobile-first                  │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                       │
-                    ┌──────────────────┴──────────────────┐
-                    │                                     │
-                    ▼                                     ▼
-┌─────────────────────────────────┐   ┌─────────────────────────────────────┐
-│         tRPC API Layer          │   │       WebSocket Realtime Server     │
-│      src/api/routers/*.ts       │   │        src/realtime/server.ts       │
-│                                 │   │                                     │
-│  • campaign.ts                  │   │  • Room management (campaign/session)│
-│  • character.ts                 │   │  • Presence tracking                │
-│  • combat.ts                    │   │  • Delta sync                       │
-│  • session.ts                   │   │  • Chat/dice/cursor broadcasting   │
-│  • world.ts                     │   │                                     │
-└─────────────────────────────────┘   └─────────────────────────────────────┘
-                    │                                     │
-                    └──────────────────┬──────────────────┘
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                            DATABASE LAYER                                   │
-│                                                                             │
-│  ┌─────────────────────┐  ┌─────────────────────┐  ┌─────────────────────┐  │
-│  │   src/db/client.ts  │  │  src/db/queries/*   │  │ src/db/migrations   │  │
-│  │   Turso/libSQL      │  │  Entity CRUD        │  │ Schema definitions  │  │
-│  └─────────────────────┘  └─────────────────────┘  └─────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         WORLD GRAPH (Graph-on-SQL)                          │
-│                                                                             │
-│  world_nodes table          world_edges table         Inheritance Protocol  │
-│  ┌─────────────────┐        ┌─────────────────┐       Children inherit from │
-│  │ id, type, name  │◄──────►│ source, target  │       parents unless they   │
-│  │ parent_id       │        │ type, properties│       explicitly override   │
-│  │ data_static     │        │ bidirectional   │                             │
-│  │ sphere/planet/  │        └─────────────────┘                             │
-│  │ continent/region│                                                        │
-│  └─────────────────┘                                                        │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+## Project Status: Wiring Incomplete
 
-## Directory Structure
+The architecture is complete. The backend (55k lines) and frontend (20k lines) are fully scaffolded with types, schemas, and UI. What's missing is the **glue code** - the actual query function implementations that connect routers to the database.
+
+### What's Done
+- 34 database tables defined in migrations
+- 13 tRPC routers with all procedures defined
+- Turso client connection code
+- WebSocket realtime infrastructure (types, handlers)
+- Frontend components wired to tRPC hooks
+- Clerk auth integration structure
+- Gemini AI client structure
+- Zod schema contracts in middleware layer
+
+### What's Missing (The Glue)
+
+1. **DB Query Functions** - Routers call functions that don't exist yet:
+   - `getNode()`, `getParty()`, `getCampaignParties()`, `createParty()`, `updateParty()`, `deleteParty()`
+   - `getHierarchy()`, `getNodesByType()`, `getSiblings()`
+   - `getEdgesFrom()`, `getEdgesTo()`, `getConnectedNodes()`
+   
+2. **`createRealtimeServer()` factory** - `index.ts` imports this but `realtime/server.ts` only exports individual handlers
+
+3. **`.env` files** - No credentials for Turso, Clerk, Gemini, Vercel Blob
+
+4. **Some import path fixes** in `db/seeds/*.ts` files
+
+---
+
+## Architecture
 
 ```
-src/
-├── api/                    # tRPC API layer
-│   ├── trpc.ts            # tRPC setup, auth middleware, permission procedures
-│   ├── router.ts          # Main router combining all sub-routers
-│   └── routers/           # Domain-specific routers
-│       ├── campaign.ts    # Campaign CRUD, membership, invites
-│       ├── character.ts   # Character CRUD, HP, inventory, level up
-│       ├── combat.ts      # Combat lifecycle, turns, participants
-│       ├── session.ts     # Game session management
-│       └── world.ts       # World graph queries
-│
-├── auth/                   # Authentication
-│   ├── clerk.ts           # Clerk integration, JWT validation, transforms
-│   ├── types.ts           # Auth types (UserProfile, SessionAuth, roles)
-│   └── permissions.ts     # Permission checker, role-based access
-│
-├── db/                     # Database layer
-│   ├── client.ts          # Turso client, transaction support, helpers
-│   ├── migrations.ts      # Schema definitions (~1200 lines)
-│   ├── index.ts           # Exports
-│   ├── queries/           # Query functions by entity
-│   │   ├── campaigns.ts   # Campaign, membership, invites
-│   │   ├── characters.ts  # Characters, inventory, HP operations
-│   │   ├── combat.ts      # Combat, participants, initiative, logging
-│   │   ├── nodes.ts       # World nodes with hierarchy traversal
-│   │   ├── edges.ts       # World edges with BFS pathfinding
-│   │   ├── factions.ts    # Faction queries
-│   │   ├── sessions.ts    # Game session queries
-│   │   └── sync.ts        # Delta sync for realtime
-│   └── seeds/             # Seed data system
-│       ├── importer.ts    # Batch import with validation
-│       ├── validator.ts   # Seed data validation
-│       └── loader.ts      # Manifest loading
-│
-├── realtime/              # WebSocket layer
-│   ├── server.ts          # WebSocket server, rooms, presence, sync
-│   └── types.ts           # Message types, payloads
-│
-├── world/                 # World graph system
-│   ├── graph.ts           # WorldNode, WorldEdge types and schemas
-│   └── SCHEMA_CONTRACT.md # Architecture contract (500+ lines)
-│
-├── middleware/            # Type contracts (Zod schemas)
-│   ├── aggregates.ts      # Combined view schemas (CharacterSheet, etc.)
-│   ├── actions.ts         # Atomic operation schemas
-│   ├── events.ts          # Cross-system event schemas
-│   ├── deltas.ts          # Sync delta schemas
-│   └── hooks.ts           # Frontend hook contracts
-│
-└── engine/                # Game engine modules
-    ├── combat/            # Combat manager
-    ├── session/           # Live session engine
-    ├── simulation/        # World simulation (economy, factions, etc.)
-    ├── narrative/         # Story/narrative systems
-    ├── rules/             # D&D 5e rules (creatures, lairs, etc.)
-    ├── puzzle/            # Puzzle builder
-    ├── intelligence/      # AI agent system
-    ├── assets/            # Quick generation
-    ├── grid/              # Hex/square grid math
-    └── manager/           # Entity CRUD layer
+/bend (55k lines)                    /fend (20k lines)
+├── src/                             ├── src/
+│   ├── index.ts      [entry]        │   ├── app.tsx        [entry]
+│   ├── api/                         │   ├── api/
+│   │   ├── router.ts [13 routers]   │   │   ├── trpc.ts    [client]
+│   │   └── routers/  [5.4k lines]   │   │   └── websocket.ts
+│   ├── db/                          │   ├── routes/        [19 routes]
+│   │   ├── client.ts [Turso]        │   ├── components/    [44 files, 10k lines]
+│   │   ├── migrations.ts [schema]   │   ├── hooks/         [6 hooks]
+│   │   └── queries/  [INCOMPLETE]   │   ├── stores/        [Zustand]
+│   ├── realtime/                    │   └── styles/        [Phi tensor UI]
+│   │   ├── server.ts [handlers]     │
+│   │   └── types.ts  [30+ msg types]│
+│   ├── middleware/   [Zod contracts]│
+│   ├── auth/         [Clerk]        │
+│   ├── ai/           [Gemini]       │
+│   ├── engine/       [game logic]   │
+│   └── world/        [graph types]  │
 ```
 
-## Core Concepts
+---
 
-### World Graph Architecture
+## Key Files to Read
 
-The world is stored as a **graph-on-SQL** structure:
+### Understanding the Architecture
+1. `/bend/src/middleware/index.ts` - Architecture diagram and data flow docs (500 lines of comments)
+2. `/bend/src/db/migrations.ts` - All 34 table schemas (~1200 lines)
+3. `/bend/src/api/router.ts` - Main router combining 13 sub-routers
 
-- **Nodes**: Spheres → Planets → Continents → Regions → Settlements → Buildings → Rooms
-- **Edges**: Connections between nodes (travel routes, portals, relationships)
-- **Inheritance**: Child nodes inherit parent properties (physics, culture, climate) unless overridden
+### What Needs Implementation
+1. `/bend/src/db/queries/campaigns.ts` - Has some functions, missing `getParty`, `createParty`, etc.
+2. `/bend/src/db/queries/nodes.ts` - Has `getNodes()`, missing `getNode()` (singular)
+3. `/bend/src/db/queries/edges.ts` - Has `getEdges()`, missing `getEdgesFrom()`, `getEdgesTo()`
+4. `/bend/src/realtime/server.ts` - Has handlers, missing `createRealtimeServer()` factory
 
-```typescript
-// Node types hierarchy
-type NodeType =
-  | "sphere"      // Crystal sphere (Realmspace, Greyspace)
-  | "planet"      // Toril, Oerth
-  | "continent"   // Faerûn, Kara-Tur
-  | "region"      // Sword Coast, Dalelands
-  | "settlement"  // Waterdeep, Baldur's Gate
-  | "district"    // Castle Ward, Dock Ward
-  | "building"    // Yawning Portal, Blackstaff Tower
-  | "room"        // Specific locations
-  | "poi";        // Points of interest
-```
+### The Routers (what calls the missing functions)
+- `/bend/src/api/routers/party.ts` - Calls missing party functions
+- `/bend/src/api/routers/world.ts` - Calls missing node/edge functions
+- `/bend/src/api/routers/economy.ts` - Calls missing `getNode()`
 
-### Authentication & Authorization
+---
 
-- **Clerk** handles authentication (JWT, social login, magic links)
-- **Campaign roles**: owner, gm, co_gm, player, spectator
-- **Permission system**: Role-based + granular permissions per campaign
+## Database Schema (34 Tables)
 
-```typescript
-// Procedure types (src/api/trpc.ts)
-publicProcedure    // No auth required
-protectedProcedure // Requires authentication
-campaignProcedure  // Requires campaign membership
-gmProcedure        // Requires GM role
-ownerProcedure     // Requires campaign owner
-```
+**Core:** campaigns, campaign_memberships, campaign_invites, users
 
-### Realtime Sync
+**World Graph:** world_nodes, world_edges, factions, faction_relations, deities
 
-Delta-based sync for multiplayer:
+**Characters:** characters, character_features, inventory_items, conditions
 
-1. Changes logged to `sync_log` table with version numbers
-2. Clients subscribe to campaign/session rooms
-3. Server broadcasts deltas to room members
-4. Clients acknowledge, cursor advances
+**NPCs:** npcs, npc_relationships, agents, agent_memories
 
-### Seed Data System
+**Sessions:** sessions, session_events, combats, combat_participants, combat_log
 
-Canonical Forgotten Realms data imported via:
+**Other:** parties, party_members, quests, quest_objectives, downtime_periods, downtime_actions, followers, economic_events, trade_routes, sync_log, audit_log
 
-```typescript
-// Manifest-based import
-await importFromManifest("seeds/manifest.json", {
-  onConflict: "skip",  // or "update" or "error"
-  batchSize: 100,
-  validateFirst: true,
-});
-```
-
-## Database Schema (Key Tables)
-
-```sql
--- Campaigns
-campaigns (id, name, owner_id, status, settings, ...)
-
--- Membership
-campaign_memberships (user_id, campaign_id, role, permissions, ...)
-
--- Characters
-characters (id, campaign_id, owner_id, name, class, level, hp, ...)
-inventory_items (id, character_id, name, type, quantity, equipped, ...)
-
--- Combat
-combats (id, session_id, status, round, turn_index, ...)
-combat_participants (id, combat_id, entity_type, initiative, hp, ...)
-combat_log (id, combat_id, action_type, action_data, ...)
-
--- World Graph
-world_nodes (id, parent_id, type, name, data_static, ...)
-world_edges (id, source_id, target_id, type, properties, ...)
-
--- Factions & Deities
-factions (id, name, type, scope, data, ...)
-deities (id, name, pantheon, alignment, data, ...)
-
--- Sync
-sync_log (id, campaign_id, entity_type, entity_id, operation, delta, version, ...)
-```
+---
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | React, Mantine UI |
-| API | tRPC (type-safe RPC) |
-| Validation | Zod |
-| Auth | Clerk |
+| Frontend | React 18, Vite, TanStack Router/Query |
+| Backend | Bun, tRPC v11 |
 | Database | Turso (libSQL/SQLite) |
+| Auth | Clerk |
 | Realtime | WebSocket |
-| Runtime | Node.js / Bun |
+| AI | Google Gemini |
+| Storage | Vercel Blob |
+| Validation | Zod |
 
-## Key Files for Context
+---
 
-When starting a new session, read these files first:
+## Type Errors Summary
 
-1. **Schema Contract**: `src/world/SCHEMA_CONTRACT.md` - Full architecture spec
-2. **Database Schema**: `src/db/migrations.ts` - All table definitions
-3. **API Layer**: `src/api/trpc.ts` - Auth middleware and procedures
-4. **World Graph Types**: `src/world/graph.ts` - Node/edge type definitions
+Running `bunx tsc --noEmit` shows ~160 real errors (plus ~200 unused variable warnings). Main categories:
 
-## Known Wiring Issues
+1. **Missing exports** - Routers import functions that don't exist in query files
+2. **API mismatches** - GeminiClient interface changed, Clerk `verifyToken` doesn't exist
+3. **Schema mismatches** - Some Zod schemas have conflicting definitions
 
-1. **Campaign router function names** - `src/api/routers/campaign.ts` calls functions with names that don't match `src/db/queries/campaigns.ts` exports. Need to add aliases or rename.
+The unused variable errors (TS6133) can be ignored - they're just `ctx` parameters that aren't used yet.
 
-2. **Entry point** - `src/index.ts` is empty. Needs to wire together API + realtime + db init.
+---
+
+## To Make It Run
+
+### Minimum Viable Path (Campaign List → View)
+
+1. Add `getNode()` to `/bend/src/db/queries/nodes.ts`:
+```typescript
+export async function getNode(id: string) {
+  return queryOne<WorldNode>('SELECT * FROM world_nodes WHERE id = ?', [id]);
+}
+```
+
+2. Add party functions to `/bend/src/db/queries/campaigns.ts`:
+```typescript
+export async function getParty(id: string) { ... }
+export async function getCampaignParties(campaignId: string) { ... }
+export async function createParty(input: CreatePartyInput) { ... }
+export async function updateParty(id: string, input: UpdatePartyInput) { ... }
+export async function deleteParty(id: string) { ... }
+```
+
+3. Add `createRealtimeServer()` factory to `/bend/src/realtime/server.ts`:
+```typescript
+export function createRealtimeServer(wss: WebSocketServer, config: RealtimeConfig) {
+  // Wire up the existing handlers
+  wss.on('connection', (ws, req) => handleConnect(...));
+  return { wss, broadcast: broadcastToRoom, ... };
+}
+```
+
+4. Create `/bend/.env`:
+```
+TURSO_DATABASE_URL=libsql://your-db.turso.io
+TURSO_AUTH_TOKEN=your-token
+CLERK_SECRET_KEY=sk_test_...
+GOOGLE_AI_API_KEY=...
+```
+
+5. Create `/fend/.env`:
+```
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
+```
+
+---
 
 ## Development
 
 ```bash
-# Install dependencies
+# Install
 bun install
 
-# Run migrations
-bun run migrate
+# Run backend (port 3001 HTTP, 3002 WS)
+cd bend && bun run dev
 
-# Import seed data
-bun run seed
-
-# Start dev server
-bun run dev
+# Run frontend (port 3003)
+cd fend && bun run dev
 ```
+
+---
+
+## Ports
+
+| Service | Port |
+|---------|------|
+| Backend HTTP (tRPC) | 3001 |
+| Backend WebSocket | 3002 |
+| Frontend (Vite) | 3003 |
+
+---
 
 ## License
 

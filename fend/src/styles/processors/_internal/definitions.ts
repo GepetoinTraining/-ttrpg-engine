@@ -308,6 +308,102 @@ export const GRID_CELL: DefinitionMap = {
 }
 
 // ============================================
+// ROLE CARD DEFINITIONS (Onboarding)
+// ============================================
+
+export const ROLE_CARD: DefinitionMap = {
+  idle: {
+    physics: {
+      mass: 0.4,
+      density: 'liquid',
+      temperature: 'cold',
+      charge: 0.4,
+      friction: 0.2,
+    },
+  },
+  hover: {
+    physics: {
+      mass: 0.5,
+      density: 'solid',
+      temperature: 'warm',
+      charge: 0.4,
+      friction: 0.15,
+    },
+  },
+  selected: {
+    physics: {
+      mass: 0.7,
+      density: 'solid',
+      temperature: 'hot',
+      charge: 0.5,
+      friction: 0.2,
+    },
+  },
+}
+
+// ============================================
+// PROGRESS DOT DEFINITIONS (Onboarding)
+// ============================================
+
+export const PROGRESS_DOT: DefinitionMap = {
+  inactive: {
+    physics: {
+      mass: 0.2,
+      density: 'gas',
+      temperature: 'cold',
+      charge: 0.2,
+      friction: 0.3,
+    },
+  },
+  active: {
+    physics: {
+      mass: 0.4,
+      density: 'solid',
+      temperature: 'hot',
+      charge: 0.3,
+      friction: 0.2,
+    },
+  },
+  current: {
+    physics: {
+      mass: 0.5,
+      density: 'solid',
+      temperature: 'hot',
+      charge: 0.4,
+      friction: 0.2,
+    },
+  },
+}
+
+// ============================================
+// ONBOARDING CONTAINER DEFINITIONS
+// ============================================
+
+export const ONBOARDING_CONTAINER: DefinitionMap = {
+  default: {
+    physics: {
+      mass: 0.6,
+      density: 'solid',
+      temperature: 'cold',
+      charge: 0.6,
+      friction: 0.3,
+    },
+  },
+}
+
+export const ONBOARDING_CARD: DefinitionMap = {
+  default: {
+    physics: {
+      mass: 0.7,
+      density: 'solid',
+      temperature: 'cold',
+      charge: 0.5,
+      friction: 0.3,
+    },
+  },
+}
+
+// ============================================
 // ALL DEFINITIONS
 // ============================================
 
@@ -318,6 +414,10 @@ export const DEFINITIONS: Record<string, DefinitionMap> = {
   Badge: BADGE,
   Token: TOKEN,
   GridCell: GRID_CELL,
+  RoleCard: ROLE_CARD,
+  ProgressDot: PROGRESS_DOT,
+  OnboardingContainer: ONBOARDING_CONTAINER,
+  OnboardingCard: ONBOARDING_CARD,
 }
 
 /**

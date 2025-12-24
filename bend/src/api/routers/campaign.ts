@@ -18,6 +18,15 @@ import * as db from "../../db/queries/campaigns";
 // CAMPAIGN ROUTER
 // ============================================
 
+// Status enum matching the database Campaign type
+const CampaignStatusSchema = z.enum([
+  "planning",
+  "active",
+  "hiatus",
+  "completed",
+  "abandoned",
+]);
+
 export const campaignRouter = router({
   // ==========================================
   // QUERIES
@@ -83,10 +92,16 @@ export const campaignRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const campaign = await db.createCampaign({
-        ...input,
+      // Explicitly construct the input to satisfy TypeScript
+      const createInput: db.CreateCampaignInput = {
+        name: input.name,
+        description: input.description,
+        primaryWorldId: input.primaryWorldId,
+        settings: input.settings,
         ownerId: ctx.auth.userId,
-      });
+      };
+
+      const campaign = await db.createCampaign(createInput);
 
       // Note: createCampaign already adds owner as member internally
       // No need to call addCampaignMember here
@@ -104,13 +119,20 @@ export const campaignRouter = router({
         description: z.string().max(2000).optional(),
         primaryWorldId: z.string().uuid().optional(),
         settings: z.record(z.string(), z.any()).optional(),
-        status: z
-          .enum(["active", "paused", "completed", "archived"])
-          .optional(),
+        status: CampaignStatusSchema.optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return db.updateCampaign(ctx.campaignId, input);
+      // Explicitly construct the update input
+      const updateInput: db.UpdateCampaignInput = {
+        name: input.name,
+        description: input.description,
+        primaryWorldId: input.primaryWorldId,
+        settings: input.settings,
+        status: input.status,
+      };
+
+      return db.updateCampaign(ctx.campaignId, updateInput);
     }),
 
   /**

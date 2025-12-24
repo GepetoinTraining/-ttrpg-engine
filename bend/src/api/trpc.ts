@@ -8,6 +8,7 @@ import type {
 import { PermissionChecker, createChecker } from "../auth/permissions";
 import type { ClerkJWTClaims } from "../auth/clerk";
 import { claimsToSessionAuth } from "../auth/clerk";
+import { ensureUser } from "../db/queries/users";
 
 // ============================================
 // tRPC SETUP
@@ -83,6 +84,14 @@ export async function createContext(
       userAgent,
     };
   }
+
+  // Sync Clerk user to our database
+  await ensureUser({
+    id: claims.sub,
+    email: claims.email,
+    displayName: claims.name,
+    avatarUrl: claims.picture,
+  });
 
   // Build auth from claims
   const auth = claimsToSessionAuth(claims);

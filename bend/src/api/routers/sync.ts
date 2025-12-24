@@ -140,4 +140,68 @@ export const syncRouter = router({
       });
       return { success: true };
     }),
+
+  /**
+   * Push client deltas to server
+   */
+  push: campaignProcedure
+    .input(
+      z.object({
+        deltas: z.array(
+          z.object({
+            id: z.string().uuid(),
+            table: z.string(),
+            recordId: z.string(),
+            operation: z.enum(['create', 'update', 'delete']),
+            data: z.record(z.any()).optional(),
+            clientVersion: z.number().int(),
+            clientTimestamp: z.string(),
+          })
+        ),
+        sessionId: z.string().uuid().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Apply each delta
+      const results = await Promise.all(
+        input.deltas.map(async (delta) => {
+          try {
+            // Log to sync_log table
+            await sync.logChange(
+              ctx.campaignId,
+              input.sessionId || null,
+              delta.table,
+              delta.recordId,
+              delta.operation as 'create' | 'update' | 'delete',
+              delta.data || {},
+              ctx.auth.userId,
+              'player'
+            );
+
+            return {
+              id: delta.id,
+              status: 'confirmed' as const
+            };
+          } catch (error) {
+            return {
+              id: delta.id,
+              status: 'rejected' as const,
+              error: error instanceof Error ? error.message : 'Unknown error'
+            };
+          }
+        })
+      );
+
+      // Get new cursor after applying changes
+      const cursor = await sync.getCurrentCursor(
+        ctx.campaignId,
+        input.sessionId
+      );
+
+      return {
+        results,
+        serverVersion: cursor.lastVersion,
+        serverTimestamp: cursor.lastTimestamp,
+      };
+    }),
 });

@@ -1,9 +1,4 @@
-import {
-  createClient,
-  type Client,
-  type ResultSet,
-  type InStatement,
-} from "@libsql/client";
+import { createClient } from "@libsql/client/web";
 
 // ============================================
 // TURSO DATABASE CLIENT
@@ -58,23 +53,26 @@ export function getTursoConfig(): TursoConfig {
 
 let _client: Client | null = null;
 
+type Client = ReturnType<typeof createClient>;
+type ResultSet = Awaited<ReturnType<Client["execute"]>>;
+// InStatement type - use explicit definition for compatibility
+type InStatement = { sql: string; args?: any[] };
+
 /**
  * Get or create Turso client
  */
-export function getClient(config?: TursoConfig): Client {
-  if (_client) return _client;
+ export function getClient(config?: TursoConfig): Client {
+   if (_client) return _client;
 
-  const cfg = config || getTursoConfig();
+   const cfg = config || getTursoConfig();
 
-  _client = createClient({
-    url: cfg.url,
-    authToken: cfg.authToken,
-    syncUrl: cfg.syncUrl,
-    syncInterval: cfg.syncInterval,
-  });
+   _client = createClient({
+     url: cfg.url,
+     authToken: cfg.authToken,
+   });
 
-  return _client;
-}
+   return _client;
+ }
 
 /**
  * Close client connection
@@ -149,16 +147,16 @@ export async function queryAll<T = any>(
   params?: QueryParams,
 ): Promise<T[]> {
   const result = await query(sql, params);
-  return result.rows.map((row) => rowToObject<T>(row, result.columns));
+  return result.rows.map((row: any) => rowToObject<T>(row, result.columns));
 }
 
 /**
  * Execute multiple queries in a batch
  */
-export async function batch(statements: InStatement[]): Promise<ResultSet[]> {
-  const client = getClient();
-  return client.batch(statements, "deferred");
-}
+ export async function batch(statements: InStatement[]): Promise<ResultSet[]> {
+   const client = getClient();
+   return client.batch(statements as any, "deferred");
+ }
 
 // ============================================
 // TRANSACTION SUPPORT
@@ -190,7 +188,7 @@ export async function transaction<T>(
     },
     queryAll: async <T>(sql: string, params?: QueryParams) => {
       const result = await tx.execute({ sql, args: params || [] });
-      return result.rows.map((row) => rowToObject<T>(row, result.columns));
+      return result.rows.map((row: any) => rowToObject<T>(row, result.columns));
     },
     commit: () => tx.commit(),
     rollback: () => tx.rollback(),

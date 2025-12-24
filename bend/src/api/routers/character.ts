@@ -128,11 +128,24 @@ export const characterRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return db.createCharacter({
-        ...input,
+      // Explicitly construct to satisfy TypeScript
+      const createInput: db.CreateCharacterInput = {
+        name: input.name,
+        race: input.race,
+        class: input.class,
+        level: input.level,
+        background: input.background,
+        alignment: input.alignment,
+        abilityScores: input.abilityScores as db.CreateCharacterInput['abilityScores'],
+        hp: input.hp,
+        maxHp: input.maxHp,
+        ac: input.ac,
+        speed: input.speed,
+        partyId: input.partyId,
         campaignId: ctx.campaignId,
         ownerId: ctx.auth.userId,
-      });
+      };
+      return db.createCharacter(createInput);
     }),
 
   /**
@@ -380,17 +393,24 @@ export const characterRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { characterId, ...item } = input;
-
-      const character = await db.getCharacter(characterId);
-      if (!character) notFound("Character", characterId);
+      const character = await db.getCharacter(input.characterId);
+      if (!character) notFound("Character", input.characterId);
 
       const isOwner = character.ownerId === ctx.auth.userId;
       if (!isOwner && !ctx.checker.isGM()) {
         forbidden("Cannot modify this character");
       }
 
-      return db.addInventoryItem(characterId, item);
+      // Explicitly construct to satisfy TypeScript
+      return db.addInventoryItem(input.characterId, {
+        name: input.name,
+        type: input.type,
+        quantity: input.quantity,
+        weight: input.weight,
+        value: input.value,
+        description: input.description,
+        properties: input.properties,
+      });
     }),
 
   /**

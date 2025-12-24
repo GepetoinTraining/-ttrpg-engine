@@ -8,8 +8,8 @@ import {
   now,
   toJson,
   type Transaction,
-} from "../db/client";
-import type { WorldNode, WorldEdge, Faction, Deity } from "../world/graph";
+} from "../client";
+import type { WorldNode, WorldEdge, Faction, Deity } from "../../world/graph";
 import { SeedValidator, type ValidationResult } from "./validator";
 import { SeedManifestSchema, type SeedManifest } from "./loader";
 

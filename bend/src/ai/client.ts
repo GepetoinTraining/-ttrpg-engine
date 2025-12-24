@@ -16,10 +16,10 @@ import { GoogleGenAI } from "@google/genai";
 // CONFIGURATION
 // =============================================================================
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_API_KEY = process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY;
 
 if (!GEMINI_API_KEY) {
-  console.warn("⚠️  GEMINI_API_KEY not set - AI features will fail");
+  console.warn("⚠️  GOOGLE_AI_API_KEY not set - AI features will fail");
 }
 
 // Singleton SDK instance
@@ -29,7 +29,7 @@ const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY || "" });
 export const MODELS = {
   FLASH: "gemini-2.5-flash",
   PRO: "gemini-2.5-pro",
-  FLASH_LITE: "gemini-2.5-flash-lite",
+  FLASH_LITE: "gemini-2.0-flash",
 } as const;
 
 export type ModelId = (typeof MODELS)[keyof typeof MODELS];
@@ -67,6 +67,56 @@ export interface GeminiClientConfig {
   defaultMaxTokens?: number;
   retries?: number;
   retryDelay?: number;
+}
+
+// =============================================================================
+// NPC RESPONSE TYPES (for router compatibility)
+// =============================================================================
+
+export interface NPCContext {
+  id: string;
+  name: string;
+  race?: string;
+  occupation?: string;
+  personality: string;
+  voice: string;
+  motivations: string[];
+  secrets?: string[];
+  knowledgeTopics: string[];
+  rumors?: string[];
+  relationships: Array<{
+    characterName: string;
+    relationship: string;
+    disposition: number;
+  }>;
+  mood: string;
+  currentLocation?: string;
+  currentActivity?: string;
+}
+
+export interface ConversationMessage {
+  role: "player" | "npc";
+  speaker: string;
+  content: string;
+  timestamp: Date;
+}
+
+export interface NPCResponseInput {
+  npc: NPCContext;
+  context: {
+    sessionId: string;
+    campaignId: string;
+    locationName: string;
+    locationDescription?: string;
+  };
+  history: ConversationMessage[];
+  playerMessage: string;
+}
+
+export interface NPCResponse {
+  content: string;
+  emotion?: string;
+  action?: string;
 }
 
 // =============================================================================
@@ -234,6 +284,142 @@ export class GeminiClient {
 
       return response.text ?? "";
     });
+  }
+
+  // ===========================================================================
+  // NPC DIALOGUE GENERATION
+  // ===========================================================================
+
+  /**
+   * Generate NPC response for conversation
+   * Used by the NPC router for AI-powered dialogue
+   */
+  async generateNPCResponse(input: NPCResponseInput): Promise<NPCResponse> {
+    const { npc, context, history, playerMessage } = input;
+
+    // Build system prompt
+    const systemPrompt = this.buildNPCSystemPrompt(npc, context);
+
+    // Build conversation context
+    let conversationContext = "";
+    if (history.length > 0) {
+      conversationContext = history
+        .slice(-8) // Last 8 messages
+        .map((msg) => `${msg.speaker}: ${msg.content}`)
+        .join("\n");
+      conversationContext += "\n\n";
+    }
+
+    const prompt = `${conversationContext}${history[0]?.speaker || "Player"}: ${playerMessage}
+
+Respond as ${npc.name}. Stay in character. Be concise (1-3 sentences unless more is needed).
+
+Respond in JSON format:
+{
+  "content": "Your in-character dialogue",
+  "emotion": "current emotional state",
+  "action": "physical action or gesture (optional, can be null)"
+}`;
+
+    try {
+      const result = await this.generateJSON<{
+        content: string;
+        emotion?: string;
+        action?: string | null;
+      }>({
+        systemInstruction: systemPrompt,
+        prompt,
+        temperature: 0.8,
+        maxOutputTokens: 500,
+      });
+
+      return {
+        content: result.content,
+        emotion: result.emotion,
+        action: result.action || undefined,
+      };
+    } catch (error) {
+      // Fallback to non-JSON response
+      const text = await this.generateText(prompt, systemPrompt, {
+        temperature: 0.8,
+        maxOutputTokens: 500,
+      });
+
+      return {
+        content: text,
+        emotion: undefined,
+        action: undefined,
+      };
+    }
+  }
+
+  private buildNPCSystemPrompt(
+    npc: NPCContext,
+    context: { locationName: string; locationDescription?: string }
+  ): string {
+    const sections: string[] = [];
+
+    // Character basics
+    sections.push(`You are roleplaying as ${npc.name}, an NPC in a TTRPG campaign.`);
+
+    // Character sheet
+    let characterSheet = `CHARACTER:
+- Name: ${npc.name}`;
+    if (npc.race) characterSheet += `\n- Race: ${npc.race}`;
+    if (npc.occupation) characterSheet += `\n- Role: ${npc.occupation}`;
+    characterSheet += `\n- Personality: ${npc.personality}`;
+    characterSheet += `\n- Voice/Speech: ${npc.voice}`;
+    characterSheet += `\n- Current Mood: ${npc.mood}`;
+    if (npc.currentActivity) characterSheet += `\n- Currently: ${npc.currentActivity}`;
+    sections.push(characterSheet);
+
+    // Knowledge
+    if (npc.knowledgeTopics.length > 0) {
+      sections.push(`KNOWLEDGE AREAS:\n${npc.knowledgeTopics.map((k) => `- ${k}`).join("\n")}`);
+    }
+
+    // Motivations
+    if (npc.motivations.length > 0) {
+      sections.push(`MOTIVATIONS:\n${npc.motivations.map((m) => `- ${m}`).join("\n")}`);
+    }
+
+    // Secrets (NPC knows but won't easily share)
+    if (npc.secrets && npc.secrets.length > 0) {
+      sections.push(`SECRETS (guard these carefully):\n${npc.secrets.map((s) => `- ${s}`).join("\n")}`);
+    }
+
+    // Rumors
+    if (npc.rumors && npc.rumors.length > 0) {
+      sections.push(`RUMORS YOU'VE HEARD:\n${npc.rumors.map((r) => `- ${r}`).join("\n")}`);
+    }
+
+    // Relationships
+    if (npc.relationships.length > 0) {
+      const relText = npc.relationships
+        .map((r) => `- ${r.characterName}: ${r.relationship} (disposition: ${r.disposition})`)
+        .join("\n");
+      sections.push(`RELATIONSHIPS:\n${relText}`);
+    }
+
+    // Location
+    let locationText = `CURRENT LOCATION: ${context.locationName}`;
+    if (context.locationDescription) {
+      locationText += `\n${context.locationDescription}`;
+    }
+    sections.push(locationText);
+
+    // Instructions
+    sections.push(`RULES:
+- Stay in character at all times
+- Speak in first person as ${npc.name}
+- Use your established voice and speech patterns
+- React based on your mood and relationships
+- Only share knowledge you would reasonably have
+- Guard your secrets unless cleverly extracted
+- Keep responses concise (1-3 sentences typically)
+- Never break character to explain game mechanics`);
+
+    return sections.join("\n\n");
   }
 
   // ===========================================================================

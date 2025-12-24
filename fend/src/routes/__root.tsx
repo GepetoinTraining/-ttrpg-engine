@@ -1,47 +1,88 @@
 import { Outlet } from '@tanstack/react-router'
-import { Shell, Navbar, NavbarBrand, NavbarItem, NavbarGroup } from '@styles/processors/_internal'
-import { Avatar } from '@styles/processors/_internal'
-import { ToastProvider } from '@styles/processors/_internal'
-import { AuthProvider, useAuthContext } from '@auth/provider'
-import { Swords, Map, Users, Calendar, Menu } from 'lucide-react'
+import { useUser } from '@clerk/clerk-react'
+import { Shell } from '../styles/processors/_internal/organism/shell'
+import { Sidebar, SidebarItem, SidebarSection } from '../styles/processors/_internal/organism/sidebar'
+import { Navbar, NavbarBrand } from '../styles/processors/_internal/organism/navbar'
+import { OnboardingWorld } from '../styles/processors/_internal/worlds/OnboardingWorld'
+import { trpc } from '../utils/trpc'
 
 export function RootLayout() {
+  const { isSignedIn, isLoaded } = useUser()
+
+  // Check if user needs onboarding
+  const { data: profile, isLoading, refetch } = trpc.user.me.useQuery(undefined, {
+    enabled: isSignedIn,
+    retry: false,  // Don't retry on 500 errors
+  })
+
+  // Mutation for completing onboarding
+  const completeOnboarding = trpc.user.completeOnboarding.useMutation({
+    onSuccess: () => {
+      refetch()  // Refetch profile after completing
+    },
+  })
+
+  // Loading state
+  if (!isLoaded || (isSignedIn && isLoading)) {
+    return <LoadingScreen />
+  }
+
+  // Not signed in - just render outlet (login page, etc)
+  if (!isSignedIn) {
+    return <Outlet />
+  }
+
+  // Needs onboarding (check inside preferences!)
+  if (!profile?.preferences?.onboardingComplete) {
+    return (
+      <OnboardingWorld
+        onComplete={(data) => {
+          completeOnboarding.mutate(data)
+        }}
+        isLoading={completeOnboarding.isPending}
+      />
+    )
+  }
+
+  // Normal app with Shell
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <Shell navbar={<RootNavbar />}>
-          <Outlet />
-        </Shell>
-      </ToastProvider>
-    </AuthProvider>
+    <Shell
+      navbar={<AppNavbar />}
+      sidebar={<AppSidebar />}
+    >
+      <Outlet />
+    </Shell>
   )
 }
 
-function RootNavbar() {
-  const { isSignedIn, user } = useAuthContext()
-
+function AppSidebar() {
   return (
-    <Navbar
-      logo={
-        <NavbarBrand href="/">
-          <Swords size={24} style={{ color: '#f59e0b' }} />
-          <span>TTRPG Engine</span>
-        </NavbarBrand>
-      }
-      actions={
-        isSignedIn ? (
-          <NavbarGroup>
-            <Avatar
-              src={user?.imageUrl}
-              name={user?.name}
-              size="sm"
-              status="online"
-            />
-          </NavbarGroup>
-        ) : (
-          <NavbarItem href="/login">Sign In</NavbarItem>
-        )
-      }
-    />
+    <Sidebar>
+      <SidebarSection title="Play">
+        <SidebarItem icon="🎭" href="/">Campaigns</SidebarItem>
+        <SidebarItem icon="⚔️" href="/characters">Characters</SidebarItem>
+      </SidebarSection>
+    </Sidebar>
+  )
+}
+
+function AppNavbar() {
+  return (
+    <Navbar logo={<NavbarBrand>TTRPG Engine</NavbarBrand>} />
+  )
+}
+
+function LoadingScreen() {
+  return (
+    <div style={{
+      height: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#0f172a',
+      color: '#94a3b8',
+    }}>
+      Loading...
+    </div>
   )
 }

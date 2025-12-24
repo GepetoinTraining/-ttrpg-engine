@@ -131,8 +131,14 @@ export const combatRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Explicitly construct to satisfy TypeScript
       return db.createCombat({
-        ...input,
+        sessionId: input.sessionId,
+        name: input.name,
+        description: input.description,
+        locationNodeId: input.locationNodeId,
+        mapUrl: input.mapUrl,
+        gridConfig: input.gridConfig,
         campaignId: ctx.campaignId,
       });
     }),
@@ -240,8 +246,22 @@ export const combatRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { combatId, ...participant } = input;
-      return db.addParticipant(combatId, participant);
+      // Explicitly construct to satisfy TypeScript
+      return db.addParticipant(input.combatId, {
+        entityType: input.entityType,
+        entityId: input.entityId,
+        name: input.name,
+        imageUrl: input.imageUrl,
+        initiative: input.initiative,
+        initiativeModifier: input.initiativeModifier,
+        hp: input.hp,
+        maxHp: input.maxHp,
+        ac: input.ac,
+        positionX: input.positionX,
+        positionY: input.positionY,
+        isVisible: input.isVisible,
+        groupId: input.groupId,
+      });
     }),
 
   /**
@@ -289,7 +309,12 @@ export const combatRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await db.rollInitiativeForAll(input.combatId, input.rolls);
+      // Explicitly type the rolls array to satisfy TypeScript
+      const typedRolls: { participantId: string; roll: number }[] = input.rolls.map(r => ({
+        participantId: r.participantId,
+        roll: r.roll,
+      }));
+      await db.rollInitiativeForAll(input.combatId, typedRolls);
       return { success: true };
     }),
 

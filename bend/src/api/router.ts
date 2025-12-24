@@ -11,6 +11,7 @@ import { questRouter } from "./routers/quest";
 import { downtimeRouter } from "./routers/downtime";
 import { economyRouter } from "./routers/economy";
 import { gmRouter } from "./routers/gm";
+import { userRouter } from "./routers/user";
 
 // ============================================
 // APP ROUTER
@@ -46,6 +47,7 @@ export const appRouter = router({
   world: worldRouter,
   sync: syncRouter,
   gm: gmRouter,
+  user: userRouter,
 });
 
 // Export type for client

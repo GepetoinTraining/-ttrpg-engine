@@ -21,3 +21,6 @@ export { Form, FormField, FormLabel, FormSection, FormActions, FormRow, useFormC
 export type { FormProps, FormFieldProps, FormLabelProps, FormSectionProps, FormActionsProps, FormRowProps } from './form'
 
 export { ToastProvider, useToast, useToastActions, toast } from './toast'
+
+export { RoleCard } from './role_card'
+export type { RoleCardProps } from './role_card'

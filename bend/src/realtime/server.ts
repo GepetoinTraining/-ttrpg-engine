@@ -58,6 +58,70 @@ export interface ServerState {
   userToClient: Map<string, string>; // userId -> clientId
 }
 
+export interface RealtimeConfig {
+  port?: number;
+  heartbeatInterval?: number;
+}
+
+export interface RealtimeServer {
+  wss: WebSocketServer;
+  broadcast: (roomId: string, message: any, exclude?: WebSocket) => void;
+  getRoomClients: (roomId: string) => Set<WebSocket>;
+  getPresence: (roomId: string) => Array<{ userId: string; userName: string }>;
+  close: () => Promise<void>;
+}
+
+/**
+ * Create and configure the realtime WebSocket server
+ */
+export function createRealtimeServer(
+  wss: WebSocketServer,
+  config: RealtimeConfig = {},
+): RealtimeServer {
+  wss.on("connection", (ws: WebSocket, req: any) => {
+    handleConnect(ws, req);
+
+    ws.on("message", (data: Buffer) => {
+      handleMessage(ws, data);
+    });
+
+    ws.on("close", () => {
+      handleDisconnect(ws);
+    });
+
+    ws.on("error", (error: Error) => {
+      console.error("[WebSocket] Error:", error);
+    });
+  });
+
+  const heartbeatInterval = config.heartbeatInterval || 30000;
+  const interval = setInterval(() => {
+    wss.clients.forEach((ws: any) => {
+      if (ws.isAlive === false) {
+        ws.terminate();
+        return;
+      }
+      ws.isAlive = false;
+      ws.ping();
+    });
+  }, heartbeatInterval);
+
+  wss.on("close", () => {
+    clearInterval(interval);
+  });
+
+  return {
+    wss,
+    broadcast: broadcastToRoom,
+    getRoomClients,
+    getPresence: getRoomPresence,
+    close: async () => {
+      clearInterval(interval);
+      wss.close();
+    },
+  };
+}
+
 // ============================================
 // SERVER STATE
 // ============================================

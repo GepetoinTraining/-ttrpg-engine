@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from '@tanstack/react-router'
-import { ClerkProvider } from '@clerk/clerk-react'
 import { httpBatchLink } from '@trpc/client'
 import { useState } from 'react'
 import { trpc } from '@api/trpc'
@@ -28,10 +27,10 @@ export function App() {
       links: [
         httpBatchLink({
           url: '/api/trpc',
-          headers() {
-            return {
-              // Clerk token will be added by interceptor
-            }
+          async headers() {
+            // Get auth token from Clerk
+            const token = await window.Clerk?.session?.getToken()
+            return token ? { authorization: `Bearer ${token}` } : {}
           },
         }),
       ],
@@ -39,12 +38,10 @@ export function App() {
   )
 
   return (
-    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY || ''}>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
         </QueryClientProvider>
       </trpc.Provider>
-    </ClerkProvider>
   )
 }

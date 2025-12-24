@@ -11,7 +11,7 @@ import {
   now,
   NotFoundError,
 } from "../client";
-import type { WorldEdge, WorldEdgeType } from "../../world/graph";
+import type { WorldEdge, WorldEdgeType, WorldNode } from "../../world/graph";
 
 // ============================================
 // WORLD EDGE QUERIES
@@ -60,13 +60,21 @@ export interface EdgeFilters {
 // ============================================
 
 function rowToEdge(row: WorldEdgeRow): WorldEdge {
+  // Parse properties with defaults for required fields
+  const parsedProps = parseJson(row.properties) || {};
+  const properties = {
+    active: true,
+    hidden: false,
+    ...parsedProps,
+  };
+
   return {
     id: row.id,
     sourceId: row.sourceId,
     targetId: row.targetId,
     type: row.type as WorldEdgeType,
     bidirectional: row.bidirectional === 1,
-    properties: parseJson(row.properties) || {},
+    properties,
     createdAt: new Date(row.createdAt),
     updatedAt: new Date(row.updatedAt),
     version: row.version,
@@ -81,13 +89,20 @@ export async function createEdge(input: CreateEdgeInput): Promise<WorldEdge> {
   const id = input.id || uuid();
   const timestamp = now();
 
+  // Ensure properties has required defaults
+  const properties = {
+    active: true,
+    hidden: false,
+    ...input.properties,
+  };
+
   const data = {
     id,
     sourceId: input.sourceId,
     targetId: input.targetId,
     type: input.type,
     bidirectional: input.bidirectional !== false ? 1 : 0,
-    properties: toJson(input.properties),
+    properties: toJson(properties),
     createdAt: timestamp,
     updatedAt: timestamp,
     version: 1,
@@ -111,6 +126,13 @@ export async function createEdges(inputs: CreateEdgeInput[]): Promise<number> {
     for (const input of inputs) {
       const id = input.id || uuid();
 
+      // Ensure properties has required defaults
+      const properties = {
+        active: true,
+        hidden: false,
+        ...input.properties,
+      };
+
       await tx.query(
         `INSERT INTO world_edges
          (id, source_id, target_id, type, bidirectional, properties, created_at, updated_at, version)
@@ -121,7 +143,7 @@ export async function createEdges(inputs: CreateEdgeInput[]): Promise<number> {
           input.targetId,
           input.type,
           input.bidirectional !== false ? 1 : 0,
-          toJson(input.properties),
+          toJson(properties),
           timestamp,
           timestamp,
           1,
@@ -563,3 +585,50 @@ export async function getEdgeStats(): Promise<{
     byType,
   };
 }
+
+  // ============================================
+  // ROUTER COMPATIBILITY EXPORTS
+  // ============================================
+
+  // Aliases for existing functions
+  export const getEdgesFrom = getOutgoingEdges;
+  export const getEdgesTo = getIncomingEdges;
+
+  /**
+   * Get connected nodes (actual node objects, not just IDs)
+   */
+  export async function getConnectedNodes(
+    nodeId: string,
+    type?: WorldEdgeType | WorldEdgeType[],
+    direction: 'from' | 'to' | 'both' = 'both',
+  ): Promise<WorldNode[]> {
+    // Import dynamically to avoid circular dependency
+    const { getNodeById } = await import("./nodes");
+
+    let edges: WorldEdge[];
+
+    if (direction === 'from') {
+      edges = await getOutgoingEdges(nodeId, type);
+    } else if (direction === 'to') {
+      edges = await getIncomingEdges(nodeId, type);
+    } else {
+      edges = await getConnectedEdges(nodeId, type);
+    }
+
+    const nodeIds = new Set<string>();
+    for (const edge of edges) {
+      if (edge.sourceId === nodeId) {
+        nodeIds.add(edge.targetId);
+      } else {
+        nodeIds.add(edge.sourceId);
+      }
+    }
+
+    const nodes: WorldNode[] = [];
+    for (const id of nodeIds) {
+      const node = await getNodeById(id);
+      if (node) nodes.push(node);
+    }
+
+    return nodes;
+  }

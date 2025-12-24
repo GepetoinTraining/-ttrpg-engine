@@ -16,6 +16,10 @@ import * as factions from "../../db/queries/factions";
 // ============================================
 // WORLD ROUTER
 // ============================================
+//
+// API for world graph: nodes, edges, factions.
+// Based on SCHEMA_CONTRACT.md architecture.
+//
 
 export const worldRouter = router({
   // ==========================================
@@ -34,15 +38,13 @@ export const worldRouter = router({
   /**
    * Get node with children
    */
-  getNodeWithChildren: publicProcedure
-    .input(IdInput)
-    .query(async ({ input }) => {
-      const node = await nodes.getNode(input.id);
-      if (!node) notFound("WorldNode", input.id);
+  getNodeWithChildren: publicProcedure.input(IdInput).query(async ({ input }) => {
+    const node = await nodes.getNode(input.id);
+    if (!node) notFound("WorldNode", input.id);
 
-      const children = await nodes.getChildren(input.id);
-      return { node, children };
-    }),
+    const children = await nodes.getChildren(input.id);
+    return { node, children };
+  }),
 
   /**
    * Get node hierarchy (ancestors)
@@ -55,13 +57,13 @@ export const worldRouter = router({
    * Search nodes
    */
   searchNodes: publicProcedure.input(SearchInput).query(async ({ input }) => {
-    return nodes.searchNodes(input.query, input.page, input.pageSize);
+    return nodes.searchNodes(input.query, { limit: input.pageSize });
   }),
 
   /**
-   * List nodes by type
+   * Get nodes by type
    */
-  listByType: publicProcedure
+  getNodesByType: publicProcedure
     .input(
       z.object({
         type: z.string(),
@@ -74,29 +76,37 @@ export const worldRouter = router({
     }),
 
   /**
-   * Get children of node
+   * Get children of a node
    */
-  getChildren: publicProcedure
-    .input(
-      z.object({
-        id: z.string().uuid(),
-        type: z.string().optional(),
-      }),
-    )
-    .query(async ({ input }) => {
-      return nodes.getChildren(input.id, input.type);
-    }),
-
-  /**
-   * Get siblings of node
-   */
-  getSiblings: publicProcedure.input(IdInput).query(async ({ input }) => {
-    return nodes.getSiblings(input.id);
+  getChildren: publicProcedure.input(IdInput).query(async ({ input }) => {
+    return nodes.getChildren(input.id);
   }),
 
   // ==========================================
   // EDGE QUERIES
   // ==========================================
+
+  /**
+   * Get edges by source/target
+   */
+  getEdges: publicProcedure
+    .input(
+      z.object({
+        sourceId: z.string().uuid().optional(),
+        targetId: z.string().uuid().optional(),
+        type: z.enum([
+          "CONTAINS", "BORDERS", "TRADE_ROUTE", "ROAD", "RIVER", "SEA_ROUTE",
+          "ORBIT", "FLOW_RIVER", "PORTAL", "PLANAR_GATE", "MANIFEST_ZONE", "COTERMINOUS",
+          "GOVERNS", "VASSAL_OF", "ALLIED_WITH", "AT_WAR_WITH", "TREATY_WITH",
+          "FACTION_PRESENCE", "FACTION_HQ", "FACTION_CONFLICT",
+          "CULTURAL_TIE", "RELIGIOUS_TIE", "TRADE_PARTNER",
+          "HISTORICAL_EVENT", "PROPHECY_LINK", "SECRET_CONNECTION",
+        ]).optional(),
+      }),
+    )
+    .query(async ({ input }) => {
+      return edges.getEdges(input);
+    }),
 
   /**
    * Get edges from node
@@ -109,7 +119,7 @@ export const worldRouter = router({
       }),
     )
     .query(async ({ input }) => {
-      return edges.getEdgesFrom(input.nodeId, input.type);
+      return edges.getEdgesFrom(input.nodeId, input.type as any);
     }),
 
   /**
@@ -123,26 +133,22 @@ export const worldRouter = router({
       }),
     )
     .query(async ({ input }) => {
-      return edges.getEdgesTo(input.nodeId, input.type);
+      return edges.getEdgesTo(input.nodeId, input.type as any);
     }),
 
   /**
-   * Get connected nodes
+   * Check if nodes are connected
    */
-  getConnected: publicProcedure
+  areConnected: publicProcedure
     .input(
       z.object({
-        nodeId: z.string().uuid(),
+        sourceId: z.string().uuid(),
+        targetId: z.string().uuid(),
         edgeType: z.string().optional(),
-        direction: z.enum(["outgoing", "incoming", "both"]).default("both"),
       }),
     )
     .query(async ({ input }) => {
-      return edges.getConnectedNodes(
-        input.nodeId,
-        input.edgeType,
-        input.direction,
-      );
+      return edges.areConnected(input.sourceId, input.targetId, input.edgeType as any);
     }),
 
   /**
@@ -193,85 +199,69 @@ export const worldRouter = router({
   /**
    * Get faction relations
    */
-  getFactionRelations: publicProcedure
-    .input(IdInput)
-    .query(async ({ input }) => {
-      return factions.getFactionRelations(input.id);
-    }),
+  getFactionRelations: publicProcedure.input(IdInput).query(async ({ input }) => {
+    return factions.getFactionRelations(input.id);
+  }),
 
   /**
    * Get faction presence (where are they)
    */
-  getFactionPresence: publicProcedure
-    .input(IdInput)
-    .query(async ({ input }) => {
-      return factions.getFactionPresence(input.id);
-    }),
+  getFactionPresence: publicProcedure.input(IdInput).query(async ({ input }) => {
+    return factions.getFactionPresence(input.id);
+  }),
 
   /**
    * Get factions at location
    */
-  getLocationFactions: publicProcedure
-    .input(IdInput)
-    .query(async ({ input }) => {
-      return factions.getLocationFactions(input.id);
-    }),
+  getLocationFactions: publicProcedure.input(IdInput).query(async ({ input }) => {
+    return factions.getLocationFactions(input.id);
+  }),
 
   // ==========================================
   // GM MUTATIONS - NODES
   // ==========================================
 
   /**
-   * Create node (GM only, for campaign-specific content)
+   * Create node
    */
   createNode: gmProcedure
     .input(
       z.object({
-        type: z.string(),
-        name: z.string().min(1).max(200),
         parentId: z.string().uuid().optional(),
+        type: z.string(),
+        name: z.string(),
         canonicalName: z.string().optional(),
-        dataStatic: z.record(z.string(), z.any()).optional(),
+        dataStatic: z.any().default({}),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       return nodes.createNode({
         ...input,
-        isCanonical: false, // Campaign-created nodes are not canonical
+        dataStatic: input.dataStatic ?? {},
       });
     }),
 
   /**
-   * Update node (GM only)
+   * Update node
    */
   updateNode: gmProcedure
     .input(
       z.object({
         id: z.string().uuid(),
-        name: z.string().min(1).max(200).optional(),
-        dataStatic: z.record(z.string(), z.any()).optional(),
-        isHidden: z.boolean().optional(),
+        name: z.string().optional(),
+        dataStatic: z.any().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      const { id, ...updates } = input;
-      return nodes.updateNode(id, updates);
+    .mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      return nodes.updateNode(id, data);
     }),
 
   /**
-   * Delete node (GM only, non-canonical only)
+   * Delete node
    */
-  deleteNode: gmProcedure.input(IdInput).mutation(async ({ ctx, input }) => {
-    const node = await nodes.getNode(input.id);
-    if (!node) notFound("WorldNode", input.id);
-
-    // Can't delete canonical/seeded nodes
-    if (node.isCanonical || node.isSeeded) {
-      throw new Error("Cannot delete canonical or seeded nodes");
-    }
-
-    await nodes.deleteNode(input.id);
-    return { success: true };
+  deleteNode: gmProcedure.input(IdInput).mutation(async ({ input }) => {
+    return nodes.deleteNode(input.id);
   }),
 
   // ==========================================
@@ -279,49 +269,96 @@ export const worldRouter = router({
   // ==========================================
 
   /**
-   * Create edge (GM only)
+   * Create edge
    */
   createEdge: gmProcedure
     .input(
       z.object({
         sourceId: z.string().uuid(),
         targetId: z.string().uuid(),
-        type: z.string(),
-        bidirectional: z.boolean().default(false),
-        properties: z.record(z.string(), z.any()).optional(),
+        type: z.enum([
+          "CONTAINS", "BORDERS", "TRADE_ROUTE", "ROAD", "RIVER", "SEA_ROUTE",
+          "ORBIT", "FLOW_RIVER", "PORTAL", "PLANAR_GATE", "MANIFEST_ZONE", "COTERMINOUS",
+          "GOVERNS", "VASSAL_OF", "ALLIED_WITH", "AT_WAR_WITH", "TREATY_WITH",
+          "FACTION_PRESENCE", "FACTION_HQ", "FACTION_CONFLICT",
+          "CULTURAL_TIE", "RELIGIOUS_TIE", "TRADE_PARTNER",
+          "HISTORICAL_EVENT", "PROPHECY_LINK", "SECRET_CONNECTION",
+        ]),
+        properties: z.any().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      return edges.createEdge(input);
+    .mutation(async ({ input }) => {
+      return edges.createEdge(input as any);
     }),
 
   /**
-   * Update edge (GM only)
+   * Update edge
    */
   updateEdge: gmProcedure
     .input(
       z.object({
         id: z.string().uuid(),
-        properties: z.record(z.string(), z.any()).optional(),
-        bidirectional: z.boolean().optional(),
+        properties: z.any().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      const { id, ...updates } = input;
-      return edges.updateEdge(id, updates);
+    .mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      return edges.updateEdge(id, data);
     }),
 
   /**
-   * Delete edge (GM only)
+   * Delete edge
    */
-  deleteEdge: gmProcedure.input(IdInput).mutation(async ({ ctx, input }) => {
-    await edges.deleteEdge(input.id);
-    return { success: true };
+  deleteEdge: gmProcedure.input(IdInput).mutation(async ({ input }) => {
+    return edges.deleteEdge(input.id);
   }),
 
   // ==========================================
   // GM MUTATIONS - FACTIONS
   // ==========================================
+
+  /**
+   * Create faction
+   */
+  createFaction: gmProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        type: z.string(),
+        scope: z.string().optional(),
+        description: z.string().optional(),
+        goals: z.any().optional(),
+        resources: z.any().optional(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      return factions.createFaction(input as any);
+    }),
+
+  /**
+   * Update faction
+   */
+  updateFaction: gmProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        name: z.string().optional(),
+        description: z.string().optional(),
+        goals: z.any().optional(),
+        resources: z.any().optional(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      return factions.updateFaction(id, data);
+    }),
+
+  /**
+   * Delete faction
+   */
+  deleteFaction: gmProcedure.input(IdInput).mutation(async ({ input }) => {
+    return factions.deleteFaction(input.id);
+  }),
 
   /**
    * Set faction relation
@@ -331,24 +368,17 @@ export const worldRouter = router({
       z.object({
         faction1Id: z.string().uuid(),
         faction2Id: z.string().uuid(),
-        relation: z.enum([
-          "allied",
-          "friendly",
-          "neutral",
-          "competitive",
-          "rival",
-          "hostile",
-          "war",
-        ]),
-        properties: z.record(z.string(), z.any()).optional(),
+        relation: z.enum(["neutral", "allied", "friendly", "competitive", "rival", "hostile", "war"]),
+        strength: z.number().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       return factions.setFactionRelation(
         input.faction1Id,
         input.faction2Id,
         input.relation,
-        input.properties,
+        input.strength ? { strength: input.strength } : undefined,
       );
     }),
+
 });

@@ -135,7 +135,7 @@ export class PermissionChecker {
 
     // Check role permissions
     const rolePerms = CampaignRolePermissions[role];
-    if (rolePerms.includes(permission)) return true;
+    if (rolePerms?.includes(permission)) return true;  // Add optional chaining
 
     // Check custom permissions on membership
     if (this.membership?.permissions) {
@@ -226,7 +226,7 @@ export class PermissionChecker {
     ];
 
     for (const role of roles) {
-      if (CampaignRolePermissions[role].includes(permission)) {
+      if (CampaignRolePermissions[role]?.includes(permission)) {
         return role;
       }
     }

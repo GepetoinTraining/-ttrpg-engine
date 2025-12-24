@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { useSyncStore } from './sync_store'
 
 interface SessionCard {
   id: string
@@ -69,9 +70,23 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     currentCard: cards[get().currentCardIndex] || null
   }),
 
-  addCard: (card) => set((state) => ({
-    cards: [...state.cards, card]
-  })),
+  addCard: (card) => {
+    // Step 1: Update local state optimistically
+    set((state) => ({
+      cards: [...state.cards, card]
+    }))
+
+    // Step 2: Queue delta for sync
+    const { sessionId } = get()
+    if (sessionId) {
+      useSyncStore.getState().queueDelta(
+        'session',
+        sessionId,
+        'update',
+        { cards: get().cards }
+      )
+    }
+  },
 
   removeCard: (cardId) => set((state) => ({
     cards: state.cards.filter(c => c.id !== cardId)

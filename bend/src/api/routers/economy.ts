@@ -45,7 +45,8 @@ export const economyRouter = router({
       [input.id, ctx.campaignId],
     );
 
-    const staticData = parseJson<any>(node.dataStatic) || {};
+    // dataStatic is already parsed as an object from the DB layer
+    const staticData = (node.dataStatic as Record<string, any>) || {};
 
     return {
       settlement: node,
@@ -78,7 +79,8 @@ export const economyRouter = router({
       const node = await nodes.getNode(input.locationId);
       if (!node) notFound("Location", input.locationId);
 
-      const staticData = parseJson<any>(node.dataStatic) || {};
+      // dataStatic is already parsed as an object from the DB layer
+      const staticData = (node.dataStatic as Record<string, any>) || {};
       const economy = staticData.economy || {};
 
       // Get price modifiers from events
@@ -118,7 +120,8 @@ export const economyRouter = router({
 
     const economyData = [];
     for (const settlement of settlements) {
-      const staticData = parseJson<any>(settlement.dataStatic) || {};
+      // dataStatic is already parsed as an object from the DB layer
+      const staticData = (settlement.dataStatic as Record<string, any>) || {};
       economyData.push({
         id: settlement.id,
         name: settlement.name,
@@ -190,7 +193,8 @@ export const economyRouter = router({
       const node = await nodes.getNode(input.settlementId);
       if (!node) notFound("Settlement", input.settlementId);
 
-      const staticData = parseJson<any>(node.dataStatic) || {};
+      // dataStatic is already parsed as an object from the DB layer
+      const staticData = (node.dataStatic as Record<string, any>) || {};
       staticData.economy = {
         ...staticData.economy,
         wealthLevel: input.wealthLevel ?? staticData.economy?.wealthLevel,
@@ -404,8 +408,15 @@ export const economyRouter = router({
       };
 
       if (directRoute && directRoute.type === "TRADE_ROUTE") {
-        const trade = directRoute.properties.trade || {};
-        const days = trade.travelTime || 1;
+        // Type the trade properties
+        const trade = (directRoute.properties.trade || {}) as {
+          travelTime?: string | number;
+          dangerLevel?: string;
+          goods?: string[];
+          volume?: string;
+        };
+        // Parse travelTime as number, default to 1
+        const days = parseInt(String(trade.travelTime ?? 1), 10) || 1;
         const dailyCost = dailyCosts[input.travelStyle] / 10; // convert to gold
 
         return {
@@ -413,7 +424,7 @@ export const economyRouter = router({
           days,
           costPerPerson: days * dailyCost,
           totalCost: days * dailyCost * input.partySize,
-          danger: trade.danger || "unknown",
+          danger: trade.dangerLevel || "unknown",
         };
       }
 

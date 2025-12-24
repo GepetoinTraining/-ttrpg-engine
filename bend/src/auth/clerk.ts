@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createClerkClient } from "@clerk/backend";
+import { createClerkClient, verifyToken } from "@clerk/backend";
 import type {
   UserProfile,
   SessionAuth,
@@ -28,8 +28,10 @@ export async function verifyClerkJWT(
   token: string
 ): Promise<ClerkJWTClaims | null> {
   try {
-    // Use Clerk's backend SDK to verify the token
-    const { payload } = await clerkClient.verifyToken(token);
+    // Use standalone verifyToken (moved out of ClerkClient in v1.x)
+    const payload = await verifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY || "",
+    });
 
     // Parse and validate the claims
     const claims = ClerkJWTClaimsSchema.safeParse({

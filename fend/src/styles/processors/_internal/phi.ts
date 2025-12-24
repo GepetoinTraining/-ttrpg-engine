@@ -261,6 +261,11 @@ function lawOfBuoyancy(physics: Physics): string {
     : 'flex-direction: row; '
 }
 
+// Font scaling function (lowercase phi)
+export function φ(power: number): number {
+  return Math.pow(PHI, power)
+}
+
 // ============================================
 // HELPER: Create field shorthand
 // ============================================

@@ -7,7 +7,7 @@ import {
   now,
   toJson,
   type Transaction,
-} from "../db/client";
+} from "../client";
 import {
   WorldNodeSchema,
   WorldEdgeSchema,
@@ -17,7 +17,7 @@ import {
   type WorldEdge,
   type Faction,
   type Deity,
-} from "../world/graph";
+} from "../../world/graph";
 
 // ============================================
 // SEED LOADER

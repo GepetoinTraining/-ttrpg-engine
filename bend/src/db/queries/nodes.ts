@@ -97,7 +97,7 @@ function rowToNode(row: WorldNodeRow): WorldNode {
     isSeeded: row.isSeeded === 1,
     isCanonical: row.isCanonical === 1,
     isHidden: row.isHidden === 1,
-    dataStatic: parseJson(row.dataStatic) || {},
+    dataStatic: (parseJson(row.dataStatic) || {}) as any,
     createdAt: new Date(row.createdAt),
     updatedAt: new Date(row.updatedAt),
     version: row.version,
@@ -576,3 +576,62 @@ export async function getNodeStats(): Promise<{
     seeded: seeded?.count || 0,
   };
 }
+
+  // ============================================
+  // ROUTER COMPATIBILITY EXPORTS
+  // ============================================
+
+  // Alias for getNodeById (routers expect "getNode")
+  export const getNode = getNodeById;
+
+  /**
+   * Get full hierarchy for a node (ancestors + node + children)
+   */
+  export async function getHierarchy(nodeId: string): Promise<{
+    ancestors: WorldNode[];
+    node: WorldNode;
+    children: WorldNode[];
+    siblings: WorldNode[];
+  }> {
+    const node = await getNodeByIdOrThrow(nodeId);
+    const ancestors = await getAncestors(nodeId);
+    const children = await getChildren(nodeId);
+
+    let siblings: WorldNode[] = [];
+    if (node.parentId) {
+      siblings = await getChildren(node.parentId);
+      siblings = siblings.filter(s => s.id !== nodeId);
+    }
+
+    return { ancestors, node, children, siblings };
+  }
+
+  /**
+   * Get nodes by type with optional parent filter
+   */
+  export async function getNodesByType(
+    type: string | string[],
+    parentId?: string,
+  ): Promise<WorldNode[]> {
+    const filters: NodeFilters = { type };
+    if (parentId !== undefined) {
+      filters.parentId = parentId;
+    }
+
+    const result = await getNodes(filters, 1, 1000);
+    return result.nodes;
+  }
+
+  /**
+   * Get sibling nodes (same parent)
+   */
+  export async function getSiblings(nodeId: string): Promise<WorldNode[]> {
+    const node = await getNodeByIdOrThrow(nodeId);
+
+    if (!node.parentId) {
+      return [];
+    }
+
+    const siblings = await getChildren(node.parentId);
+    return siblings.filter(s => s.id !== nodeId);
+  }

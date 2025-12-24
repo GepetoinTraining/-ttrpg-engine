@@ -22,3 +22,6 @@ export type { PillProps } from './pill'
 
 export { Spinner, LoadingOverlay } from './spinner'
 export type { SpinnerProps } from './spinner'
+
+export { ProgressDots } from './progress_dots'
+export type { ProgressDotsProps } from './progress_dots'

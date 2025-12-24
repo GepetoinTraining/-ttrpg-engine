@@ -60,6 +60,11 @@ export type {
   ChatMessage,
   GeminiClientConfig,
   ModelId,
+  // NPC-specific types for router compatibility
+  NPCContext,
+  ConversationMessage,
+  NPCResponseInput,
+  NPCResponse,
 } from "./client";
 
 // =============================================================================

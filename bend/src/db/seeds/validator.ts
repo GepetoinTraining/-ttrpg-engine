@@ -10,7 +10,7 @@ import {
   type WorldEdge,
   type Faction,
   type Deity,
-} from "../world/graph";
+} from "../../world/graph";
 import { SeedManifestSchema, type SeedManifest } from "./loader";
 
 // ============================================
