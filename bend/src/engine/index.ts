@@ -912,6 +912,106 @@ export {
 } from "./intelligence/agent";
 
 // ============================================
+// INVENTORY SYSTEM
+// ============================================
+// Comprehensive item and equipment management
+// Access via: import { Inventory } from './engine'
+
+export * as Inventory from './inventory'
+
+// ============================================
+// MAGIC SYSTEM
+// ============================================
+// Comprehensive magic with difficulty modes, lore gates, entropy
+
+export * as Magic from './magic'
+
+// ============================================
+// SKILL SYSTEM
+// ============================================
+// Emergent skill discovery, synergies, and skill gates
+
+export * as Skills from './skills'
+
+// ============================================
+// HUB SYSTEM
+// ============================================
+// Procedural settlement generation with NPC scheduling
+
+export * as Hub from './hub'
+
+// ============================================
+// EXTRACTION SYSTEM (PRIMARY SECTOR)
+// ============================================
+// Resource deposits and extraction operations
+
+export * as Extraction from './extraction'
+
+// ============================================
+// LOGISTICS SYSTEM
+// ============================================
+// Transport, trade routes, gems/coining
+
+export * as Logistics from './logistics'
+
+// ============================================
+// INDUSTRY SYSTEM (SECONDARY SECTOR)
+// ============================================
+// Guilds, workshops, craftsman progression
+
+export * as Industry from './industry'
+
+// ============================================
+// MARKETS SYSTEM (TERTIARY SECTOR)
+// ============================================
+// Merchants, shops, price discovery, haggling
+
+export * as Markets from './markets'
+
+// ============================================
+// FACTION CONTROL LAYER
+// ============================================
+// Economic interventions, black markets, corruption
+
+export * as FactionControl from './factions'
+
+// ============================================
+// PLAYER INTERVENTION LAYER
+// ============================================
+// Property ownership, organizations, downtime automation
+
+export * as Player from './player'
+
+// ============================================
+// POINTS OF INTEREST (POI) SYSTEM
+// ============================================
+// Adventure locations, discovery, bounties, economic impact
+
+export * as POI from './poi'
+
+// ============================================
+// MONSTER POPULATION SYSTEM
+// ============================================
+// Living ecosystem, spawning dungeons, evolutionary director
+
+export * as Monsters from './monsters'
+
+// ============================================
+// TIMELINE SYSTEM
+// ============================================
+// Turn substrate, party time tracking, canonical timeline
+
+export * as Timeline from './timeline'
+
+// ============================================
+// ADVENTURER'S GUILD
+// ============================================
+// The universal constant. Quest boards. Ranks. And Her.
+// The receptionist who knows your name before you speak it.
+
+export * as Guild from './guild'
+
+// ============================================
 // ENGINE SUMMARY
 // ============================================
 //

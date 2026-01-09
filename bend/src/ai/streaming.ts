@@ -7,7 +7,7 @@
 //
 
 import { GeminiClient, getGeminiClient, MODELS, type ModelId } from "./client";
-import { FullContext, NPCProfile } from "./context";
+import type { FullContext } from "./context";
 import { getRateLimiter, RateLimiter } from "./rate-limit";
 
 // =============================================================================

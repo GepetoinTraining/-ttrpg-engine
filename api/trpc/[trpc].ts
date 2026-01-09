@@ -3,9 +3,10 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import {
   appRouter,
   createContext,
-  verifyClerkJWT,
   getMembership,
-  ensureUser, // Add this export to bend
+  ensureUser,
+  verifyTopologyAuth,
+  createChallenge,
 } from "@ttrpg/bend";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -16,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, x-campaign-id",
+    "Content-Type, Authorization, x-campaign-id, x-topology-cert, x-topology-challenge, x-topology-trajectory",
   );
 
   if (req.method === "OPTIONS") {
@@ -25,33 +26,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Extract auth
-    const authHeader = req.headers.authorization as string | undefined;
-    let claims = null;
-
-    if (authHeader?.startsWith("Bearer ")) {
-      try {
-        claims = await verifyClerkJWT(authHeader.slice(7));
-        console.log("[TRPC] Auth OK:", claims?.sub);
-
-        // Sync Clerk user to database
-        if (claims?.sub) {
-          try {
-            await ensureUser({
-              id: claims.sub,
-              email: claims.email,
-              displayName: claims.given_name || claims.email?.split("@")[0],
-              avatarUrl: claims.picture,
-            });
-            console.log("[TRPC] User synced to DB");
-          } catch (err) {
-            console.error("[TRPC] ensureUser error:", err);
-          }
-        }
-      } catch (err) {
-        console.error("[TRPC] Auth error:", err);
-      }
-    }
+    // Extract topology auth headers
+    const certificateHash = req.headers["x-topology-cert"] as
+      | string
+      | undefined;
+    const challengeId = req.headers["x-topology-challenge"] as
+      | string
+      | undefined;
+    const trajectory = req.headers["x-topology-trajectory"] as
+      | string
+      | undefined;
 
     // Extract campaign ID
     const campaignId =
@@ -60,10 +44,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       undefined;
     console.log("[TRPC] Campaign ID:", campaignId);
 
-    // Create context
+    // Create context with topology auth
     console.log("[TRPC] Creating context...");
     const ctx = await createContext({
-      claims,
+      certificateHash,
+      challengeId,
+      trajectory,
       getMembership,
       campaignId,
       requestId: crypto.randomUUID(),
@@ -71,7 +57,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         (req.headers["x-forwarded-for"] as string) || req.socket?.remoteAddress,
       userAgent: req.headers["user-agent"],
     });
-    console.log("[TRPC] Context created");
+    console.log("[TRPC] Context created, auth:", ctx.auth?.userId || "none");
 
     // Handle tRPC request
     console.log("[TRPC] Handling request...");

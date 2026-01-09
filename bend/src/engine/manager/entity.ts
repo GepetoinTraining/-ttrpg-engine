@@ -250,8 +250,8 @@ export const QuerySchema = z.object({
     .optional(),
 
   // Pagination
-  limit: z.number().int().min(1).max(1000).default(100),
-  offset: z.number().int().min(0).default(0),
+  limit: z.number().int().min(1).max(1000).optional().default(100),
+  offset: z.number().int().min(0).optional().default(0),
 
   // Include related entities
   include: z.array(z.string()).optional(), // Relationship names
@@ -264,6 +264,7 @@ export const QuerySchema = z.object({
   searchFields: z.array(z.string()).optional(),
 });
 export type Query = z.infer<typeof QuerySchema>;
+export type QueryInput = z.input<typeof QuerySchema>;
 
 // ============================================
 // CHANGE TRACKING
@@ -1188,14 +1189,14 @@ export type GmDashboard = z.infer<typeof GmDashboardSchema>;
 
 export interface EntityManagerAPI {
   // CRUD
-  create<T>(operation: CreateOperation): Promise<OperationResult>;
-  read<T>(operation: ReadOperation): Promise<OperationResult>;
-  update<T>(operation: UpdateOperation): Promise<OperationResult>;
+  create(operation: CreateOperation): Promise<OperationResult>;
+  read(operation: ReadOperation): Promise<OperationResult>;
+  update(operation: UpdateOperation): Promise<OperationResult>;
   delete(operation: DeleteOperation): Promise<OperationResult>;
 
   // Query
-  query<T>(query: Query): Promise<OperationResult>;
-  search<T>(
+  query(query: Query): Promise<OperationResult>;
+  search(
     entityType: EntityType,
     term: string,
     options?: { limit?: number; fields?: string[] },
@@ -1268,7 +1269,7 @@ export interface EntityManagerAPI {
 
 export const StandardQueries = {
   // My characters
-  myCharacters: (userId: string): Query => ({
+  myCharacters: (userId: string): QueryInput => ({
     entityType: "player_character",
     conditions: [{ field: "playerId", operator: "eq", value: userId }],
     orderBy: [{ field: "name", direction: "asc" }],
@@ -1276,7 +1277,7 @@ export const StandardQueries = {
   }),
 
   // Party members
-  partyMembers: (partyId: string): Query => ({
+  partyMembers: (partyId: string): QueryInput => ({
     entityType: "player_character",
     conditions: [{ field: "partyId", operator: "eq", value: partyId }],
     include: ["player"],
@@ -1284,7 +1285,7 @@ export const StandardQueries = {
   }),
 
   // Available followers
-  availableFollowers: (ownerId: string): Query => ({
+  availableFollowers: (ownerId: string): QueryInput => ({
     entityType: "follower",
     conditions: [
       { field: "ownerId", operator: "eq", value: ownerId },
@@ -1298,7 +1299,7 @@ export const StandardQueries = {
   }),
 
   // Settlements in region
-  settlementsInRegion: (regionId: string): Query => ({
+  settlementsInRegion: (regionId: string): QueryInput => ({
     entityType: "settlement",
     conditions: [{ field: "regionId", operator: "eq", value: regionId }],
     orderBy: [{ field: "population", direction: "desc" }],
@@ -1306,7 +1307,7 @@ export const StandardQueries = {
   }),
 
   // Active quests
-  activeQuests: (partyId: string): Query => ({
+  activeQuests: (partyId: string): QueryInput => ({
     entityType: "quest",
     conditions: [
       { field: "partyId", operator: "eq", value: partyId },
@@ -1317,7 +1318,7 @@ export const StandardQueries = {
   }),
 
   // Pending downtime actions
-  pendingDowntime: (characterId: string): Query => ({
+  pendingDowntime: (characterId: string): QueryInput => ({
     entityType: "downtime_action",
     conditions: [
       { field: "characterId", operator: "eq", value: characterId },
@@ -1328,7 +1329,7 @@ export const StandardQueries = {
   }),
 
   // Recent economic events
-  recentEconomicEvents: (daysBack: number = 7): Query => ({
+  recentEconomicEvents: (daysBack: number = 7): QueryInput => ({
     entityType: "economic_event",
     conditions: [
       {
@@ -1344,7 +1345,7 @@ export const StandardQueries = {
   }),
 
   // Active faction schemes (GM only)
-  activeFactionSchemes: (): Query => ({
+  activeFactionSchemes: (): QueryInput => ({
     entityType: "faction_scheme",
     conditions: [
       { field: "status", operator: "in", value: ["planning", "executing"] },

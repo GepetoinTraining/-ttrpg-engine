@@ -1260,7 +1260,7 @@ export function generatePuzzleHTML(puzzle: Puzzle): string {
 `.trim();
 }
 
-function generateElementHTML(element: PuzzleElement, puzzle: Puzzle): string {
+function generateElementHTML(element: PuzzleElement, _puzzle: Puzzle): string {
   const style = `
     left: ${element.position.x}${element.position.unit};
     top: ${element.position.y}${element.position.unit};

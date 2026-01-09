@@ -11,7 +11,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
 
     "strict": false,
     "noUnusedLocals": false,
@@ -21,16 +20,15 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
+      "@views/*": ["./src/views/*"],
       "@components/*": ["./src/components/*"],
-      "@routes/*": ["./src/routes/*"],
-      "@hooks/*": ["./src/hooks/*"],
+      "@composables/*": ["./src/composables/*"],
       "@stores/*": ["./src/stores/*"],
-      "@utils/*": ["./src/utils/*"],
       "@api/*": ["./src/api/*"],
-      "@auth/*": ["./src/auth/*"],
-      "@styles/*": ["./src/styles/*"]
+      "@styles/*": ["./src/styles/*"],
+      "@viewport/*": ["./src/viewport/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src/**/*.ts", "src/**/*.vue"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

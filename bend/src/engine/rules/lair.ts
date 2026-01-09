@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { DamageTypeSchema, ConditionSchema } from "./core";
-import { CoordSchema } from "../grid/types";
+import { SquareCoordSchema as CoordSchema } from "../grid/types";
 
 // ============================================
 // LAIR SYSTEM - THE DUNGEON BRAIN

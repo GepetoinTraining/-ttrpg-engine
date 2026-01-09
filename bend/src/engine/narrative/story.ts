@@ -593,8 +593,8 @@ export interface TimelineNode {
 // This would be implemented as a function that queries all the data
 // and builds a unified timeline view
 export function buildTimelineQuery(
-  campaignId: string,
-  filter?: TimelineFilter,
+  _campaignId: string,
+  _filter?: TimelineFilter,
 ): {
   // Returns a structured tree of timeline entries
   // with arcs containing quests containing beats

@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { ResourceTypeSchema } from "./downtime";
 
 // ============================================
 // FACTION & POLITICAL SYSTEM

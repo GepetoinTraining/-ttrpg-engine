@@ -303,12 +303,9 @@ export const questRouter = router({
   /**
    * Delete quest
    */
-  delete: gmProcedure.input(IdInput).mutation(async ({ ctx, input }) => {
+  delete: gmProcedure.input(IdInput).mutation(async ({ input }) => {
     await query("DELETE FROM quest_objectives WHERE quest_id = ?", [input.id]);
-    await query("DELETE FROM quests WHERE id = ? AND campaign_id = ?", [
-      input.id,
-      ctx.campaignId,
-    ]);
+    await query("DELETE FROM quests WHERE id = ?", [input.id]);
     return { success: true };
   }),
 
@@ -326,7 +323,7 @@ export const questRouter = router({
         ...QuestObjectiveInput.shape,
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const id = input.id || uuid();
 
       await query(
@@ -359,7 +356,7 @@ export const questRouter = router({
         isRevealed: z.boolean().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const { id, ...updates } = input;
 
       const setClauses: string[] = [];
@@ -399,12 +396,7 @@ export const questRouter = router({
         id: z.string().uuid(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      // GM or during active session
-      if (!ctx.checker.isGM()) {
-        // Could add session check here
-      }
-
+    .mutation(async ({ input }) => {
       await query("UPDATE quest_objectives SET is_complete = 1 WHERE id = ?", [
         input.id,
       ]);
@@ -453,7 +445,7 @@ export const questRouter = router({
   /**
    * Complete quest
    */
-  complete: gmProcedure.input(IdInput).mutation(async ({ ctx, input }) => {
+  complete: gmProcedure.input(IdInput).mutation(async ({ input }) => {
     await query(
       `UPDATE quests SET status = 'completed', updated_at = ? WHERE id = ?`,
       [now(), input.id],
@@ -464,7 +456,7 @@ export const questRouter = router({
   /**
    * Fail quest
    */
-  fail: gmProcedure.input(IdInput).mutation(async ({ ctx, input }) => {
+  fail: gmProcedure.input(IdInput).mutation(async ({ input }) => {
     await query(
       `UPDATE quests SET status = 'failed', updated_at = ? WHERE id = ?`,
       [now(), input.id],
@@ -475,7 +467,7 @@ export const questRouter = router({
   /**
    * Reveal quest to players
    */
-  reveal: gmProcedure.input(IdInput).mutation(async ({ ctx, input }) => {
+  reveal: gmProcedure.input(IdInput).mutation(async ({ input }) => {
     await query(
       "UPDATE quests SET is_revealed = 1, updated_at = ? WHERE id = ?",
       [now(), input.id],

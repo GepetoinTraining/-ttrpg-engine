@@ -1,11 +1,9 @@
-import { z, ZodError, ZodIssue } from "zod";
+import { ZodError } from "zod";
 import {
   WorldNodeSchema,
   WorldEdgeSchema,
   FactionSchema,
   DeitySchema,
-  WorldNodeTypeSchema,
-  WorldEdgeTypeSchema,
   type WorldNode,
   type WorldEdge,
   type Faction,

@@ -1,0 +1,922 @@
+[
+  {
+    "id": "button",
+    "name": "Button",
+    "level": "atom",
+    "prime": 2,
+    "parent_ids": [],
+    "child_ids": [],
+    "tags": [
+      "atom",
+      "interactive",
+      "action",
+      "clickable"
+    ]
+  },
+  {
+    "id": "button_primary",
+    "name": "Button.primary",
+    "level": "atom",
+    "prime": 2,
+    "parent_ids": [
+      "button"
+    ],
+    "child_ids": [],
+    "variant_of": "button",
+    "variant_name": "primary",
+    "tags": [
+      "atom",
+      "interactive",
+      "action",
+      "clickable",
+      "primary"
+    ]
+  },
+  {
+    "id": "button_secondary",
+    "name": "Button.secondary",
+    "level": "atom",
+    "prime": 2,
+    "parent_ids": [
+      "button"
+    ],
+    "child_ids": [],
+    "variant_of": "button",
+    "variant_name": "secondary",
+    "tags": [
+      "atom",
+      "interactive",
+      "action",
+      "clickable",
+      "secondary"
+    ]
+  },
+  {
+    "id": "button_ghost",
+    "name": "Button.ghost",
+    "level": "atom",
+    "prime": 2,
+    "parent_ids": [
+      "button"
+    ],
+    "child_ids": [],
+    "variant_of": "button",
+    "variant_name": "ghost",
+    "tags": [
+      "atom",
+      "interactive",
+      "action",
+      "clickable",
+      "ghost"
+    ]
+  },
+  {
+    "id": "button_danger",
+    "name": "Button.danger",
+    "level": "atom",
+    "prime": 2,
+    "parent_ids": [
+      "button"
+    ],
+    "child_ids": [],
+    "variant_of": "button",
+    "variant_name": "danger",
+    "tags": [
+      "atom",
+      "interactive",
+      "action",
+      "clickable",
+      "danger"
+    ]
+  },
+  {
+    "id": "button_disabled",
+    "name": "Button.disabled",
+    "level": "atom",
+    "prime": 2,
+    "parent_ids": [
+      "button"
+    ],
+    "child_ids": [],
+    "variant_of": "button",
+    "variant_name": "disabled",
+    "tags": [
+      "atom",
+      "interactive",
+      "action",
+      "clickable",
+      "disabled"
+    ]
+  },
+  {
+    "id": "card",
+    "name": "Card",
+    "level": "molecule",
+    "prime": 6,
+    "parent_ids": [],
+    "child_ids": [],
+    "tags": [
+      "molecule",
+      "container",
+      "content"
+    ]
+  },
+  {
+    "id": "card_elevated",
+    "name": "Card.elevated",
+    "level": "molecule",
+    "prime": 6,
+    "parent_ids": [
+      "card"
+    ],
+    "child_ids": [],
+    "variant_of": "card",
+    "variant_name": "elevated",
+    "tags": [
+      "molecule",
+      "container",
+      "content",
+      "elevated"
+    ]
+  },
+  {
+    "id": "card_floating",
+    "name": "Card.floating",
+    "level": "molecule",
+    "prime": 6,
+    "parent_ids": [
+      "card"
+    ],
+    "child_ids": [],
+    "variant_of": "card",
+    "variant_name": "floating",
+    "tags": [
+      "molecule",
+      "container",
+      "content",
+      "floating"
+    ]
+  },
+  {
+    "id": "card_glass",
+    "name": "Card.glass",
+    "level": "molecule",
+    "prime": 6,
+    "parent_ids": [
+      "card"
+    ],
+    "child_ids": [],
+    "variant_of": "card",
+    "variant_name": "glass",
+    "tags": [
+      "molecule",
+      "container",
+      "content",
+      "glass"
+    ]
+  },
+  {
+    "id": "input",
+    "name": "Input",
+    "level": "atom",
+    "prime": 5,
+    "parent_ids": [],
+    "child_ids": [],
+    "tags": [
+      "atom",
+      "interactive",
+      "form",
+      "editable"
+    ]
+  },
+  {
+    "id": "input_focused",
+    "name": "Input.focused",
+    "level": "atom",
+    "prime": 5,
+    "parent_ids": [
+      "input"
+    ],
+    "child_ids": [],
+    "variant_of": "input",
+    "variant_name": "focused",
+    "tags": [
+      "atom",
+      "interactive",
+      "form",
+      "editable",
+      "focused"
+    ]
+  },
+  {
+    "id": "input_error",
+    "name": "Input.error",
+    "level": "atom",
+    "prime": 5,
+    "parent_ids": [
+      "input"
+    ],
+    "child_ids": [],
+    "variant_of": "input",
+    "variant_name": "error",
+    "tags": [
+      "atom",
+      "interactive",
+      "form",
+      "editable",
+      "error"
+    ]
+  },
+  {
+    "id": "input_disabled",
+    "name": "Input.disabled",
+    "level": "atom",
+    "prime": 5,
+    "parent_ids": [
+      "input"
+    ],
+    "child_ids": [],
+    "variant_of": "input",
+    "variant_name": "disabled",
+    "tags": [
+      "atom",
+      "interactive",
+      "form",
+      "editable",
+      "disabled"
+    ]
+  },
+  {
+    "id": "badge",
+    "name": "Badge",
+    "level": "atom",
+    "prime": 21,
+    "parent_ids": [],
+    "child_ids": [],
+    "tags": [
+      "atom"
+    ]
+  },
+  {
+    "id": "badge_success",
+    "name": "Badge.success",
+    "level": "atom",
+    "prime": 21,
+    "parent_ids": [
+      "badge"
+    ],
+    "child_ids": [],
+    "variant_of": "badge",
+    "variant_name": "success",
+    "tags": [
+      "atom",
+      "success"
+    ]
+  },
+  {
+    "id": "badge_warning",
+    "name": "Badge.warning",
+    "level": "atom",
+    "prime": 21,
+    "parent_ids": [
+      "badge"
+    ],
+    "child_ids": [],
+    "variant_of": "badge",
+    "variant_name": "warning",
+    "tags": [
+      "atom",
+      "warning"
+    ]
+  },
+  {
+    "id": "badge_error",
+    "name": "Badge.error",
+    "level": "atom",
+    "prime": 21,
+    "parent_ids": [
+      "badge"
+    ],
+    "child_ids": [],
+    "variant_of": "badge",
+    "variant_name": "error",
+    "tags": [
+      "atom",
+      "error"
+    ]
+  },
+  {
+    "id": "link",
+    "name": "Link",
+    "level": "atom",
+    "prime": 14,
+    "parent_ids": [],
+    "child_ids": [],
+    "tags": [
+      "atom"
+    ]
+  },
+  {
+    "id": "link_muted",
+    "name": "Link.muted",
+    "level": "atom",
+    "prime": 14,
+    "parent_ids": [
+      "link"
+    ],
+    "child_ids": [],
+    "variant_of": "link",
+    "variant_name": "muted",
+    "tags": [
+      "atom",
+      "muted"
+    ]
+  },
+  {
+    "id": "link_action",
+    "name": "Link.action",
+    "level": "atom",
+    "prime": 14,
+    "parent_ids": [
+      "link"
+    ],
+    "child_ids": [],
+    "variant_of": "link",
+    "variant_name": "action",
+    "tags": [
+      "atom",
+      "action"
+    ]
+  },
+  {
+    "id": "orb",
+    "name": "Orb",
+    "level": "atom",
+    "prime": 143,
+    "parent_ids": [],
+    "child_ids": [],
+    "tags": [
+      "atom",
+      "3d",
+      "visual",
+      "spatial"
+    ]
+  },
+  {
+    "id": "orb_pulsing",
+    "name": "Orb.pulsing",
+    "level": "atom",
+    "prime": 143,
+    "parent_ids": [
+      "orb"
+    ],
+    "child_ids": [],
+    "variant_of": "orb",
+    "variant_name": "pulsing",
+    "tags": [
+      "atom",
+      "3d",
+      "visual",
+      "spatial",
+      "pulsing"
+    ]
+  },
+  {
+    "id": "alignmentorb",
+    "name": "AlignmentOrb",
+    "level": "atom",
+    "prime": 143,
+    "parent_ids": [],
+    "child_ids": [],
+    "tags": [
+      "atom",
+      "3d",
+      "visual",
+      "spatial",
+      "morality",
+      "alignment",
+      "d&d"
+    ]
+  },
+  {
+    "id": "alignmentorb_lawful_good",
+    "name": "AlignmentOrb.lawful_good",
+    "level": "atom",
+    "prime": 143,
+    "parent_ids": [
+      "alignmentorb"
+    ],
+    "child_ids": [],
+    "variant_of": "alignmentorb",
+    "variant_name": "lawful_good",
+    "tags": [
+      "atom",
+      "3d",
+      "visual",
+      "spatial",
+      "morality",
+      "alignment",
+      "d&d",
+      "lawful_good"
+    ]
+  },
+  {
+    "id": "alignmentorb_neutral_good",
+    "name": "AlignmentOrb.neutral_good",
+    "level": "atom",
+    "prime": 143,
+    "parent_ids": [
+      "alignmentorb"
+    ],
+    "child_ids": [],
+    "variant_of": "alignmentorb",
+    "variant_name": "neutral_good",
+    "tags": [
+      "atom",
+      "3d",
+      "visual",
+      "spatial",
+      "morality",
+      "alignment",
+      "d&d",
+      "neutral_good"
+    ]
+  },
+  {
+    "id": "alignmentorb_chaotic_good",
+    "name": "AlignmentOrb.chaotic_good",
+    "level": "atom",
+    "prime": 143,
+    "parent_ids": [
+      "alignmentorb"
+    ],
+    "child_ids": [],
+    "variant_of": "alignmentorb",
+    "variant_name": "chaotic_good",
+    "tags": [
+      "atom",
+      "3d",
+      "visual",
+      "spatial",
+      "morality",
+      "alignment",
+      "d&d",
+      "chaotic_good"
+    ]
+  },
+  {
+    "id": "alignmentorb_lawful_neutral",
+    "name": "AlignmentOrb.lawful_neutral",
+    "level": "atom",
+    "prime": 143,
+    "parent_ids": [
+      "alignmentorb"
+    ],
+    "child_ids": [],
+    "variant_of": "alignmentorb",
+    "variant_name": "lawful_neutral",
+    "tags": [
+      "atom",
+      "3d",
+      "visual",
+      "spatial",
+      "morality",
+      "alignment",
+      "d&d",
+      "lawful_neutral"
+    ]
+  },
+  {
+    "id": "alignmentorb_true_neutral",
+    "name": "AlignmentOrb.true_neutral",
+    "level": "atom",
+    "prime": 143,
+    "parent_ids": [
+      "alignmentorb"
+    ],
+    "child_ids": [],
+    "variant_of": "alignmentorb",
+    "variant_name": "true_neutral",
+    "tags": [
+      "atom",
+      "3d",
+      "visual",
+      "spatial",
+      "morality",
+      "alignment",
+      "d&d",
+      "true_neutral"
+    ]
+  },
+  {
+    "id": "alignmentorb_chaotic_neutral",
+    "name": "AlignmentOrb.chaotic_neutral",
+    "level": "atom",
+    "prime": 143,
+    "parent_ids": [
+      "alignmentorb"
+    ],
+    "child_ids": [],
+    "variant_of": "alignmentorb",
+    "variant_name": "chaotic_neutral",
+    "tags": [
+      "atom",
+      "3d",
+      "visual",
+      "spatial",
+      "morality",
+      "alignment",
+      "d&d",
+      "chaotic_neutral"
+    ]
+  },
+  {
+    "id": "alignmentorb_lawful_evil",
+    "name": "AlignmentOrb.lawful_evil",
+    "level": "atom",
+    "prime": 143,
+    "parent_ids": [
+      "alignmentorb"
+    ],
+    "child_ids": [],
+    "variant_of": "alignmentorb",
+    "variant_name": "lawful_evil",
+    "tags": [
+      "atom",
+      "3d",
+      "visual",
+      "spatial",
+      "morality",
+      "alignment",
+      "d&d",
+      "lawful_evil"
+    ]
+  },
+  {
+    "id": "alignmentorb_neutral_evil",
+    "name": "AlignmentOrb.neutral_evil",
+    "level": "atom",
+    "prime": 143,
+    "parent_ids": [
+      "alignmentorb"
+    ],
+    "child_ids": [],
+    "variant_of": "alignmentorb",
+    "variant_name": "neutral_evil",
+    "tags": [
+      "atom",
+      "3d",
+      "visual",
+      "spatial",
+      "morality",
+      "alignment",
+      "d&d",
+      "neutral_evil"
+    ]
+  },
+  {
+    "id": "alignmentorb_chaotic_evil",
+    "name": "AlignmentOrb.chaotic_evil",
+    "level": "atom",
+    "prime": 143,
+    "parent_ids": [
+      "alignmentorb"
+    ],
+    "child_ids": [],
+    "variant_of": "alignmentorb",
+    "variant_name": "chaotic_evil",
+    "tags": [
+      "atom",
+      "3d",
+      "visual",
+      "spatial",
+      "morality",
+      "alignment",
+      "d&d",
+      "chaotic_evil"
+    ]
+  },
+  {
+    "id": "campaigncard",
+    "name": "CampaignCard",
+    "level": "molecule",
+    "prime": 66,
+    "parent_ids": [],
+    "child_ids": [],
+    "tags": [
+      "molecule",
+      "container",
+      "content",
+      "game",
+      "campaign"
+    ]
+  },
+  {
+    "id": "campaigncard_hover",
+    "name": "CampaignCard.hover",
+    "level": "molecule",
+    "prime": 66,
+    "parent_ids": [
+      "campaigncard"
+    ],
+    "child_ids": [],
+    "variant_of": "campaigncard",
+    "variant_name": "hover",
+    "tags": [
+      "molecule",
+      "container",
+      "content",
+      "game",
+      "campaign",
+      "hover"
+    ]
+  },
+  {
+    "id": "campaigncard_active",
+    "name": "CampaignCard.active",
+    "level": "molecule",
+    "prime": 66,
+    "parent_ids": [
+      "campaigncard"
+    ],
+    "child_ids": [],
+    "variant_of": "campaigncard",
+    "variant_name": "active",
+    "tags": [
+      "molecule",
+      "container",
+      "content",
+      "game",
+      "campaign",
+      "active"
+    ]
+  },
+  {
+    "id": "worldnode",
+    "name": "WorldNode",
+    "level": "molecule",
+    "prime": 21,
+    "parent_ids": [],
+    "child_ids": [],
+    "tags": [
+      "molecule",
+      "game",
+      "world",
+      "map"
+    ]
+  },
+  {
+    "id": "worldnode_hover",
+    "name": "WorldNode.hover",
+    "level": "molecule",
+    "prime": 21,
+    "parent_ids": [
+      "worldnode"
+    ],
+    "child_ids": [],
+    "variant_of": "worldnode",
+    "variant_name": "hover",
+    "tags": [
+      "molecule",
+      "game",
+      "world",
+      "map",
+      "hover"
+    ]
+  },
+  {
+    "id": "worldnode_selected",
+    "name": "WorldNode.selected",
+    "level": "molecule",
+    "prime": 21,
+    "parent_ids": [
+      "worldnode"
+    ],
+    "child_ids": [],
+    "variant_of": "worldnode",
+    "variant_name": "selected",
+    "tags": [
+      "molecule",
+      "game",
+      "world",
+      "map",
+      "selected"
+    ]
+  },
+  {
+    "id": "worldnode_cosmic",
+    "name": "WorldNode.cosmic",
+    "level": "molecule",
+    "prime": 21,
+    "parent_ids": [
+      "worldnode"
+    ],
+    "child_ids": [],
+    "variant_of": "worldnode",
+    "variant_name": "cosmic",
+    "tags": [
+      "molecule",
+      "game",
+      "world",
+      "map",
+      "cosmic"
+    ]
+  },
+  {
+    "id": "usergm",
+    "name": "UserGM",
+    "level": "atom",
+    "prime": 22,
+    "parent_ids": [],
+    "child_ids": [],
+    "tags": [
+      "atom",
+      "user",
+      "identity",
+      "role"
+    ]
+  },
+  {
+    "id": "usergm_active",
+    "name": "UserGM.active",
+    "level": "atom",
+    "prime": 22,
+    "parent_ids": [
+      "usergm"
+    ],
+    "child_ids": [],
+    "variant_of": "usergm",
+    "variant_name": "active",
+    "tags": [
+      "atom",
+      "user",
+      "identity",
+      "role",
+      "active"
+    ]
+  },
+  {
+    "id": "userplayer",
+    "name": "UserPlayer",
+    "level": "atom",
+    "prime": 55,
+    "parent_ids": [],
+    "child_ids": [],
+    "tags": [
+      "atom",
+      "user",
+      "identity",
+      "role"
+    ]
+  },
+  {
+    "id": "userplayer_active",
+    "name": "UserPlayer.active",
+    "level": "atom",
+    "prime": 55,
+    "parent_ids": [
+      "userplayer"
+    ],
+    "child_ids": [],
+    "variant_of": "userplayer",
+    "variant_name": "active",
+    "tags": [
+      "atom",
+      "user",
+      "identity",
+      "role",
+      "active"
+    ]
+  },
+  {
+    "id": "usernpc",
+    "name": "UserNPC",
+    "level": "atom",
+    "prime": 77,
+    "parent_ids": [],
+    "child_ids": [],
+    "tags": [
+      "atom",
+      "user",
+      "identity",
+      "role"
+    ]
+  },
+  {
+    "id": "usernpc_active",
+    "name": "UserNPC.active",
+    "level": "atom",
+    "prime": 77,
+    "parent_ids": [
+      "usernpc"
+    ],
+    "child_ids": [],
+    "variant_of": "usernpc",
+    "variant_name": "active",
+    "tags": [
+      "atom",
+      "user",
+      "identity",
+      "role",
+      "active"
+    ]
+  },
+  {
+    "id": "token",
+    "name": "Token",
+    "level": "atom",
+    "prime": 35,
+    "parent_ids": [],
+    "child_ids": [],
+    "tags": [
+      "atom"
+    ]
+  },
+  {
+    "id": "token_selected",
+    "name": "Token.selected",
+    "level": "atom",
+    "prime": 35,
+    "parent_ids": [
+      "token"
+    ],
+    "child_ids": [],
+    "variant_of": "token",
+    "variant_name": "selected",
+    "tags": [
+      "atom",
+      "selected"
+    ]
+  },
+  {
+    "id": "token_targeted",
+    "name": "Token.targeted",
+    "level": "atom",
+    "prime": 35,
+    "parent_ids": [
+      "token"
+    ],
+    "child_ids": [],
+    "variant_of": "token",
+    "variant_name": "targeted",
+    "tags": [
+      "atom",
+      "targeted"
+    ]
+  },
+  {
+    "id": "token_dead",
+    "name": "Token.dead",
+    "level": "atom",
+    "prime": 35,
+    "parent_ids": [
+      "token"
+    ],
+    "child_ids": [],
+    "variant_of": "token",
+    "variant_name": "dead",
+    "tags": [
+      "atom",
+      "dead"
+    ]
+  },
+  {
+    "id": "scatter3d",
+    "name": "Scatter3D",
+    "level": "atom",
+    "prime": 77,
+    "parent_ids": [],
+    "child_ids": [],
+    "tags": [
+      "atom",
+      "3d",
+      "visual",
+      "spatial"
+    ]
+  },
+  {
+    "id": "cubechart",
+    "name": "CubeChart",
+    "level": "atom",
+    "prime": 49,
+    "parent_ids": [],
+    "child_ids": [],
+    "tags": [
+      "atom",
+      "3d",
+      "visual",
+      "spatial"
+    ]
+  },
+  {
+    "id": "prism",
+    "name": "Prism",
+    "level": "atom",
+    "prime": 35,
+    "parent_ids": [],
+    "child_ids": [],
+    "tags": [
+      "atom"
+    ]
+  }
+]

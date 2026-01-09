@@ -464,6 +464,10 @@ export const SessionAuthSchema = z.object({
   displayName: z.string().optional(),
   imageUrl: z.string().optional(),
 
+  // Topology auth - seed binding
+  seedId: z.string().uuid().optional(),
+  certificateId: z.string().uuid().optional(),
+
   // System role
   systemRole: SystemRoleSchema.default("user"),
 

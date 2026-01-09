@@ -5,7 +5,6 @@ import {
   ownerProcedure,
   IdInput,
   PaginationInput,
-  notFound,
 } from "../trpc";
 import {
   query,
@@ -14,9 +13,7 @@ import {
   uuid,
   now,
   toJson,
-  parseJson,
 } from "../../db/client";
-import * as nodes from "../../db/queries/nodes";
 import * as campaigns from "../../db/queries/campaigns";
 
 // ============================================
@@ -121,7 +118,7 @@ export const gmRouter = router({
         isSecret: z.boolean().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const { id, ...updates } = input;
 
       const setClauses: string[] = ["updated_at = ?"];
@@ -288,7 +285,7 @@ export const gmRouter = router({
         revealedTo: z.array(z.string()).optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       await query(
         `UPDATE campaign_secrets SET
           is_revealed = 1,
@@ -410,7 +407,7 @@ export const gmRouter = router({
         difficulty: z.enum(["easy", "medium", "hard", "deadly"]),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       // Placeholder - would integrate with monster data
       const encounters: Record<string, string[]> = {
         forest: ["Wolves", "Bandits", "Owlbear", "Green Hag", "Treant"],
@@ -445,7 +442,7 @@ export const gmRouter = router({
         occupation: z.string().optional(),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const races = [
         "Human",
         "Elf",
@@ -501,7 +498,7 @@ export const gmRouter = router({
         type: z.enum(["individual", "hoard"]),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       // Simplified loot tables
       const goldMultiplier = input.type === "hoard" ? 10 : 1;
       const baseGold =

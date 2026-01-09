@@ -98,58 +98,61 @@ export interface UpdateCampaignInput {
 // ============================================
 
 function rowToCampaign(row: any): Campaign {
+  // Note: queryOne/queryAll convert snake_case to camelCase via rowToObject
   return {
     id: row.id,
     name: row.name,
     tagline: row.tagline || undefined,
     description: row.description || undefined,
-    primaryWorldId: row.primary_world_id || undefined,
-    startingRegionId: row.starting_region_id || undefined,
-    isSpelljammer: row.is_spelljammer === 1,
-    accessibleWorlds: parseJson(row.accessible_worlds) || [],
-    accessibleSpheres: parseJson(row.accessible_spheres) || [],
+    primaryWorldId: row.primaryWorldId || undefined,
+    startingRegionId: row.startingRegionId || undefined,
+    isSpelljammer: row.isSpelljammer === 1,
+    accessibleWorlds: parseJson(row.accessibleWorlds) || [],
+    accessibleSpheres: parseJson(row.accessibleSpheres) || [],
     settings: parseJson(row.settings) || {},
     status: row.status,
-    currentDate: row.current_date || undefined,
-    currentArcId: row.current_arc_id || undefined,
-    sessionsPlayed: row.sessions_played,
-    ownerId: row.owner_id,
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at),
-    lastSessionAt: row.last_session_at ? new Date(row.last_session_at) : undefined,
+    currentDate: row.currentDate || undefined,
+    currentArcId: row.currentArcId || undefined,
+    sessionsPlayed: row.sessionsPlayed,
+    ownerId: row.ownerId,
+    createdAt: new Date(row.createdAt),
+    updatedAt: new Date(row.updatedAt),
+    lastSessionAt: row.lastSessionAt ? new Date(row.lastSessionAt) : undefined,
     version: row.version,
   };
 }
 
 function rowToMembership(row: any): CampaignMembership {
+  // Note: queryOne/queryAll convert snake_case to camelCase via rowToObject
   return {
     id: row.id,
-    userId: row.user_id,
-    campaignId: row.campaign_id,
+    userId: row.userId,
+    campaignId: row.campaignId,
     role: row.role,
     permissions: parseJson(row.permissions) || {},
     status: row.status,
-    joinedAt: new Date(row.joined_at),
-    lastActiveAt: row.last_active_at ? new Date(row.last_active_at) : undefined,
-    invitedBy: row.invited_by || undefined,
-    invitedAt: row.invited_at ? new Date(row.invited_at) : undefined,
-    acceptedAt: row.accepted_at ? new Date(row.accepted_at) : undefined,
+    joinedAt: new Date(row.joinedAt),
+    lastActiveAt: row.lastActiveAt ? new Date(row.lastActiveAt) : undefined,
+    invitedBy: row.invitedBy || undefined,
+    invitedAt: row.invitedAt ? new Date(row.invitedAt) : undefined,
+    acceptedAt: row.acceptedAt ? new Date(row.acceptedAt) : undefined,
   };
 }
 
 function rowToInvite(row: any): CampaignInvite {
+  // Note: queryOne/queryAll convert snake_case to camelCase via rowToObject
   return {
     id: row.id,
-    campaignId: row.campaign_id,
+    campaignId: row.campaignId,
     code: row.code,
-    defaultRole: row.default_role,
-    createdBy: row.created_by,
-    createdAt: new Date(row.created_at),
-    expiresAt: row.expires_at ? new Date(row.expires_at) : undefined,
-    maxUses: row.max_uses || undefined,
-    usedCount: row.used_count,
+    defaultRole: row.defaultRole,
+    createdBy: row.createdBy,
+    createdAt: new Date(row.createdAt),
+    expiresAt: row.expiresAt ? new Date(row.expiresAt) : undefined,
+    maxUses: row.maxUses || undefined,
+    usedCount: row.usedCount,
     active: row.active === 1,
-    usedBy: parseJson(row.used_by) || [],
+    usedBy: parseJson(row.usedBy) || [],
   };
 }
 
@@ -743,13 +746,7 @@ export async function markInviteUsed(
     updated_at: string;
   }
 
-  interface PartyMembershipRow {
-    id: string;
-    party_id: string;
-    character_id: string;
-    joined_at: string;
-    is_active: number;
-  }
+
 
   // ============================================
   // PARTY FUNCTIONS

@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { CreatureSchema, PlayerCharacterSchema } from "../rules/creature";
-import { SizeSchema } from "../grid/types";
+import { CreatureSchema } from "../rules/creature";
 
 // ============================================
 // UNIVERSAL ASSET SYSTEM
@@ -994,7 +993,7 @@ export interface DeepenAssetResult {
 }
 
 export function buildDeepenPrompt(
-  request: DetailGenerationRequestSchema,
+  request: DetailGenerationRequest,
 ): string {
   const {
     assetType,

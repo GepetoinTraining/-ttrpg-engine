@@ -2,8 +2,6 @@ import {
   query,
   queryOne,
   queryAll,
-  transaction,
-  parseJson,
   toJson,
   uuid,
   now,
@@ -63,8 +61,6 @@ export interface SyncResult {
 // ============================================
 // LOGGING CHANGES
 // ============================================
-
-let globalVersion = 0;
 
 async function getNextVersion(campaignId: string): Promise<number> {
   const result = await queryOne<{ maxVersion: number }>(

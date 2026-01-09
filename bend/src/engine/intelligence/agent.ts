@@ -554,7 +554,7 @@ export function assembleContext(
     recentMessages: Array<{ role: string; content: string }>;
     userMessage: string;
   },
-  budget: ContextBudgetSchema,
+  budget: ContextBudget,
 ): ContextWindow {
   const sections: ContextSection[] = [];
 
@@ -957,7 +957,7 @@ export type OrchestratorState = z.infer<typeof OrchestratorStateSchema>;
 export function routeMessage(
   state: OrchestratorState,
   message: string,
-  context: { speaker: string; location: string },
+  _context: { speaker: string; location: string },
 ): { agentId: string; reason: string } | null {
   // Check explicit routing rules
   for (const rule of state.config.routingRules) {

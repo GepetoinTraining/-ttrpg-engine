@@ -1167,7 +1167,7 @@ export function resolveCulture(
   node: WorldNode,
   ancestors: WorldNode[],
 ): CulturalTraits {
-  let resolved: CulturalTraits = {};
+  let resolved: CulturalTraits = { taboos: [] };
 
   for (const ancestor of [...ancestors].reverse()) {
     if (ancestor.dataStatic.culture) {

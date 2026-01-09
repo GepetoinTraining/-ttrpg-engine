@@ -2,13 +2,10 @@ import {
   query,
   queryOne,
   queryAll,
-  transaction,
-  parseJson,
   toJson,
   uuid,
   now,
   NotFoundError,
-  type Transaction,
 } from "../client";
 
 // ============================================
@@ -22,55 +19,67 @@ import {
 export interface CharacterRow {
   id: string;
   campaignId: string;
-  partyId: string | null;
   ownerId: string;
+  ownerSeedId: string | null;
 
   // Identity
   name: string;
   race: string;
   class: string;
-  level: number;
+  subclass: string | null;
   background: string | null;
-  alignment: string | null;
+  level: number;
 
-  // Stats
-  abilityScores: string; // JSON
-  hp: number;
-  maxHp: number;
-  tempHp: number;
+  // Type
+  characterType: string;
+  isNpc: number;
+
+  // Stats (individual ability scores)
+  hpCurrent: number;
+  hpMax: number;
+  hpTemp: number;
   ac: number;
   speed: number;
   proficiencyBonus: number;
 
-  // Resources
+  // Ability scores
+  str: number;
+  dex: number;
+  con: number;
+  int: number;
+  wis: number;
+  cha: number;
+
+  // Saves & skills
+  savingThrows: string; // JSON
+  skills: string; // JSON
+
+  // Combat
   hitDice: string; // JSON
   deathSaves: string; // JSON
-  inspiration: number;
 
-  // Currency
-  copper: number;
-  silver: number;
-  electrum: number;
-  gold: number;
-  platinum: number;
+  // Spellcasting
+  spellcastingAbility: string | null;
+  spellSlots: string; // JSON
+  spellsKnown: string; // JSON
+  spellsPrepared: string; // JSON
 
   // Details
-  personality: string | null;
-  ideals: string | null;
-  bonds: string | null;
-  flaws: string | null;
+  appearance: string; // JSON
+  personality: string; // JSON
   backstory: string | null;
-  notes: string | null;
 
-  // State
-  status: string;
-  experience: number;
+  // Experience
+  xp: number;
+  inspiration: number;
 
-  // Metadata
-  portraitUrl: string | null;
-  sheetData: string; // JSON - full character sheet
+  // NPC metadata
+  npcMetadata: string; // JSON
+
+  // Timestamps
   createdAt: string;
   updatedAt: string;
+  lastPlayedAt: string | null;
   version: number;
 }
 
@@ -79,6 +88,7 @@ export interface CreateCharacterInput {
   campaignId: string;
   partyId?: string;
   ownerId: string;
+  ownerSeedId?: string;  // Topology auth: binds character to player's seed
   name: string;
   race: string;
   class: string;
@@ -151,41 +161,44 @@ export async function createCharacter(
   const id = input.id || uuid();
   const timestamp = now();
 
+  // Note: Table schema uses individual ability columns (str, dex, etc.)
+  // and hp_current/hp_max instead of hp/max_hp
   await query(
     `INSERT INTO characters (
-      id, campaign_id, party_id, owner_id,
-      name, race, class, level, background, alignment,
-      ability_scores, hp, max_hp, temp_hp, ac, speed, proficiency_bonus,
-      hit_dice, death_saves, inspiration,
-      copper, silver, electrum, gold, platinum,
-      status, experience, sheet_data,
+      id, campaign_id, owner_id, owner_seed_id,
+      name, race, class, level, background,
+      hp_current, hp_max, hp_temp, ac, speed, proficiency_bonus,
+      str, dex, con, int, wis, cha,
+      hit_dice, death_saves, inspiration, xp,
       created_at, updated_at, version
     ) VALUES (
       ?, ?, ?, ?,
+      ?, ?, ?, ?, ?,
+      ?, ?, 0, ?, ?, 2,
       ?, ?, ?, ?, ?, ?,
-      ?, ?, ?, 0, ?, ?, 2,
-      '{}', '{"successes":0,"failures":0}', 0,
-      0, 0, 0, 0, 0,
-      'alive', 0, ?,
+      '{}', '{}', 0, 0,
       ?, ?, 1
     )`,
     [
       id,
       input.campaignId,
-      input.partyId || null,
       input.ownerId,
+      input.ownerSeedId || null,
       input.name,
       input.race,
       input.class,
       input.level || 1,
       input.background || null,
-      input.alignment || null,
-      toJson(input.abilityScores),
       input.hp,
       input.maxHp,
       input.ac,
       input.speed || 30,
-      toJson(input.sheetData || {}),
+      input.abilityScores.strength,
+      input.abilityScores.dexterity,
+      input.abilityScores.constitution,
+      input.abilityScores.intelligence,
+      input.abilityScores.wisdom,
+      input.abilityScores.charisma,
       timestamp,
       timestamp,
     ],
@@ -391,8 +404,8 @@ export async function damageCharacter(
   const char = await getCharacterOrThrow(id);
 
   let remaining = amount;
-  let newTempHp = char.tempHp;
-  let newHp = char.hp;
+  let newTempHp = char.hpTemp;
+  let newHp = char.hpCurrent;
 
   if (newTempHp > 0) {
     if (remaining <= newTempHp) {
@@ -406,13 +419,11 @@ export async function damageCharacter(
 
   newHp = Math.max(0, newHp - remaining);
 
-  const status = newHp === 0 ? "unconscious" : "alive";
-
   await query(
     `UPDATE characters
-     SET hp = ?, temp_hp = ?, status = ?, updated_at = ?, version = version + 1
+     SET hp_current = ?, hp_temp = ?, updated_at = ?, version = version + 1
      WHERE id = ?`,
-    [newHp, newTempHp, status, now(), id],
+    [newHp, newTempHp, now(), id],
   );
 
   return getCharacterOrThrow(id);
@@ -423,15 +434,13 @@ export async function healCharacter(
   amount: number,
 ): Promise<CharacterRow> {
   const char = await getCharacterOrThrow(id);
-  const newHp = Math.min(char.maxHp, char.hp + amount);
-  const status =
-    char.status === "unconscious" && newHp > 0 ? "alive" : char.status;
+  const newHp = Math.min(char.hpMax, char.hpCurrent + amount);
 
   await query(
     `UPDATE characters
-     SET hp = ?, status = ?, updated_at = ?, version = version + 1
+     SET hp_current = ?, updated_at = ?, version = version + 1
      WHERE id = ?`,
-    [newHp, status, now(), id],
+    [newHp, now(), id],
   );
 
   return getCharacterOrThrow(id);
@@ -443,11 +452,11 @@ export async function addTempHp(
 ): Promise<CharacterRow> {
   const char = await getCharacterOrThrow(id);
   // Temp HP doesn't stack, take higher
-  const newTempHp = Math.max(char.tempHp, amount);
+  const newTempHp = Math.max(char.hpTemp, amount);
 
   await query(
     `UPDATE characters
-     SET temp_hp = ?, updated_at = ?, version = version + 1
+     SET hp_temp = ?, updated_at = ?, version = version + 1
      WHERE id = ?`,
     [newTempHp, now(), id],
   );
@@ -512,7 +521,7 @@ export async function levelUp(
   hpIncrease: number,
   updates?: Partial<UpdateCharacterInput>,
 ): Promise<CharacterRow> {
-  const char = await getCharacterOrThrow(id);
+  await getCharacterOrThrow(id);
 
   await query(
     `UPDATE characters SET

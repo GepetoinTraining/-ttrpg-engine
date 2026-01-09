@@ -6,16 +6,15 @@
 // Uses the new @google/genai SDK with rich context support.
 //
 
-import { GeminiClient, getGeminiClient, MODELS } from "./client";
+import { GeminiClient, getGeminiClient } from "./client";
 import {
   ContextBuilder,
   FullContext,
   NPCProfile,
   CampaignContext,
   SpeakerContext,
-  createContext,
 } from "./context";
-import { enforceRateLimit, RateLimitType } from "./rate-limit";
+import { enforceRateLimit } from "./rate-limit";
 
 // =============================================================================
 // TYPES
@@ -48,6 +47,8 @@ export interface DialogueOptions {
   conversationHistory?: Array<{ role: "user" | "assistant"; content: string }>;
   enableInternalThoughts?: boolean;
   enableSuggestedTopics?: boolean;
+  /** Override the default system prompt (used for phenomenological context) */
+  systemPromptOverride?: string;
 }
 
 export interface NPCAIConfig {
@@ -182,7 +183,9 @@ export class NPCAI {
       throw new Error("NPCAI not initialized with NPC data");
     }
 
-    const systemPrompt = this.buildSimpleSystemPrompt(options.speakerContext);
+    // Use override if provided, otherwise build default
+    const systemPrompt = options.systemPromptOverride ||
+      this.buildSimpleSystemPrompt(options.speakerContext);
     const conversationContext = this.buildConversationContext(
       options.conversationHistory
     );
@@ -481,7 +484,7 @@ EMOTION: [your current emotion]`;
     return prompt;
   }
 
-  private buildSimpleSystemPrompt(speakerContext?: SpeakerContext): string {
+  private buildSimpleSystemPrompt(_speakerContext?: SpeakerContext): string {
     if (!this.npc) {
       return "You are an NPC in a TTRPG campaign.";
     }

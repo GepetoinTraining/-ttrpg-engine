@@ -1,17 +1,9 @@
 import { z } from "zod";
 import {
-  ArcSchema,
-  QuestSchema,
-  BeatSchema,
   BeatTypeSchema,
-  ObjectiveSchema,
-  ObjectiveStatusSchema,
 } from "./story";
 import {
   DistractionSchema,
-  GeneratedHookSchema,
-  NarrativeThreadSchema,
-  HookTypeSchema,
 } from "./redirect";
 
 // ============================================

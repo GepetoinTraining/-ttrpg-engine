@@ -393,7 +393,7 @@ export async function setInitiative(
 }
 
 export async function rollInitiativeForAll(
-  combatId: string,
+  _combatId: string,
   rolls: { participantId: string; roll: number }[],
 ): Promise<void> {
   await transaction(async (tx) => {

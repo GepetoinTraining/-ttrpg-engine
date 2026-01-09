@@ -124,7 +124,7 @@ export const downtimeRouter = router({
         periodId: z.string().uuid().optional(),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       if (input.periodId) {
         return queryAll<any>(
           "SELECT * FROM downtime_actions WHERE character_id = ? AND period_id = ?",
@@ -193,7 +193,7 @@ export const downtimeRouter = router({
         endDate: z.string().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       await query(
         `UPDATE downtime_periods SET
           status = 'completed',
@@ -220,7 +220,7 @@ export const downtimeRouter = router({
         description: z.string().max(1000).optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const { id, ...updates } = input;
 
       const setClauses: string[] = ["updated_at = ?"];
@@ -324,7 +324,7 @@ export const downtimeRouter = router({
         complications: z.string().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const activity = await queryOne<any>(
         "SELECT * FROM downtime_actions WHERE id = ?",
         [input.id],
@@ -420,7 +420,7 @@ export const downtimeRouter = router({
         ]),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const lifestyleCosts: Record<string, number> = {
         wretched: 0,
         squalid: 1,
@@ -480,7 +480,7 @@ export const downtimeRouter = router({
         instructorCost: z.number().int().default(250), // 250 days at 1gp/day
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const goldSpent = (input.instructorCost * input.days) / 250;
 
       const id = uuid();
@@ -524,7 +524,7 @@ export const downtimeRouter = router({
         toolProficiency: z.string(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       // 5gp progress per day, materials = half value
       const progressPerDay = 5;
       const daysRequired = Math.ceil(input.itemValue / progressPerDay);

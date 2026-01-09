@@ -4,11 +4,11 @@
 //
 // Authentication and authorization for TTRPG.
 //
-// Uses Clerk for:
-//   - User authentication (sign up, sign in, SSO)
-//   - Session management
-//   - JWT tokens
-//   - User metadata
+// Uses Topology-First Authentication:
+//   - φ + ζ = π
+//   - No passwords, no tokens, no sessions
+//   - Same seed + same math = same answer
+//   - Device-bound enrollment with human verification
 //
 // We handle:
 //   - Campaign/Party membership
@@ -16,27 +16,25 @@
 //   - Permission checking
 //   - Character ownership
 //   - API middleware
-//   - WebSocket auth
 //
 
 export * from "./types";
-export * from "./clerk";
+export * from "./topology";
 export * from "./permissions";
-export * from "./middleware";
 
 // ============================================
 // ARCHITECTURE
 // ============================================
 //
 //  ┌─────────────────────────────────────────────────────────────────────────┐
-//  │                              CLERK                                      │
+//  │                        TOPOLOGY AUTH                                    │
 //  │                                                                         │
 //  │  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐           │
-//  │  │  Sign Up  │  │  Sign In  │  │   SSO     │  │  Session  │           │
-//  │  │           │  │           │  │  Discord  │  │  Tokens   │           │
+//  │  │ Enrollment│  │  Vouch    │  │Certificate│  │ Challenge │           │
+//  │  │ (geo+time)│  │  (human)  │  │  (device) │  │ (M^n)     │           │
 //  │  └───────────┘  └───────────┘  └───────────┘  └───────────┘           │
 //  │                                                                         │
-//  │                         JWT Token                                       │
+//  │                    Certificate Hash                                     │
 //  └─────────────────────────────┬───────────────────────────────────────────┘
 //                                │
 //  ┌─────────────────────────────┼───────────────────────────────────────────┐
@@ -45,8 +43,8 @@ export * from "./middleware";
 //  │  ┌──────────────────────────▼──────────────────────────────┐           │
 //  │  │                   MIDDLEWARE                             │           │
 //  │  │                                                          │           │
-//  │  │  1. Extract token from header                           │           │
-//  │  │  2. Verify with Clerk                                   │           │
+//  │  │  1. Extract certificate hash from header                │           │
+//  │  │  2. Verify with topology auth                           │           │
 //  │  │  3. Load campaign membership                            │           │
 //  │  │  4. Build SessionAuth                                   │           │
 //  │  │  5. Create PermissionChecker                            │           │
@@ -123,144 +121,58 @@ export * from "./middleware";
 //
 
 // ============================================
-// USAGE EXAMPLES
+// TOPOLOGY AUTH FLOW
 // ============================================
 //
-// API Route (Next.js style):
+// ENROLLMENT (new user or new device):
 //
-// ```typescript
-// import { createAuthMiddleware } from '@/auth';
+//   1. Client captures geo + datetime
+//   2. Client requests enrollment
+//   3. Another human vouches for them (or bootstrap for first user)
+//   4. Server creates seed + certificate
+//   5. Client stores certificate locally
 //
-// const authMiddleware = createAuthMiddleware(
-//   clerkService,
-//   getMembership,
-//   {
-//     required: true,
-//     requireCampaign: true,
-//   }
-// );
+// AUTHENTICATION (every request):
 //
-// export async function POST(req: Request) {
-//   const result = await authMiddleware({
-//     method: 'POST',
-//     path: '/api/npc',
-//     headers: Object.fromEntries(req.headers),
-//     query: {},
-//     body: await req.json(),
-//   });
+//   1. Client computes certificate hash
+//   2. Client sends hash in x-topology-cert header
+//   3. Server looks up certificate by hash
+//   4. Server verifies seed is active
+//   5. Server returns SessionAuth
 //
-//   if (!result.success) {
-//     return new Response(result.error.message, {
-//       status: result.error.statusCode
-//     });
-//   }
+// CHALLENGE/RESPONSE (optional, for sensitive ops):
 //
-//   const { context } = result;
-//
-//   // Check specific permission
-//   context.assertPermission('npc.create');
-//
-//   // Do the thing
-//   const npc = await createNPC(req.body);
-//   return Response.json(npc);
-// }
-// ```
-//
-// WebSocket:
-//
-// ```typescript
-// import { authenticateWebSocket } from '@/auth';
-//
-// wss.on('connection', async (ws, req) => {
-//   const token = new URL(req.url, 'http://localhost').searchParams.get('token');
-//   const campaignId = req.headers['x-campaign-id'];
-//
-//   const result = await authenticateWebSocket(
-//     clerkService,
-//     getMembership,
-//     { token, campaignId }
-//   );
-//
-//   if (!result.authenticated) {
-//     ws.close(4001, result.error);
-//     return;
-//   }
-//
-//   // Attach auth to connection
-//   ws.auth = result.auth;
-//   ws.checker = result.checker;
-//
-//   ws.on('message', (data) => {
-//     // Check permissions per message
-//     if (data.type === 'combat.action' && !ws.checker.isGM()) {
-//       ws.send({ error: 'Only GM can do that' });
-//       return;
-//     }
-//   });
-// });
-// ```
-//
-// tRPC:
-//
-// ```typescript
-// import { TRPCError } from '@trpc/server';
-// import { createChecker } from '@/auth';
-//
-// const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
-//   if (!ctx.auth) {
-//     throw new TRPCError({ code: 'UNAUTHORIZED' });
-//   }
-//
-//   const checker = createChecker(ctx.auth, ctx.membership);
-//
-//   return next({
-//     ctx: {
-//       ...ctx,
-//       checker,
-//     },
-//   });
-// });
-//
-// const gmProcedure = protectedProcedure.use(async ({ ctx, next }) => {
-//   if (!ctx.checker.isGM()) {
-//     throw new TRPCError({ code: 'FORBIDDEN' });
-//   }
-//   return next();
-// });
-// ```
-//
-
-// ============================================
-// CLERK SETUP
-// ============================================
-//
-// 1. Create Clerk account: https://clerk.com
-//
-// 2. Get API keys from dashboard
-//
-// 3. Add to environment:
-//    CLERK_PUBLISHABLE_KEY=pk_...
-//    CLERK_SECRET_KEY=sk_...
-//    CLERK_WEBHOOK_SECRET=whsec_...
-//
-// 4. Configure social logins (Discord recommended!)
-//
-// 5. Set up webhook for user sync:
-//    - user.created
-//    - user.updated
-//    - user.deleted
-//    - session.ended
-//
-// 6. Configure metadata:
-//    Public metadata: displayName, pronouns
-//    Private metadata: stats, preferences
+//   1. Server sends challenge: n (random exponent)
+//   2. Both compute M^n where M = [[φ, ζ], [ζ, φ]]
+//   3. Client sends trajectory hash
+//   4. Server verifies trajectories match
 //
 
 // ============================================
 // DATABASE TABLES (Turso)
 // ============================================
 //
-// These tables supplement Clerk:
+// Topology auth tables:
+//
+// topology_seeds:
+//   id, user_id, seed_commitment, zeta_commitment,
+//   is_active, created_at, revoked_at, revoked_by, revoke_reason
+//
+// topology_certificates:
+//   id, seed_id, device_identifier, certificate_hash,
+//   enrolled_at, enrolled_by, enrollment_geo, is_active,
+//   last_used_at, revoked_at
+//
+// topology_enrollment_requests:
+//   id, requested_user_id, requested_email, device_identifier,
+//   enrollment_geo, enrollment_datetime, vouched_by, vouched_at,
+//   status, created_at, expires_at, existing_seed_id
+//
+// topology_challenges:
+//   id, seed_id, certificate_id, n, expected_trajectory,
+//   created_at, expires_at, used
+//
+// Campaign membership tables:
 //
 // campaign_memberships:
 //   id, user_id, campaign_id, role, permissions, status,
@@ -270,15 +182,8 @@ export * from "./middleware";
 //   id, user_id, party_id, character_id, role, active, joined_at
 //
 // character_ownership:
-//   character_id, owner_id, type, can_edit, can_delete, created_at
-//
-// campaign_invites:
-//   id, campaign_id, code, created_by, expires_at, max_uses,
-//   used_count, default_role, active
-//
-// audit_log:
-//   id, user_id, action, entity_type, entity_id, campaign_id,
-//   details, ip_address, user_agent, timestamp
+//   character_id, owner_id, owner_seed_id, type, can_edit,
+//   can_delete, created_at
 //
 
 // ============================================
@@ -286,41 +191,31 @@ export * from "./middleware";
 // ============================================
 //
 // auth/
-// ├── types.ts       (300+ lines)
+// ├── types.ts           (SessionAuth, Permissions, Roles)
 // │   ├── UserProfile
 // │   ├── SystemRole / CampaignRole / PartyRole
 // │   ├── CampaignMembership / PartyMembership
 // │   ├── CharacterOwnership
 // │   ├── Permission enum (50+ permissions)
 // │   ├── CampaignRolePermissions mapping
-// │   ├── SessionAuth
-// │   ├── CampaignInvite
-// │   └── AuditLogEntry
+// │   ├── SessionAuth (with seedId, certificateId)
+// │   └── CampaignInvite
 // │
-// ├── clerk.ts       (280+ lines)
-// │   ├── ClerkConfig
-// │   ├── ClerkUser / ClerkSession
-// │   ├── ClerkJWTClaims
-// │   ├── Transform functions
-// │   ├── ClerkService interface
-// │   ├── Webhook events
-// │   └── Helper functions
+// ├── topology/          (Topology-First Authentication)
+// │   ├── math.ts        (φ, ζ, M^n, trajectories)
+// │   ├── enrollment.ts  (seed + certificate creation)
+// │   ├── challenge.ts   (challenge/response protocol)
+// │   ├── verify.ts      (auth verification)
+// │   ├── revocation.ts  (seed/cert revocation)
+// │   └── index.ts       (exports)
 // │
-// ├── permissions.ts (380+ lines)
+// ├── permissions.ts     (Permission checking)
 // │   ├── PermissionChecker class
 // │   ├── System/Campaign/Entity checks
 // │   ├── Assert functions
 // │   ├── AuthorizationError
 // │   └── Query filters
 // │
-// ├── middleware.ts  (350+ lines)
-// │   ├── AuthenticatedContext
-// │   ├── createAuthMiddleware
-// │   ├── authenticateWebSocket
-// │   ├── Audit logging
-// │   ├── Rate limiting
-// │   └── Framework helpers
-// │
-// └── index.ts       (this file)
+// └── index.ts           (this file)
 //     └── Exports and documentation
 //

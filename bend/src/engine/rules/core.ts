@@ -738,6 +738,7 @@ export function resolveAttack(
         amount: damageRoll.total,
         type: damageType,
         isCritical: critical,
+        isMagical: false,
       },
     ];
     totalDamage = damageRoll.total;

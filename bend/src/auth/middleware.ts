@@ -5,18 +5,13 @@ import type {
   CampaignMembership,
   AuditLogEntry,
 } from "./types";
-import type { ClerkJWTClaims, ClerkService } from "./clerk";
 import {
   PermissionChecker,
   AuthorizationError,
   AuthenticationError,
   createChecker,
 } from "./permissions";
-import {
-  claimsToSessionAuth,
-  extractBearerToken,
-  isTokenExpired,
-} from "./clerk";
+import { verifyTopologyAuthQuick } from "./topology/verify";
 
 // ============================================
 // AUTH MIDDLEWARE
@@ -26,6 +21,11 @@ import {
 //   - HTTP API routes
 //   - WebSocket connections
 //   - Server actions
+//
+// Uses Topology-First Authentication:
+//   - No bearer tokens
+//   - Challenge/response based on M^n trajectory
+//   - Certificate + trajectory verification
 //
 
 // ============================================
@@ -54,6 +54,25 @@ export interface RequestContext {
   // IP and user agent
   ip?: string;
   userAgent?: string;
+}
+
+// ============================================
+// TOPOLOGY AUTH HEADERS
+// ============================================
+
+export interface TopologyAuthHeaders {
+  certificateHash?: string;
+}
+
+/**
+ * Extract topology auth headers from request
+ */
+export function extractTopologyHeaders(
+  headers: Record<string, string | undefined>
+): TopologyAuthHeaders {
+  return {
+    certificateHash: headers["x-topology-cert"],
+  };
 }
 
 // ============================================
@@ -106,7 +125,6 @@ export type MiddlewareResult =
 // ============================================
 
 export function createAuthMiddleware(
-  clerkService: ClerkService,
   getMembership: (
     userId: string,
     campaignId: string,
@@ -116,14 +134,14 @@ export function createAuthMiddleware(
   const opts = AuthMiddlewareOptionsSchema.parse(options);
 
   return async (request: RequestContext): Promise<MiddlewareResult> => {
-    // Extract token
-    const token = extractBearerToken(request.headers.authorization);
+    // Extract topology auth headers
+    const topologyHeaders = extractTopologyHeaders(request.headers);
 
-    if (!token) {
+    if (!topologyHeaders.certificateHash) {
       if (opts.required) {
         return {
           success: false,
-          error: new AuthenticationError("No authorization token provided"),
+          error: new AuthenticationError("No topology certificate provided"),
         };
       }
       // Continue without auth
@@ -133,20 +151,15 @@ export function createAuthMiddleware(
       };
     }
 
-    // Verify token
-    const claims = await clerkService.verifyToken(token);
+    // Verify topology auth (quick path using certificate hash)
+    const auth = await verifyTopologyAuthQuick(
+      topologyHeaders.certificateHash
+    );
 
-    if (!claims) {
+    if (!auth) {
       return {
         success: false,
-        error: new AuthenticationError("Invalid token"),
-      };
-    }
-
-    if (isTokenExpired(claims)) {
-      return {
-        success: false,
-        error: new AuthenticationError("Token expired"),
+        error: new AuthenticationError("Invalid topology certificate"),
       };
     }
 
@@ -156,7 +169,7 @@ export function createAuthMiddleware(
       request.headers["x-campaign-id"] || request.query.campaignId;
 
     if (campaignId) {
-      membership = await getMembership(claims.sub, campaignId);
+      membership = await getMembership(auth.userId, campaignId);
 
       if (opts.requireCampaign && !membership) {
         return {
@@ -176,19 +189,6 @@ export function createAuthMiddleware(
         ),
       };
     }
-
-    // Build session auth
-    const auth = claimsToSessionAuth(
-      claims,
-      membership
-        ? {
-            campaignId: membership.campaignId,
-            campaignName: "", // Would be fetched
-            role: membership.role,
-            permissions: [], // Would be computed
-          }
-        : undefined,
-    );
 
     // Create permission checker
     const checker = createChecker(auth, membership);
@@ -316,49 +316,32 @@ export interface WebSocketAuthResult {
 }
 
 /**
- * Authenticate WebSocket connection
+ * Authenticate WebSocket connection using topology auth
  */
 export async function authenticateWebSocket(
-  clerkService: ClerkService,
   getMembership: (
     userId: string,
     campaignId: string,
   ) => Promise<CampaignMembership | null>,
   params: {
-    token: string;
+    certificateHash: string;
     campaignId?: string;
   },
 ): Promise<WebSocketAuthResult> {
-  const { token, campaignId } = params;
+  const { certificateHash, campaignId } = params;
 
-  // Verify token
-  const claims = await clerkService.verifyToken(token);
+  // Verify topology auth
+  const auth = await verifyTopologyAuthQuick(certificateHash);
 
-  if (!claims) {
-    return { authenticated: false, error: "Invalid token" };
-  }
-
-  if (isTokenExpired(claims)) {
-    return { authenticated: false, error: "Token expired" };
+  if (!auth) {
+    return { authenticated: false, error: "Invalid topology certificate" };
   }
 
   // Get membership if campaign specified
   let membership: CampaignMembership | null = null;
   if (campaignId) {
-    membership = await getMembership(claims.sub, campaignId);
+    membership = await getMembership(auth.userId, campaignId);
   }
-
-  const auth = claimsToSessionAuth(
-    claims,
-    membership
-      ? {
-          campaignId: membership.campaignId,
-          campaignName: "",
-          role: membership.role,
-          permissions: [],
-        }
-      : undefined,
-  );
 
   const checker = createChecker(auth, membership);
 

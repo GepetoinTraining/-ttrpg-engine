@@ -5,12 +5,11 @@ import {
   SkillSchema,
   ProficiencyLevelSchema,
   ConditionSchema,
+  ConditionInstanceSchema,
   DamageTypeSchema,
-  DamageResistanceSchema,
   ActionSchema,
-  DiceExpressionSchema,
 } from "./core";
-import { SizeSchema, VisionSchema } from "../grid/types";
+import { SizeSchema } from "../grid/types";
 
 // ============================================
 // CREATURE TYPE & CLASSIFICATION
@@ -514,15 +513,7 @@ export const CreatureSchema = z.object({
   conditionImmunities: ConditionImmunitiesSchema,
 
   // Current conditions
-  conditions: z
-    .array(
-      z.object({
-        condition: ConditionSchema,
-        source: z.string().optional(),
-        duration: z.number().int().optional(),
-      }),
-    )
-    .default([]),
+  conditions: z.array(ConditionInstanceSchema).default([]),
 
   // Features
   features: z.array(FeatureSchema).default([]),

@@ -10,8 +10,8 @@
 export { appRouter, type AppRouter } from "./api/router";
 export { createContext, type Context } from "./api/trpc";
 
-// Auth
-export { verifyClerkJWT } from "./auth/clerk";
+// Auth - Topology Authentication
+export * from "./auth/topology";
 
 // Database - Core
 export { getClient, initDatabase, closeDatabase } from "./db/client";

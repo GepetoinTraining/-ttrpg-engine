@@ -94,8 +94,8 @@ export const CommoditySchema = z.object({
   productionRate: z.number().default(1), // Units per building per week
 
   // Consumption
-  consumedBy: z.array(z.string()).default([]), // What consumes this
-  consumptionRate: z.number().default(1),
+  consumedBy: z.array(z.string()).optional().default([]), // What consumes this
+  consumptionRate: z.number().optional().default(1),
 
   // Requirements
   requiresBuilding: z.string().optional(), // Building needed to produce
@@ -118,15 +118,13 @@ export const CommoditySchema = z.object({
   magicalValue: z.boolean().default(false),
 });
 export type Commodity = z.infer<typeof CommoditySchema>;
+export type CommodityInput = z.input<typeof CommoditySchema>;
 
 // ============================================
 // STANDARD COMMODITIES
 // ============================================
 
-export const StandardCommodities: Record<
-  string,
-  z.infer<typeof CommoditySchema>
-> = {
+export const StandardCommodities: Record<string, CommodityInput> = {
   // Food
   grain: {
     id: "grain",
@@ -585,13 +583,41 @@ export const SettlementEconomySchema = z.object({
     slaves: z.number().int().optional(),
   }),
 
-  // Production
+  // ─────────────────────────────────────────
+  // EXTRACTION (PRIMARY SECTOR)
+  // Links to extraction/schema.ts deposits
+  // ─────────────────────────────────────────
+  extraction: z.object({
+    // Deposits in this settlement's territory
+    depositIds: z.array(z.string().uuid()).default([]),
+
+    // Active extraction operations
+    operationIds: z.array(z.string().uuid()).default([]),
+
+    // Summary of extraction output (computed from operations)
+    dailyOutput: z.record(z.string(), z.number()).default({}), // commodityId -> amount/day
+
+    // Workers allocated to extraction
+    extractionWorkers: z.number().int().default(0),
+  }).default({
+    depositIds: [],
+    operationIds: [],
+    dailyOutput: {},
+    extractionWorkers: 0,
+  }),
+
+  // Production (SECONDARY SECTOR - transforms extracted materials)
   production: z
     .array(
       z.object({
         commodityId: z.string(),
         weeklyOutput: z.number(),
         buildings: z.array(z.string()), // Building IDs producing
+        // NEW: Link to input materials (from extraction or imports)
+        inputMaterials: z.array(z.object({
+          commodityId: z.string(),
+          amountPerUnit: z.number(),
+        })).default([]),
         modifiers: z
           .array(
             z.object({
@@ -775,9 +801,37 @@ export type WorldEconomy = z.infer<typeof WorldEconomySchema>;
 // ECONOMIC SIMULATION
 // ============================================
 
+/**
+ * Extraction data passed in from the extraction system.
+ * This bridges the extraction engine to the economy engine.
+ */
+export interface ExtractionInput {
+  settlementId: string;
+  depositId: string;
+  output: Record<string, number>; // commodityId -> amount extracted
+  operatingCost: number;
+}
+
+/**
+ * Main economic simulation tick.
+ *
+ * Turn substrate:
+ *   1 day = 14400 turns = 48 slots
+ *   This function processes DAYS, not turns.
+ *   Extraction ticks should be aggregated before calling this.
+ *
+ * Flow:
+ *   1. PRIMARY: Process extraction outputs (passed in)
+ *   2. SECONDARY: Transform raw materials into goods
+ *   3. TERTIARY: Services consume goods
+ *   4. LOGISTICS: Flow goods along trade routes
+ *   5. MARKET: Update prices based on supply/demand
+ *   6. EVENTS: Generate/resolve economic events
+ */
 export function simulateEconomicTick(
   economy: WorldEconomy,
   daysElapsed: number = 7,
+  extractionInputs: ExtractionInput[] = [],
 ): {
   economy: WorldEconomy;
   events: EconomicEvent[];
@@ -790,25 +844,332 @@ export function simulateEconomicTick(
     reason: string;
   }>;
 } {
-  // This would be the main simulation function
-  // Returns updated economy, new events, news headlines, and notable price changes
+  const updatedEconomy = structuredClone(economy);
+  const events: EconomicEvent[] = [];
+  const news: string[] = [];
+  const priceChanges: Array<{
+    settlement: string;
+    commodity: string;
+    oldPrice: number;
+    newPrice: number;
+    reason: string;
+  }> = [];
 
-  // Placeholder - actual implementation would:
-  // 1. Calculate production for each settlement
-  // 2. Calculate consumption
-  // 3. Determine surplus/deficit
-  // 4. Flow goods along trade routes
-  // 5. Update prices based on supply/demand
-  // 6. Generate random events
-  // 7. Apply event effects
-  // 8. Track party impacts
-  // 9. Generate news/rumors
+  // ─────────────────────────────────────────
+  // PHASE 1: PRIMARY SECTOR (Extraction)
+  // Aggregate extraction outputs by settlement
+  // ─────────────────────────────────────────
+
+  const extractionBySettlement = new Map<string, Record<string, number>>();
+
+  for (const input of extractionInputs) {
+    if (!extractionBySettlement.has(input.settlementId)) {
+      extractionBySettlement.set(input.settlementId, {});
+    }
+    const settlementExtraction = extractionBySettlement.get(input.settlementId)!;
+
+    for (const [commodityId, amount] of Object.entries(input.output)) {
+      settlementExtraction[commodityId] = (settlementExtraction[commodityId] || 0) + amount;
+    }
+  }
+
+  // Apply extraction to settlement economies
+  for (const settlement of updatedEconomy.settlements) {
+    const extracted = extractionBySettlement.get(settlement.settlementId) || {};
+
+    // Update extraction summary
+    settlement.extraction = settlement.extraction || {
+      depositIds: [],
+      operationIds: [],
+      dailyOutput: {},
+      extractionWorkers: 0,
+    };
+    settlement.extraction.dailyOutput = extracted;
+
+    // Add extracted materials to market supply
+    const market = updatedEconomy.markets.find(m => m.settlementId === settlement.settlementId);
+    if (market) {
+      for (const [commodityId, amount] of Object.entries(extracted)) {
+        const price = market.prices.find(p => p.commodityId === commodityId);
+        if (price) {
+          price.supply += amount * daysElapsed;
+        }
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────
+  // PHASE 2: SECONDARY SECTOR (Production)
+  // Transform raw materials into goods
+  // ─────────────────────────────────────────
+
+  for (const settlement of updatedEconomy.settlements) {
+    const market = updatedEconomy.markets.find(m => m.settlementId === settlement.settlementId);
+    if (!market) continue;
+
+    for (const prod of settlement.production) {
+      // Check if we have input materials
+      let canProduce = true;
+      const inputsNeeded: Array<{ commodityId: string; amount: number }> = [];
+
+      for (const input of prod.inputMaterials || []) {
+        const inputPrice = market.prices.find(p => p.commodityId === input.commodityId);
+        const needed = input.amountPerUnit * prod.weeklyOutput * (daysElapsed / 7);
+
+        if (!inputPrice || inputPrice.supply < needed) {
+          canProduce = false;
+          break;
+        }
+        inputsNeeded.push({ commodityId: input.commodityId, amount: needed });
+      }
+
+      if (canProduce) {
+        // Consume inputs
+        for (const input of inputsNeeded) {
+          const inputPrice = market.prices.find(p => p.commodityId === input.commodityId);
+          if (inputPrice) {
+            inputPrice.supply -= input.amount;
+          }
+        }
+
+        // Produce output
+        const outputPrice = market.prices.find(p => p.commodityId === prod.commodityId);
+        if (outputPrice) {
+          const produced = prod.weeklyOutput * (daysElapsed / 7);
+          outputPrice.supply += produced;
+        }
+      } else {
+        // Production bottleneck - potential news
+        if (prod.weeklyOutput > 100) { // Significant production
+          news.push(`${settlement.settlementId}: ${prod.commodityId} production halted - material shortage`);
+        }
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────
+  // PHASE 3: CONSUMPTION
+  // Population and buildings consume goods
+  // ─────────────────────────────────────────
+
+  for (const settlement of updatedEconomy.settlements) {
+    const market = updatedEconomy.markets.find(m => m.settlementId === settlement.settlementId);
+    if (!market) continue;
+
+    for (const cons of settlement.consumption) {
+      const price = market.prices.find(p => p.commodityId === cons.commodityId);
+      if (!price) continue;
+
+      const consumed = cons.weeklyNeed * (daysElapsed / 7);
+      const available = price.supply;
+
+      if (available >= consumed) {
+        price.supply -= consumed;
+        cons.currentStock = available - consumed;
+        cons.daysOfSupply = cons.currentStock / (cons.weeklyNeed / 7);
+        cons.status = cons.daysOfSupply > 14 ? "surplus" :
+                      cons.daysOfSupply > 7 ? "adequate" :
+                      cons.daysOfSupply > 3 ? "low" :
+                      cons.daysOfSupply > 0 ? "critical" : "depleted";
+      } else {
+        // Shortage!
+        price.supply = 0;
+        cons.currentStock = 0;
+        cons.daysOfSupply = 0;
+        cons.status = "depleted";
+
+        // Create shortage event
+        if (cons.commodityId === "food" || cons.commodityId === "grain") {
+          events.push({
+            id: crypto.randomUUID(),
+            worldId: economy.worldId,
+            type: "crop_failure",
+            name: `Food Shortage in ${settlement.settlementId}`,
+            description: `${settlement.settlementId} has run out of food supplies`,
+            causedBy: { type: "natural" },
+            scope: "local",
+            affectedSettlements: [settlement.settlementId],
+            affectedRoutes: [],
+            affectedCommodities: [cons.commodityId],
+            effects: [{
+              type: "demand_modifier",
+              target: cons.commodityId,
+              modifier: 2,
+              isMultiplier: true,
+            }],
+            startDate: new Date().toISOString(),
+            status: "active",
+            publiclyKnown: true,
+            knownToFactions: [],
+            knownToParties: [],
+            newsHeadline: `Famine Strikes ${settlement.settlementId}!`,
+            rumorText: `People are going hungry in ${settlement.settlementId}...`,
+            triggeredEvents: [],
+          });
+        }
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────
+  // PHASE 4: LOGISTICS (Trade Routes)
+  // Move goods along active routes
+  // ─────────────────────────────────────────
+
+  for (const route of updatedEconomy.tradeRoutes) {
+    if (route.status !== "active") continue;
+
+    const fromMarket = updatedEconomy.markets.find(m => m.settlementId === route.fromSettlementId);
+    const toMarket = updatedEconomy.markets.find(m => m.settlementId === route.toSettlementId);
+    if (!fromMarket || !toMarket) continue;
+
+    // Trade primary goods
+    for (const goodId of route.primaryGoods) {
+      const fromPrice = fromMarket.prices.find(p => p.commodityId === goodId);
+      const toPrice = toMarket.prices.find(p => p.commodityId === goodId);
+      if (!fromPrice || !toPrice) continue;
+
+      // Price arbitrage drives trade
+      if (fromPrice.currentPrice < toPrice.currentPrice * 0.8) {
+        // Profitable to move goods
+        const tradeVolume = Math.min(
+          fromPrice.supply * 0.1, // Max 10% of supply per tick
+          route.weeklyCapacity * (daysElapsed / 7),
+          (route.weeklyCapacity - route.currentVolume)
+        );
+
+        if (tradeVolume > 0) {
+          // Apply loss rate (bandits, spoilage, etc.)
+          const delivered = tradeVolume * (1 - route.lossRate);
+
+          fromPrice.supply -= tradeVolume;
+          toPrice.supply += delivered;
+          route.currentVolume += tradeVolume;
+        }
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────
+  // PHASE 5: MARKET (Price Updates)
+  // Supply/demand determines prices
+  // ─────────────────────────────────────────
+
+  for (const market of updatedEconomy.markets) {
+    for (const price of market.prices) {
+      const oldPrice = price.currentPrice;
+
+      // Calculate new price
+      const result = calculatePrice(
+        price.basePrice,
+        price.supply,
+        price.demand,
+        economy.simulationSettings.volatility
+      );
+
+      // Apply price floors/ceilings
+      let newPrice = result.price;
+      if (price.priceFloor && newPrice < price.priceFloor) {
+        newPrice = price.priceFloor;
+      }
+      if (price.priceCeiling && newPrice > price.priceCeiling) {
+        newPrice = price.priceCeiling;
+      }
+
+      // Apply taxes
+      newPrice *= (1 + price.taxRate);
+
+      // Update price history
+      price.priceHistory.push({
+        date: new Date().toISOString(),
+        price: newPrice,
+        supply: price.supply,
+        demand: price.demand,
+      });
+
+      // Keep last 30 entries
+      if (price.priceHistory.length > 30) {
+        price.priceHistory = price.priceHistory.slice(-30);
+      }
+
+      // Track significant changes
+      const changePercent = Math.abs((newPrice - oldPrice) / oldPrice);
+      if (changePercent > 0.1) { // 10% change
+        priceChanges.push({
+          settlement: market.settlementName,
+          commodity: price.commodityId,
+          oldPrice,
+          newPrice,
+          reason: result.trend,
+        });
+      }
+
+      price.currentPrice = newPrice;
+      price.priceMultiplier = newPrice / price.basePrice;
+      price.trend = result.trend as typeof price.trend;
+      price.weeklyChange = ((newPrice - oldPrice) / oldPrice) * 100;
+      price.supplyDemandRatio = price.demand > 0 ? price.supply / price.demand : 2;
+    }
+  }
+
+  // ─────────────────────────────────────────
+  // PHASE 6: EVENTS
+  // Random events and ripple effects
+  // ─────────────────────────────────────────
+
+  // Random event chance per settlement
+  for (const settlement of updatedEconomy.settlements) {
+    if (Math.random() < economy.simulationSettings.eventProbability * daysElapsed) {
+      // Generate random event (simplified)
+      const eventTypes: EconomicEventType[] = [
+        "bumper_harvest", "crop_failure", "new_trade_route",
+        "guild_strike", "festival", "refugee_influx"
+      ];
+      const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+
+      events.push({
+        id: crypto.randomUUID(),
+        worldId: economy.worldId,
+        type: eventType,
+        name: `${eventType.replace(/_/g, ' ')} in ${settlement.settlementId}`,
+        description: `Random economic event`,
+        causedBy: { type: "random" },
+        scope: "local",
+        affectedSettlements: [settlement.settlementId],
+        affectedRoutes: [],
+        affectedCommodities: [],
+        effects: [],
+        startDate: new Date().toISOString(),
+        status: "active",
+        publiclyKnown: true,
+        knownToFactions: [],
+        knownToParties: [],
+        triggeredEvents: [],
+      });
+    }
+  }
+
+  // ─────────────────────────────────────────
+  // FINALIZE
+  // ─────────────────────────────────────────
+
+  // Update timestamps
+  updatedEconomy.lastSimulated = new Date().toISOString();
+
+  // Generate news from price changes
+  for (const change of priceChanges) {
+    if (change.reason === "spiking") {
+      news.push(`${change.commodity.toUpperCase()} prices skyrocket in ${change.settlement}!`);
+    } else if (change.reason === "crashing") {
+      news.push(`${change.commodity.toUpperCase()} prices collapse in ${change.settlement}!`);
+    }
+  }
 
   return {
-    economy,
-    events: [],
-    news: [],
-    priceChanges: [],
+    economy: updatedEconomy,
+    events,
+    news,
+    priceChanges,
   };
 }
 
@@ -1118,7 +1479,7 @@ function generateRumor(action: PlayerEconomicAction): string {
 export function generateEconomicNews(
   economy: WorldEconomy,
   forSettlement?: string,
-  forParty?: string,
+  _forParty?: string,
 ): string[] {
   const news: string[] = [];
 
@@ -1140,7 +1501,7 @@ export function generateEconomicNews(
   }
 
   // Active events
-  for (const eventId of economy.activeEvents) {
+  for (const _eventId of economy.activeEvents) {
     // Look up event and add news
     // news.push(event.newsHeadline);
   }

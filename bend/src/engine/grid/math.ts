@@ -605,7 +605,6 @@ function tokenOccupiesCell(token: Token, x: number, y: number): boolean {
 function getThreatenedCells(token: Token): Set<string> {
   const threatened = new Set<string>();
   const size = SizeToGridMap[token.size];
-  const reach = 5; // Standard reach, could be from token data
 
   // Cells adjacent to the token (within reach)
   for (let dx = -1; dx <= size; dx++) {
@@ -623,7 +622,7 @@ function getThreatenedCells(token: Token): Set<string> {
 }
 
 // Placeholder - should check actual allegiance/faction
-function isHostile(a: Token, b: Token): boolean {
+function isHostile(_a: Token, _b: Token): boolean {
   // This would check faction/allegiance data
   return false; // Implement based on your faction system
 }

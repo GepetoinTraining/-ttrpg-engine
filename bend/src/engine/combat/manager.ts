@@ -1,7 +1,6 @@
 import { z } from "zod";
 import {
   CombatState,
-  CombatStateSchema,
   InitiativeEntry,
   ActionEconomy,
   rollD20,
@@ -17,15 +16,13 @@ import {
   Condition,
   ConditionInstance,
   ConditionEffects,
-} from "./core";
-import { Creature, getAbilityModifier } from "./creature";
-import { Token, GridConfig, Cell, PathResult } from "../grid/types";
+  getAbilityModifier,
+} from "../rules/core";
+import { Creature } from "../rules/creature";
+import type { Token, GridConfig, Cell, PathResult } from "../grid/types";
 import {
   findPath,
   calculateDistance,
-  checkLineOfSight,
-  calculateAoE,
-  AreaOfEffect,
 } from "../grid/math";
 
 // ============================================
@@ -198,7 +195,7 @@ export class CombatManager {
   }
 
   rollAllInitiative(): void {
-    for (const [id, creature] of this.creatures) {
+    for (const [id, _creature] of this.creatures) {
       // Check if already in initiative
       if (!this.state.initiativeOrder.find((e) => e.entityId === id)) {
         this.rollInitiative(id);

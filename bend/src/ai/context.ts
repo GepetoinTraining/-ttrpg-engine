@@ -5,8 +5,23 @@
 // Build rich context for NPC AI conversations.
 // Supports both fluent builder pattern and DB-backed context aggregation.
 //
+// IMPORTANT: NPCs don't know economics. They know their lives.
+// The phenomenological adapter translates simulation state into lived experience.
+//
 
 import { queryOne, queryAll, parseJson } from "../db/client";
+import {
+  translateToExperience,
+  buildExperiencePrompt,
+  type NPCLens,
+  type NPCRole,
+  type EconomicPressure,
+  type LocalEconomyState,
+  type FactionActivityState,
+  type RegionalThreatState,
+  type GuildState,
+  type LivedExperience,
+} from "./phenomenology";
 
 // =============================================================================
 // TYPES - NPC Profile
@@ -49,6 +64,20 @@ export interface NPCProfile {
 
   // Depth level (0-5)
   depth?: number;
+
+  // Attributes for phenomenological translation (D&D modifiers, -5 to +5)
+  intelligence?: number;
+  wisdom?: number;
+  charisma?: number;
+
+  // Role for perception gating
+  role?: NPCRole;
+
+  // Economic situation
+  economicPressure?: EconomicPressure;
+
+  // Recent personal events
+  recentEvents?: string[];
 }
 
 export interface NPCRelationship {
@@ -141,6 +170,7 @@ export interface FullContext {
   history: ConversationHistory;
   players: PlayerContext[];
   activeQuests?: QuestContext[];
+  livedExperience?: LivedExperience;
 }
 
 export interface CampaignContext {
@@ -163,6 +193,13 @@ export class ContextBuilder {
   private history: ConversationHistory = { messages: [], topics: [] };
   private players: PlayerContext[] = [];
   private quests: QuestContext[] = [];
+
+  // Simulation state for phenomenological translation
+  private economyState?: LocalEconomyState;
+  private factionState?: FactionActivityState;
+  private threatState?: RegionalThreatState;
+  private guildState?: GuildState;
+  private livedExperience?: LivedExperience;
 
   // ===========================================================================
   // NPC METHODS
@@ -345,10 +382,114 @@ export class ContextBuilder {
   }
 
   // ===========================================================================
+  // SIMULATION STATE (for phenomenological translation)
+  // ===========================================================================
+
+  setEconomyState(economy: LocalEconomyState): this {
+    this.economyState = economy;
+    return this;
+  }
+
+  setFactionState(factions: FactionActivityState): this {
+    this.factionState = factions;
+    return this;
+  }
+
+  setThreatState(threats: RegionalThreatState): this {
+    this.threatState = threats;
+    return this;
+  }
+
+  setGuildState(guild: GuildState): this {
+    this.guildState = guild;
+    return this;
+  }
+
+  /**
+   * Set all simulation state at once
+   */
+  setSimulationState(state: {
+    economy?: LocalEconomyState;
+    factions?: FactionActivityState;
+    threats?: RegionalThreatState;
+    guild?: GuildState;
+  }): this {
+    if (state.economy) this.economyState = state.economy;
+    if (state.factions) this.factionState = state.factions;
+    if (state.threats) this.threatState = state.threats;
+    if (state.guild) this.guildState = state.guild;
+    return this;
+  }
+
+  // ===========================================================================
   // BUILD
   // ===========================================================================
 
+  /**
+   * Build the NPC lens from current NPC profile
+   */
+  private buildNPCLens(): NPCLens | null {
+    const npc = this.npc as NPCProfile;
+    if (!npc.id) return null;
+
+    return {
+      intelligence: npc.intelligence ?? 0,
+      wisdom: npc.wisdom ?? 0,
+      charisma: npc.charisma ?? 0,
+      role: npc.role ?? 'commoner',
+      factions: npc.factionMemberships?.map(f => f.factionId) ?? [],
+      factionRanks: npc.factionMemberships?.reduce((acc, f) => {
+        // Map loyalty to rank
+        const rank = f.loyalty >= 90 ? 'leader' :
+                     f.loyalty >= 70 ? 'inner_circle' :
+                     f.loyalty >= 50 ? 'trusted' :
+                     f.loyalty >= 25 ? 'member' : 'outsider';
+        acc[f.factionId] = rank;
+        return acc;
+      }, {} as Record<string, 'outsider' | 'member' | 'trusted' | 'inner_circle' | 'leader'>) ?? {},
+      economicPressure: npc.economicPressure ?? 'stable',
+      currentMood: npc.currentMood ?? '',
+      recentEvents: npc.recentEvents ?? [],
+    };
+  }
+
+  /**
+   * Translate simulation state to lived experience
+   */
+  private translateExperience(): void {
+    const lens = this.buildNPCLens();
+    if (!lens) return;
+
+    // Need at minimum economy state to translate
+    if (!this.economyState) return;
+
+    // Default states if not provided
+    const factions: FactionActivityState = this.factionState ?? {
+      interventions: [],
+      tensions: [],
+      recentFactionEvents: [],
+    };
+
+    const threats: RegionalThreatState = this.threatState ?? {
+      overallThreat: 'low',
+      activeThreats: [],
+      recentIncidents: [],
+      roadSafety: 'patrolled',
+    };
+
+    this.livedExperience = translateToExperience(
+      lens,
+      this.economyState,
+      factions,
+      threats,
+      this.guildState,
+    );
+  }
+
   build(): FullContext {
+    // Translate simulation state to lived experience before building
+    this.translateExperience();
+
     return {
       npc: this.npc as NPCProfile,
       location: this.location as LocationContext,
@@ -356,6 +497,7 @@ export class ContextBuilder {
       history: this.history,
       players: this.players,
       activeQuests: this.quests.length > 0 ? this.quests : undefined,
+      livedExperience: this.livedExperience,
     };
   }
 
@@ -484,6 +626,12 @@ export class ContextBuilder {
       sections.push(`\nPLAYER CHARACTERS:\n${playerInfo}`);
     }
 
+    // Lived experience (phenomenological translation of simulation state)
+    // This is what the NPC FEELS, not what the system KNOWS
+    if (this.livedExperience) {
+      sections.push(`\n${buildExperiencePrompt(this.livedExperience)}`);
+    }
+
     // Instructions
     sections.push(`\nINSTRUCTIONS:
 - Stay in character at all times
@@ -493,7 +641,8 @@ export class ContextBuilder {
 - Only share knowledge you would reasonably have
 - Protect your secrets unless cleverly extracted
 - Keep responses concise (2-4 sentences typically)
-- Never break character to explain game mechanics`);
+- Never break character to explain game mechanics
+- Your observations and worries above reflect what YOU perceive - embody them, don't analyze them`);
 
     return sections.join("\n\n");
   }
@@ -769,5 +918,17 @@ async function getRecentEvents(
 
   return events.map((e) => e.summary).reverse(); // Chronological order
 }
+
+// Re-export phenomenology types for consumers
+export {
+  type NPCLens,
+  type NPCRole,
+  type EconomicPressure,
+  type LocalEconomyState,
+  type FactionActivityState,
+  type RegionalThreatState,
+  type GuildState,
+  type LivedExperience,
+} from "./phenomenology";
 
 export default ContextBuilder;

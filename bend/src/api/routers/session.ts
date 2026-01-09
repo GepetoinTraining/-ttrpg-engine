@@ -22,7 +22,7 @@ export const sessionRouter = router({
   /**
    * Get session by ID
    */
-  get: campaignProcedure.input(IdInput).query(async ({ ctx, input }) => {
+  get: campaignProcedure.input(IdInput).query(async ({ input }) => {
     const session = await db.getSession(input.id);
     if (!session) notFound("Session", input.id);
     return session;
@@ -86,7 +86,7 @@ export const sessionRouter = router({
         after: z.string().optional(),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       return db.getSessionEvents(input.sessionId, {
         type: input.type,
         limit: input.limit,
@@ -128,7 +128,7 @@ export const sessionRouter = router({
         playerIds: z.array(z.string()),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const session = await db.getSession(input.id);
       if (!session) notFound("Session", input.id);
 
@@ -145,7 +145,7 @@ export const sessionRouter = router({
   /**
    * Pause session
    */
-  pause: gmProcedure.input(IdInput).mutation(async ({ ctx, input }) => {
+  pause: gmProcedure.input(IdInput).mutation(async ({ input }) => {
     const session = await db.getSession(input.id);
     if (!session) notFound("Session", input.id);
 
@@ -162,7 +162,7 @@ export const sessionRouter = router({
   /**
    * Resume session
    */
-  resume: gmProcedure.input(IdInput).mutation(async ({ ctx, input }) => {
+  resume: gmProcedure.input(IdInput).mutation(async ({ input }) => {
     const session = await db.getSession(input.id);
     if (!session) notFound("Session", input.id);
 
@@ -186,7 +186,7 @@ export const sessionRouter = router({
         summary: z.string().max(5000).optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const session = await db.getSession(input.id);
       if (!session) notFound("Session", input.id);
 
@@ -215,7 +215,7 @@ export const sessionRouter = router({
         locationId: z.string().uuid().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       return db.setScene(input.sessionId, input.sceneId, input.locationId);
     }),
 
@@ -229,7 +229,7 @@ export const sessionRouter = router({
         locationId: z.string().uuid(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       return db.setLocation(input.sessionId, input.locationId);
     }),
 
@@ -249,7 +249,7 @@ export const sessionRouter = router({
         notes: z.string().max(10000).optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const { id, ...updates } = input;
       return db.updateSession(id, updates);
     }),

@@ -798,6 +798,8 @@ export const FaerunManifest: SeedManifest = {
       "deities/dwarven_mordinsamman.json",
       "deities/drow_dark_seldarine.json",
     ],
+    npcs: [],
+    locations: [],
   },
   createdAt: "2024-01-01",
   updatedAt: "2024-12-22",
@@ -825,6 +827,7 @@ export const RealmspaceManifest: SeedManifest = {
   },
   files: {
     sphere: "sphere.json",
+    regions: [],
     settlements: [
       "settlements/rock_of_bral.json", // Often included here
       "settlements/h4rn.json",
@@ -836,6 +839,9 @@ export const RealmspaceManifest: SeedManifest = {
       "factions/scro.json",
       "factions/neogi.json",
     ],
+    deities: [],
+    npcs: [],
+    locations: [],
   },
   createdAt: "2024-01-01",
   updatedAt: "2024-12-22",

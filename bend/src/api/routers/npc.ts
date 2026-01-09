@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
+// TRPCError available if needed for future validation
+import type { TRPCError as _TRPCError } from "@trpc/server";
 import {
   router,
   campaignProcedure,
@@ -144,7 +145,7 @@ export const npcRouter = router({
    */
   relationships: campaignProcedure
     .input(IdInput)
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       return queryAll<any>(`SELECT * FROM npc_relationships WHERE npc_id = ?`, [
         input.id,
       ]);
@@ -160,7 +161,7 @@ export const npcRouter = router({
         limit: z.number().int().min(1).max(100).default(20),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       return queryAll<any>(
         `SELECT * FROM agent_memories
          WHERE agent_id = ? AND type = 'conversation'
@@ -330,7 +331,7 @@ export const npcRouter = router({
         notes: z.string().max(500).optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const existing = await queryOne<any>(
         `SELECT id FROM npc_relationships
          WHERE npc_id = ? AND target_type = ? AND target_id = ?`,

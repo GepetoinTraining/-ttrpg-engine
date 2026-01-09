@@ -8,13 +8,16 @@
     "fend"
   ],
   "scripts": {
-    "dev": "turbo run dev",
+    "start": "bun run launcher.ts",
+    "dev": "bun run launcher.ts",
     "dev:bend": "cd bend && bun run dev",
     "dev:fend": "cd fend && bun run dev",
-    "build": "turbo run build"
+    "build": "turbo run build",
+    "build:all": "bun run build:bend && bun run build:fend",
+    "build:bend": "cd bend && bun run build",
+    "build:fend": "cd fend && bun run build"
   },
   "dependencies": {
-    "@clerk/backend": "^2.29.0",
     "@libsql/client": "^0.15.15",
     "@libsql/linux-x64-gnu": "^0.5.22",
     "@trpc/server": "^11.8.1",

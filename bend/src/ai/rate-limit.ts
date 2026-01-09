@@ -488,9 +488,7 @@ export class UserRateLimiter {
     return limiter;
   }
 
-  cleanup(maxIdleMs = 3600000): void {
-    const now = Date.now();
-
+  cleanup(_maxIdleMs = 3600000): void {
     for (const [userId, limiter] of this.limiters) {
       const stats = limiter.getStats();
       if (stats.requestsThisWindow === 0) {

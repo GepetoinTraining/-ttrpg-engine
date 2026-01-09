@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, campaignProcedure, notFound } from "../trpc";
+import { router, campaignProcedure } from "../trpc";
 import * as sync from "../../db/queries/sync";
 
 // ============================================
@@ -116,7 +116,7 @@ export const syncRouter = router({
         subscriptionId: z.string().uuid(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       sync.removeSubscription(input.subscriptionId);
       return { success: true };
     }),

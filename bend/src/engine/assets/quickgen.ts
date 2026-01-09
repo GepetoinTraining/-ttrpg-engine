@@ -1,13 +1,10 @@
 import { z } from "zod";
-import {
+import type {
   DetailLevel,
-  AssetType,
-  NpcStubSchema,
-  LocationStubSchema,
-  ItemStubSchema,
-  FactionStubSchema,
 } from "./entity";
-import { CreatureSchema } from "../rules/creature";
+import {
+  DetailLevelSchema,
+} from "./entity";
 
 // ============================================
 // INSTANT GENERATION
@@ -575,7 +572,7 @@ export const AssetInteractionSchema = z.object({
 export type AssetInteraction = z.infer<typeof AssetInteractionSchema>;
 
 export function checkDeepenSuggestion(
-  assetId: string,
+  _assetId: string,
   currentLevel: DetailLevel,
   interactions: AssetInteraction[],
 ): {
@@ -615,11 +612,7 @@ export function checkDeepenSuggestion(
   }
 
   // Recurring across sessions
-  if (
-    sessionCount >= 3 &&
-    currentLevel !== "full" &&
-    currentLevel !== "integrated"
-  ) {
+  if (sessionCount >= 3 && currentLevel !== "full") {
     return {
       shouldSuggest: true,
       targetLevel: "full",
@@ -628,7 +621,7 @@ export function checkDeepenSuggestion(
   }
 
   // Bookmarked = important
-  if (isBookmarked && currentLevel !== "integrated") {
+  if (isBookmarked) {
     return {
       shouldSuggest: true,
       targetLevel: "integrated",

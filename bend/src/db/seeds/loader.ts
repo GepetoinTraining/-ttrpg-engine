@@ -1,11 +1,10 @@
 import { z } from "zod";
 import {
   transaction,
-  query,
-  queryOne,
-  uuid,
   now,
   toJson,
+  query,
+  queryOne,
   type Transaction,
 } from "../client";
 import {
@@ -75,7 +74,7 @@ export type SeedManifest = z.infer<typeof SeedManifestSchema>;
 // IMPORT RESULT
 // ============================================
 
-export interface ImportResult {
+export interface LoaderImportResult {
   success: boolean;
   seedId: string;
   imported: {
@@ -278,13 +277,13 @@ export class SeedLoader {
       skipExisting?: boolean;
       updateExisting?: boolean;
     } = {},
-  ): Promise<ImportResult> {
+  ): Promise<LoaderImportResult> {
     if (!this.manifest) {
       throw new Error("Manifest not loaded");
     }
 
     const startTime = Date.now();
-    const result: ImportResult = {
+    const result: LoaderImportResult = {
       success: true,
       seedId: this.manifest.id,
       imported: { nodes: 0, edges: 0, factions: 0, deities: 0 },
@@ -673,7 +672,7 @@ export class SeedLoader {
 export async function importSeed(
   manifestPath: string,
   options?: { skipExisting?: boolean; updateExisting?: boolean },
-): Promise<ImportResult> {
+): Promise<LoaderImportResult> {
   const loader = new SeedLoader();
   await loader.loadManifest(manifestPath);
   await loader.loadFiles();

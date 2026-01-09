@@ -2,7 +2,6 @@ import { z } from "zod";
 import {
   router,
   publicProcedure,
-  campaignProcedure,
   gmProcedure,
   IdInput,
   PaginationInput,
@@ -231,12 +230,15 @@ export const worldRouter = router({
         type: z.string(),
         name: z.string(),
         canonicalName: z.string().optional(),
-        dataStatic: z.any().default({}),
+        dataStatic: z.record(z.unknown()).default({}),
       }),
     )
     .mutation(async ({ input }) => {
       return nodes.createNode({
-        ...input,
+        type: input.type,
+        name: input.name,
+        parentId: input.parentId,
+        canonicalName: input.canonicalName,
         dataStatic: input.dataStatic ?? {},
       });
     }),

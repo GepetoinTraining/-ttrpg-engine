@@ -1,8 +1,6 @@
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import {
   router,
-  protectedProcedure,
   campaignProcedure,
   gmProcedure,
   PaginationInput,
@@ -11,6 +9,9 @@ import {
   forbidden,
 } from "../trpc";
 import * as db from "../../db/queries/characters";
+import * as tokenDb from "../../db/queries/character-tokens";
+import { birthCharacter, RACE_TOPOLOGIES, CLASS_TOPOLOGIES } from "../../genesis/character";
+import { getSeed } from "../../auth/topology/enrollment";
 
 // ============================================
 // CHARACTER ROUTER
@@ -26,6 +27,156 @@ const AbilityScoresInput = z.object({
 });
 
 export const characterRouter = router({
+  // ==========================================
+  // GENESIS CHARACTER CREATION
+  // ==========================================
+
+  /**
+   * Birth a character using Genesis topology system
+   *
+   * Creates both:
+   * - TOKEN (topology seed) - Source of truth
+   * - ATOM (character sheet) - Projection for quick access
+   */
+  birthGenesis: campaignProcedure
+    .input(
+      z.object({
+        name: z.string().min(1).max(100),
+        race: z.string().min(1),
+        class: z.string().min(1),
+        background: z.string().optional(),
+        abilityScores: AbilityScoresInput,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Validate race and class exist in topology system
+      const raceLower = input.race.toLowerCase();
+      const classLower = input.class.toLowerCase();
+
+      if (!RACE_TOPOLOGIES[raceLower]) {
+        throw new Error(`Unknown race: ${input.race}. Available: ${Object.keys(RACE_TOPOLOGIES).join(', ')}`);
+      }
+      if (!CLASS_TOPOLOGIES[classLower]) {
+        throw new Error(`Unknown class: ${input.class}. Available: ${Object.keys(CLASS_TOPOLOGIES).join(', ')}`);
+      }
+
+      // Verify player has a topology seed
+      if (!ctx.auth.seedId) {
+        forbidden("Topology seed required for Genesis character creation");
+      }
+
+      const playerSeed = await getSeed(ctx.auth.seedId);
+      if (!playerSeed) {
+        forbidden("Topology seed not found");
+      }
+
+      // Birth the character (creates token + atom)
+      const { token, atom } = await birthCharacter({
+        playerSeedId: ctx.auth.seedId,
+        name: input.name,
+        race: raceLower,
+        class: classLower,
+        background: input.background,
+        abilityScores: input.abilityScores,
+      });
+
+      // Store atom in characters table (projection)
+      const character = await db.createCharacter({
+        campaignId: ctx.campaignId,
+        ownerId: ctx.auth.userId,
+        ownerSeedId: ctx.auth.seedId,
+        name: atom.name,
+        race: atom.race,
+        class: atom.class,
+        level: atom.level,
+        background: atom.background || undefined,
+        abilityScores: {
+          strength: atom.strength,
+          dexterity: atom.dexterity,
+          constitution: atom.constitution,
+          intelligence: atom.intelligence,
+          wisdom: atom.wisdom,
+          charisma: atom.charisma,
+        },
+        hp: atom.hpCurrent,
+        maxHp: atom.hpMax,
+        ac: atom.ac,
+        speed: atom.speed,
+      });
+
+      // Store token (source of truth) and link to character
+      await tokenDb.createToken({
+        token,
+        characterId: character.id,
+      });
+
+      return {
+        character,
+        token: {
+          id: token.id,
+          uid: token.uid,
+          seed: token.seed.toString(),  // bigint → string for JSON
+          topology: token.topology,
+          dominantType: token.dominantType,
+          entropy: token.entropy,
+        },
+      };
+    }),
+
+  /**
+   * Get character's token (topology data)
+   */
+  getToken: campaignProcedure
+    .input(IdInput)
+    .query(async ({ ctx, input }) => {
+      const character = await db.getCharacter(input.id);
+      if (!character) notFound("Character", input.id);
+
+      if (!ctx.checker.canViewCharacter(character.ownerId)) {
+        forbidden("Cannot view this character");
+      }
+
+      const token = await tokenDb.getTokenByCharacterId(input.id);
+      if (!token) {
+        return null;  // Legacy character without token
+      }
+
+      return {
+        id: token.id,
+        uid: token.uid,
+        seed: token.seed,
+        topology: JSON.parse(token.topology),
+        dominantType: token.dominantType,
+        entropy: token.entropy,
+        status: token.status,
+        isRepresented: token.isRepresented === 1,
+      };
+    }),
+
+  /**
+   * Get available races for Genesis character creation
+   */
+  getGenesisRaces: campaignProcedure.query(async () => {
+    return Object.entries(RACE_TOPOLOGIES).map(([key, race]) => ({
+      id: key,
+      name: race.name,
+      traits: race.traits,
+      abilityBonus: race.abilityBonus,
+    }));
+  }),
+
+  /**
+   * Get available classes for Genesis character creation
+   */
+  getGenesisClasses: campaignProcedure.query(async () => {
+    return Object.entries(CLASS_TOPOLOGIES).map(([key, cls]) => ({
+      id: key,
+      name: cls.name,
+      primaryAbility: cls.primaryAbility,
+      hitDie: cls.hitDie,
+    }));
+  }),
+
   // ==========================================
   // QUERIES
   // ==========================================
@@ -85,7 +236,7 @@ export const characterRouter = router({
    */
   party: campaignProcedure
     .input(z.object({ partyId: z.string().uuid() }))
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       return db.getPartyCharacters(input.partyId);
     }),
 
@@ -108,7 +259,7 @@ export const characterRouter = router({
   // ==========================================
 
   /**
-   * Create new character
+   * Create new character (simple)
    */
   create: campaignProcedure
     .input(
@@ -144,8 +295,138 @@ export const characterRouter = router({
         partyId: input.partyId,
         campaignId: ctx.campaignId,
         ownerId: ctx.auth.userId,
+        ownerSeedId: ctx.auth.seedId,  // Topology auth: bind character to seed
       };
       return db.createCharacter(createInput);
+    }),
+
+  /**
+   * Create new character with full builder data
+   * Supports 2014/2024 PHB rulesets and D&D Beyond import
+   */
+  createFull: campaignProcedure
+    .input(
+      z.object({
+        // Basic required fields
+        name: z.string().min(1).max(100),
+        race: z.string().min(1).max(50),
+        class: z.string().min(1).max(50),
+        level: z.number().int().min(1).max(20).default(1),
+        background: z.string().max(50).optional(),
+        alignment: z.string().max(50).optional(),
+        abilityScores: AbilityScoresInput,
+        hp: z.number().int().min(1),
+        maxHp: z.number().int().min(1),
+        ac: z.number().int().min(0).max(30),
+        speed: z.number().int().min(0).default(30),
+        partyId: z.string().uuid().optional(),
+
+        // Extended character builder data
+        ruleset: z.enum(['2014', '2024', 'mixed']).default('2014'),
+        importedFromDDB: z.boolean().default(false),
+        ddbCharacterId: z.number().optional(),
+        subraceId: z.string().optional(),
+
+        // Multiclass support
+        classes: z.array(z.object({
+          classId: z.string(),
+          level: z.number().int().min(1).max(20),
+          subclassId: z.string().optional(),
+        })).optional(),
+
+        // Spells
+        selectedSpellIds: z.array(z.string()).optional(),
+
+        // Equipment
+        equipmentChoices: z.record(z.string(), z.string()).optional(),
+        additionalItems: z.array(z.object({
+          itemId: z.string(),
+          quantity: z.number().int().min(1),
+        })).optional(),
+
+        // Appearance & Personality
+        appearance: z.object({
+          age: z.string().optional(),
+          height: z.string().optional(),
+          weight: z.string().optional(),
+          eyes: z.string().optional(),
+          hair: z.string().optional(),
+          skin: z.string().optional(),
+          description: z.string().optional(),
+          portraitUrl: z.string().url().optional(),
+        }).optional(),
+
+        personality: z.object({
+          traits: z.array(z.string()).optional(),
+          ideals: z.array(z.string()).optional(),
+          bonds: z.array(z.string()).optional(),
+          flaws: z.array(z.string()).optional(),
+        }).optional(),
+
+        backstory: z.string().max(10000).optional(),
+        selectedLanguages: z.array(z.string()).optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Create the base character first
+      const createInput: db.CreateCharacterInput = {
+        name: input.name,
+        race: input.race,
+        class: input.class,
+        level: input.level,
+        background: input.background,
+        alignment: input.alignment,
+        abilityScores: input.abilityScores as db.CreateCharacterInput['abilityScores'],
+        hp: input.hp,
+        maxHp: input.maxHp,
+        ac: input.ac,
+        speed: input.speed,
+        partyId: input.partyId,
+        campaignId: ctx.campaignId,
+        ownerId: ctx.auth.userId,
+        ownerSeedId: ctx.auth.seedId,  // Topology auth: bind character to seed
+      };
+
+      const character = await db.createCharacter(createInput);
+
+      // Store extended data as JSON in character metadata
+      const extendedData = {
+        ruleset: input.ruleset,
+        importedFromDDB: input.importedFromDDB,
+        ddbCharacterId: input.ddbCharacterId,
+        subraceId: input.subraceId,
+        classes: input.classes,
+        selectedSpellIds: input.selectedSpellIds,
+        equipmentChoices: input.equipmentChoices,
+        selectedLanguages: input.selectedLanguages,
+      };
+
+      // Update with extended fields
+      await db.updateCharacter(character.id, {
+        personality: input.personality?.traits?.join('\n'),
+        ideals: input.personality?.ideals?.join('\n'),
+        bonds: input.personality?.bonds?.join('\n'),
+        flaws: input.personality?.flaws?.join('\n'),
+        backstory: input.backstory,
+        portraitUrl: input.appearance?.portraitUrl,
+        // Store extended data as notes JSON for now (would use proper columns in production)
+        notes: JSON.stringify(extendedData),
+      });
+
+      // Add starting equipment if provided
+      if (input.additionalItems?.length) {
+        for (const item of input.additionalItems) {
+          await db.addInventoryItem(character.id, {
+            name: item.itemId, // Would resolve to actual item name
+            type: 'equipment',
+            quantity: item.quantity,
+            weight: 0,
+            value: 0,
+          });
+        }
+      }
+
+      return character;
     }),
 
   /**
@@ -278,7 +559,7 @@ export const characterRouter = router({
         maxHp: z.number().int().min(1).optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       return db.updateCharacter(input.id, {
         hp: input.hp,
         maxHp: input.maxHp,
@@ -324,7 +605,15 @@ export const characterRouter = router({
       // Apply ASI if provided
       let abilityUpdates: Record<string, number> | undefined;
       if (input.abilityScoreImprovement) {
-        const current = JSON.parse(character.abilityScores);
+        // Build ability scores from individual columns
+        const current: Record<string, number> = {
+          strength: character.str,
+          dexterity: character.dex,
+          constitution: character.con,
+          intelligence: character.int,
+          wisdom: character.wis,
+          charisma: character.cha,
+        };
         const ability = input.abilityScoreImprovement.ability;
         current[ability] = Math.min(
           20,

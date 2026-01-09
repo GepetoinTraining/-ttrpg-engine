@@ -61,7 +61,7 @@ export const economyRouter = router({
    */
   tradeRoutes: campaignProcedure
     .input(IdInput)
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       return edges.getTradeRoutes(input.id);
     }),
 
@@ -111,7 +111,7 @@ export const economyRouter = router({
   /**
    * Get regional economic overview
    */
-  region: campaignProcedure.input(IdInput).query(async ({ ctx, input }) => {
+  region: campaignProcedure.input(IdInput).query(async ({ input }) => {
     const region = await nodes.getNode(input.id);
     if (!region) notFound("Region", input.id);
 
@@ -189,7 +189,7 @@ export const economyRouter = router({
           .optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const node = await nodes.getNode(input.settlementId);
       if (!node) notFound("Settlement", input.settlementId);
 
@@ -275,7 +275,7 @@ export const economyRouter = router({
   /**
    * End economic event
    */
-  endEvent: gmProcedure.input(IdInput).mutation(async ({ ctx, input }) => {
+  endEvent: gmProcedure.input(IdInput).mutation(async ({ input }) => {
     await query(
       `UPDATE economic_events SET status = 'ended', expires_at = ? WHERE id = ?`,
       [now(), input.id],
@@ -298,7 +298,7 @@ export const economyRouter = router({
         notes: z.string().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       return edges.createEdge({
         sourceId: input.sourceId,
         targetId: input.targetId,
@@ -396,7 +396,7 @@ export const economyRouter = router({
         travelStyle: z.enum(["poor", "modest", "comfortable", "wealthy"]),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       // Try to find direct route
       const directRoute = await edges.getEdgeBetween(input.fromId, input.toId);
 

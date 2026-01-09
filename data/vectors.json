@@ -1,0 +1,933 @@
+[
+  {
+    "id": "button_primary",
+    "namespace": "components",
+    "content": "Button primary A fundamental building block: Button atom component medium weight, solid, hot atom interactive action clickable",
+    "metadata": {
+      "name": "Button",
+      "level": "atom",
+      "prime": 2,
+      "variant": "primary",
+      "tags": [
+        "atom",
+        "interactive",
+        "action",
+        "clickable",
+        "primary"
+      ],
+      "physics_summary": "medium weight, solid, hot"
+    }
+  },
+  {
+    "id": "button_secondary",
+    "namespace": "components",
+    "content": "Button secondary A fundamental building block: Button atom component medium weight, solid, warm atom interactive action clickable",
+    "metadata": {
+      "name": "Button",
+      "level": "atom",
+      "prime": 2,
+      "variant": "secondary",
+      "tags": [
+        "atom",
+        "interactive",
+        "action",
+        "clickable",
+        "secondary"
+      ],
+      "physics_summary": "medium weight, solid, warm"
+    }
+  },
+  {
+    "id": "button_ghost",
+    "namespace": "components",
+    "content": "Button ghost A fundamental building block: Button atom component medium weight, gas, cold atom interactive action clickable",
+    "metadata": {
+      "name": "Button",
+      "level": "atom",
+      "prime": 2,
+      "variant": "ghost",
+      "tags": [
+        "atom",
+        "interactive",
+        "action",
+        "clickable",
+        "ghost"
+      ],
+      "physics_summary": "medium weight, gas, cold"
+    }
+  },
+  {
+    "id": "button_danger",
+    "namespace": "components",
+    "content": "Button danger A fundamental building block: Button atom component medium weight, solid, critical atom interactive action clickable",
+    "metadata": {
+      "name": "Button",
+      "level": "atom",
+      "prime": 2,
+      "variant": "danger",
+      "tags": [
+        "atom",
+        "interactive",
+        "action",
+        "clickable",
+        "danger"
+      ],
+      "physics_summary": "medium weight, solid, critical"
+    }
+  },
+  {
+    "id": "button_disabled",
+    "namespace": "components",
+    "content": "Button disabled A fundamental building block: Button atom component light, gas, cold, sluggish atom interactive action clickable",
+    "metadata": {
+      "name": "Button",
+      "level": "atom",
+      "prime": 2,
+      "variant": "disabled",
+      "tags": [
+        "atom",
+        "interactive",
+        "action",
+        "clickable",
+        "disabled"
+      ],
+      "physics_summary": "light, gas, cold, sluggish"
+    }
+  },
+  {
+    "id": "card",
+    "namespace": "components",
+    "content": "Card A composed component: Card molecule component medium weight, solid, cold molecule container content",
+    "metadata": {
+      "name": "Card",
+      "level": "molecule",
+      "prime": 6,
+      "tags": [
+        "molecule",
+        "container",
+        "content"
+      ],
+      "physics_summary": "medium weight, solid, cold"
+    }
+  },
+  {
+    "id": "card_elevated",
+    "namespace": "components",
+    "content": "Card elevated A composed component: Card molecule component heavy, dense, cold molecule container content",
+    "metadata": {
+      "name": "Card",
+      "level": "molecule",
+      "prime": 6,
+      "variant": "elevated",
+      "tags": [
+        "molecule",
+        "container",
+        "content",
+        "elevated"
+      ],
+      "physics_summary": "heavy, dense, cold"
+    }
+  },
+  {
+    "id": "card_floating",
+    "namespace": "components",
+    "content": "Card floating A composed component: Card molecule component light, liquid, warm molecule container content",
+    "metadata": {
+      "name": "Card",
+      "level": "molecule",
+      "prime": 6,
+      "variant": "floating",
+      "tags": [
+        "molecule",
+        "container",
+        "content",
+        "floating"
+      ],
+      "physics_summary": "light, liquid, warm"
+    }
+  },
+  {
+    "id": "card_glass",
+    "namespace": "components",
+    "content": "Card glass A composed component: Card molecule component medium weight, liquid, cold molecule container content",
+    "metadata": {
+      "name": "Card",
+      "level": "molecule",
+      "prime": 6,
+      "variant": "glass",
+      "tags": [
+        "molecule",
+        "container",
+        "content",
+        "glass"
+      ],
+      "physics_summary": "medium weight, liquid, cold"
+    }
+  },
+  {
+    "id": "input",
+    "namespace": "components",
+    "content": "Input A fundamental building block: Input atom component medium weight, solid, cold atom interactive form editable",
+    "metadata": {
+      "name": "Input",
+      "level": "atom",
+      "prime": 5,
+      "tags": [
+        "atom",
+        "interactive",
+        "form",
+        "editable"
+      ],
+      "physics_summary": "medium weight, solid, cold"
+    }
+  },
+  {
+    "id": "input_focused",
+    "namespace": "components",
+    "content": "Input focused A fundamental building block: Input atom component medium weight, solid, warm atom interactive form editable",
+    "metadata": {
+      "name": "Input",
+      "level": "atom",
+      "prime": 5,
+      "variant": "focused",
+      "tags": [
+        "atom",
+        "interactive",
+        "form",
+        "editable",
+        "focused"
+      ],
+      "physics_summary": "medium weight, solid, warm"
+    }
+  },
+  {
+    "id": "input_error",
+    "namespace": "components",
+    "content": "Input error A fundamental building block: Input atom component medium weight, solid, critical atom interactive form editable",
+    "metadata": {
+      "name": "Input",
+      "level": "atom",
+      "prime": 5,
+      "variant": "error",
+      "tags": [
+        "atom",
+        "interactive",
+        "form",
+        "editable",
+        "error"
+      ],
+      "physics_summary": "medium weight, solid, critical"
+    }
+  },
+  {
+    "id": "input_disabled",
+    "namespace": "components",
+    "content": "Input disabled A fundamental building block: Input atom component light, gas, cold, sluggish atom interactive form editable",
+    "metadata": {
+      "name": "Input",
+      "level": "atom",
+      "prime": 5,
+      "variant": "disabled",
+      "tags": [
+        "atom",
+        "interactive",
+        "form",
+        "editable",
+        "disabled"
+      ],
+      "physics_summary": "light, gas, cold, sluggish"
+    }
+  },
+  {
+    "id": "badge",
+    "namespace": "components",
+    "content": "Badge A fundamental building block: Badge atom component medium weight, solid, cold atom",
+    "metadata": {
+      "name": "Badge",
+      "level": "atom",
+      "prime": 21,
+      "tags": [
+        "atom"
+      ],
+      "physics_summary": "medium weight, solid, cold"
+    }
+  },
+  {
+    "id": "badge_success",
+    "namespace": "components",
+    "content": "Badge success A fundamental building block: Badge atom component medium weight, solid, warm atom",
+    "metadata": {
+      "name": "Badge",
+      "level": "atom",
+      "prime": 21,
+      "variant": "success",
+      "tags": [
+        "atom",
+        "success"
+      ],
+      "physics_summary": "medium weight, solid, warm"
+    }
+  },
+  {
+    "id": "badge_warning",
+    "namespace": "components",
+    "content": "Badge warning A fundamental building block: Badge atom component medium weight, solid, hot atom",
+    "metadata": {
+      "name": "Badge",
+      "level": "atom",
+      "prime": 21,
+      "variant": "warning",
+      "tags": [
+        "atom",
+        "warning"
+      ],
+      "physics_summary": "medium weight, solid, hot"
+    }
+  },
+  {
+    "id": "badge_error",
+    "namespace": "components",
+    "content": "Badge error A fundamental building block: Badge atom component medium weight, solid, critical atom",
+    "metadata": {
+      "name": "Badge",
+      "level": "atom",
+      "prime": 21,
+      "variant": "error",
+      "tags": [
+        "atom",
+        "error"
+      ],
+      "physics_summary": "medium weight, solid, critical"
+    }
+  },
+  {
+    "id": "link",
+    "namespace": "components",
+    "content": "Link A fundamental building block: Link atom component medium weight, gas, warm atom",
+    "metadata": {
+      "name": "Link",
+      "level": "atom",
+      "prime": 14,
+      "tags": [
+        "atom"
+      ],
+      "physics_summary": "medium weight, gas, warm"
+    }
+  },
+  {
+    "id": "link_muted",
+    "namespace": "components",
+    "content": "Link muted A fundamental building block: Link atom component medium weight, gas, cold atom",
+    "metadata": {
+      "name": "Link",
+      "level": "atom",
+      "prime": 14,
+      "variant": "muted",
+      "tags": [
+        "atom",
+        "muted"
+      ],
+      "physics_summary": "medium weight, gas, cold"
+    }
+  },
+  {
+    "id": "link_action",
+    "namespace": "components",
+    "content": "Link action A fundamental building block: Link atom component medium weight, liquid, hot atom",
+    "metadata": {
+      "name": "Link",
+      "level": "atom",
+      "prime": 14,
+      "variant": "action",
+      "tags": [
+        "atom",
+        "action"
+      ],
+      "physics_summary": "medium weight, liquid, hot"
+    }
+  },
+  {
+    "id": "orb",
+    "namespace": "components",
+    "content": "Orb A fundamental building block: Orb atom component medium weight, void, fusion, snappy atom 3d visual spatial",
+    "metadata": {
+      "name": "Orb",
+      "level": "atom",
+      "prime": 143,
+      "tags": [
+        "atom",
+        "3d",
+        "visual",
+        "spatial"
+      ],
+      "physics_summary": "medium weight, void, fusion, snappy"
+    }
+  },
+  {
+    "id": "orb_pulsing",
+    "namespace": "components",
+    "content": "Orb pulsing A fundamental building block: Orb atom component medium weight, gas, critical, snappy atom 3d visual spatial",
+    "metadata": {
+      "name": "Orb",
+      "level": "atom",
+      "prime": 143,
+      "variant": "pulsing",
+      "tags": [
+        "atom",
+        "3d",
+        "visual",
+        "spatial",
+        "pulsing"
+      ],
+      "physics_summary": "medium weight, gas, critical, snappy"
+    }
+  },
+  {
+    "id": "alignmentorb_lawful_good",
+    "namespace": "components",
+    "content": "AlignmentOrb lawful_good A fundamental building block: Alignment Orb atom component medium weight, solid, hot, snappy atom 3d visual spatial morality alignment d&d",
+    "metadata": {
+      "name": "AlignmentOrb",
+      "level": "atom",
+      "prime": 143,
+      "variant": "lawful_good",
+      "tags": [
+        "atom",
+        "3d",
+        "visual",
+        "spatial",
+        "morality",
+        "alignment",
+        "d&d",
+        "lawful_good"
+      ],
+      "physics_summary": "medium weight, solid, hot, snappy"
+    }
+  },
+  {
+    "id": "alignmentorb_neutral_good",
+    "namespace": "components",
+    "content": "AlignmentOrb neutral_good A fundamental building block: Alignment Orb atom component medium weight, liquid, warm atom 3d visual spatial morality alignment d&d",
+    "metadata": {
+      "name": "AlignmentOrb",
+      "level": "atom",
+      "prime": 143,
+      "variant": "neutral_good",
+      "tags": [
+        "atom",
+        "3d",
+        "visual",
+        "spatial",
+        "morality",
+        "alignment",
+        "d&d",
+        "neutral_good"
+      ],
+      "physics_summary": "medium weight, liquid, warm"
+    }
+  },
+  {
+    "id": "alignmentorb_chaotic_good",
+    "namespace": "components",
+    "content": "AlignmentOrb chaotic_good A fundamental building block: Alignment Orb atom component medium weight, gas, hot, snappy atom 3d visual spatial morality alignment d&d",
+    "metadata": {
+      "name": "AlignmentOrb",
+      "level": "atom",
+      "prime": 143,
+      "variant": "chaotic_good",
+      "tags": [
+        "atom",
+        "3d",
+        "visual",
+        "spatial",
+        "morality",
+        "alignment",
+        "d&d",
+        "chaotic_good"
+      ],
+      "physics_summary": "medium weight, gas, hot, snappy"
+    }
+  },
+  {
+    "id": "alignmentorb_lawful_neutral",
+    "namespace": "components",
+    "content": "AlignmentOrb lawful_neutral A fundamental building block: Alignment Orb atom component medium weight, solid, cold atom 3d visual spatial morality alignment d&d",
+    "metadata": {
+      "name": "AlignmentOrb",
+      "level": "atom",
+      "prime": 143,
+      "variant": "lawful_neutral",
+      "tags": [
+        "atom",
+        "3d",
+        "visual",
+        "spatial",
+        "morality",
+        "alignment",
+        "d&d",
+        "lawful_neutral"
+      ],
+      "physics_summary": "medium weight, solid, cold"
+    }
+  },
+  {
+    "id": "alignmentorb_true_neutral",
+    "namespace": "components",
+    "content": "AlignmentOrb true_neutral A fundamental building block: Alignment Orb atom component medium weight, liquid, cold atom 3d visual spatial morality alignment d&d",
+    "metadata": {
+      "name": "AlignmentOrb",
+      "level": "atom",
+      "prime": 143,
+      "variant": "true_neutral",
+      "tags": [
+        "atom",
+        "3d",
+        "visual",
+        "spatial",
+        "morality",
+        "alignment",
+        "d&d",
+        "true_neutral"
+      ],
+      "physics_summary": "medium weight, liquid, cold"
+    }
+  },
+  {
+    "id": "alignmentorb_chaotic_neutral",
+    "namespace": "components",
+    "content": "AlignmentOrb chaotic_neutral A fundamental building block: Alignment Orb atom component medium weight, void, warm, snappy atom 3d visual spatial morality alignment d&d",
+    "metadata": {
+      "name": "AlignmentOrb",
+      "level": "atom",
+      "prime": 143,
+      "variant": "chaotic_neutral",
+      "tags": [
+        "atom",
+        "3d",
+        "visual",
+        "spatial",
+        "morality",
+        "alignment",
+        "d&d",
+        "chaotic_neutral"
+      ],
+      "physics_summary": "medium weight, void, warm, snappy"
+    }
+  },
+  {
+    "id": "alignmentorb_lawful_evil",
+    "namespace": "components",
+    "content": "AlignmentOrb lawful_evil A fundamental building block: Alignment Orb atom component heavy, dense, critical atom 3d visual spatial morality alignment d&d",
+    "metadata": {
+      "name": "AlignmentOrb",
+      "level": "atom",
+      "prime": 143,
+      "variant": "lawful_evil",
+      "tags": [
+        "atom",
+        "3d",
+        "visual",
+        "spatial",
+        "morality",
+        "alignment",
+        "d&d",
+        "lawful_evil"
+      ],
+      "physics_summary": "heavy, dense, critical"
+    }
+  },
+  {
+    "id": "alignmentorb_neutral_evil",
+    "namespace": "components",
+    "content": "AlignmentOrb neutral_evil A fundamental building block: Alignment Orb atom component medium weight, liquid, cold atom 3d visual spatial morality alignment d&d",
+    "metadata": {
+      "name": "AlignmentOrb",
+      "level": "atom",
+      "prime": 143,
+      "variant": "neutral_evil",
+      "tags": [
+        "atom",
+        "3d",
+        "visual",
+        "spatial",
+        "morality",
+        "alignment",
+        "d&d",
+        "neutral_evil"
+      ],
+      "physics_summary": "medium weight, liquid, cold"
+    }
+  },
+  {
+    "id": "alignmentorb_chaotic_evil",
+    "namespace": "components",
+    "content": "AlignmentOrb chaotic_evil A fundamental building block: Alignment Orb atom component heavy, void, critical, snappy atom 3d visual spatial morality alignment d&d",
+    "metadata": {
+      "name": "AlignmentOrb",
+      "level": "atom",
+      "prime": 143,
+      "variant": "chaotic_evil",
+      "tags": [
+        "atom",
+        "3d",
+        "visual",
+        "spatial",
+        "morality",
+        "alignment",
+        "d&d",
+        "chaotic_evil"
+      ],
+      "physics_summary": "heavy, void, critical, snappy"
+    }
+  },
+  {
+    "id": "campaigncard",
+    "namespace": "components",
+    "content": "CampaignCard A composed component: Campaign Card molecule component medium weight, solid, cold molecule container content game campaign",
+    "metadata": {
+      "name": "CampaignCard",
+      "level": "molecule",
+      "prime": 66,
+      "tags": [
+        "molecule",
+        "container",
+        "content",
+        "game",
+        "campaign"
+      ],
+      "physics_summary": "medium weight, solid, cold"
+    }
+  },
+  {
+    "id": "campaigncard_hover",
+    "namespace": "components",
+    "content": "CampaignCard hover A composed component: Campaign Card molecule component light, solid, warm molecule container content game campaign",
+    "metadata": {
+      "name": "CampaignCard",
+      "level": "molecule",
+      "prime": 66,
+      "variant": "hover",
+      "tags": [
+        "molecule",
+        "container",
+        "content",
+        "game",
+        "campaign",
+        "hover"
+      ],
+      "physics_summary": "light, solid, warm"
+    }
+  },
+  {
+    "id": "campaigncard_active",
+    "namespace": "components",
+    "content": "CampaignCard active A composed component: Campaign Card molecule component medium weight, solid, hot, snappy molecule container content game campaign",
+    "metadata": {
+      "name": "CampaignCard",
+      "level": "molecule",
+      "prime": 66,
+      "variant": "active",
+      "tags": [
+        "molecule",
+        "container",
+        "content",
+        "game",
+        "campaign",
+        "active"
+      ],
+      "physics_summary": "medium weight, solid, hot, snappy"
+    }
+  },
+  {
+    "id": "worldnode",
+    "namespace": "components",
+    "content": "WorldNode A composed component: World Node molecule component medium weight, solid, cold molecule game world map",
+    "metadata": {
+      "name": "WorldNode",
+      "level": "molecule",
+      "prime": 21,
+      "tags": [
+        "molecule",
+        "game",
+        "world",
+        "map"
+      ],
+      "physics_summary": "medium weight, solid, cold"
+    }
+  },
+  {
+    "id": "worldnode_hover",
+    "namespace": "components",
+    "content": "WorldNode hover A composed component: World Node molecule component medium weight, solid, warm molecule game world map",
+    "metadata": {
+      "name": "WorldNode",
+      "level": "molecule",
+      "prime": 21,
+      "variant": "hover",
+      "tags": [
+        "molecule",
+        "game",
+        "world",
+        "map",
+        "hover"
+      ],
+      "physics_summary": "medium weight, solid, warm"
+    }
+  },
+  {
+    "id": "worldnode_selected",
+    "namespace": "components",
+    "content": "WorldNode selected A composed component: World Node molecule component medium weight, solid, hot molecule game world map",
+    "metadata": {
+      "name": "WorldNode",
+      "level": "molecule",
+      "prime": 21,
+      "variant": "selected",
+      "tags": [
+        "molecule",
+        "game",
+        "world",
+        "map",
+        "selected"
+      ],
+      "physics_summary": "medium weight, solid, hot"
+    }
+  },
+  {
+    "id": "worldnode_cosmic",
+    "namespace": "components",
+    "content": "WorldNode cosmic A composed component: World Node molecule component heavy, void, fusion, snappy molecule game world map",
+    "metadata": {
+      "name": "WorldNode",
+      "level": "molecule",
+      "prime": 21,
+      "variant": "cosmic",
+      "tags": [
+        "molecule",
+        "game",
+        "world",
+        "map",
+        "cosmic"
+      ],
+      "physics_summary": "heavy, void, fusion, snappy"
+    }
+  },
+  {
+    "id": "usergm",
+    "namespace": "components",
+    "content": "UserGM A fundamental building block: User G M atom component heavy, solid, hot atom user identity role",
+    "metadata": {
+      "name": "UserGM",
+      "level": "atom",
+      "prime": 22,
+      "tags": [
+        "atom",
+        "user",
+        "identity",
+        "role"
+      ],
+      "physics_summary": "heavy, solid, hot"
+    }
+  },
+  {
+    "id": "usergm_active",
+    "namespace": "components",
+    "content": "UserGM active A fundamental building block: User G M atom component heavy, dense, critical, snappy atom user identity role",
+    "metadata": {
+      "name": "UserGM",
+      "level": "atom",
+      "prime": 22,
+      "variant": "active",
+      "tags": [
+        "atom",
+        "user",
+        "identity",
+        "role",
+        "active"
+      ],
+      "physics_summary": "heavy, dense, critical, snappy"
+    }
+  },
+  {
+    "id": "userplayer",
+    "namespace": "components",
+    "content": "UserPlayer A fundamental building block: User Player atom component medium weight, solid, warm atom user identity role",
+    "metadata": {
+      "name": "UserPlayer",
+      "level": "atom",
+      "prime": 55,
+      "tags": [
+        "atom",
+        "user",
+        "identity",
+        "role"
+      ],
+      "physics_summary": "medium weight, solid, warm"
+    }
+  },
+  {
+    "id": "userplayer_active",
+    "namespace": "components",
+    "content": "UserPlayer active A fundamental building block: User Player atom component medium weight, solid, hot atom user identity role",
+    "metadata": {
+      "name": "UserPlayer",
+      "level": "atom",
+      "prime": 55,
+      "variant": "active",
+      "tags": [
+        "atom",
+        "user",
+        "identity",
+        "role",
+        "active"
+      ],
+      "physics_summary": "medium weight, solid, hot"
+    }
+  },
+  {
+    "id": "usernpc",
+    "namespace": "components",
+    "content": "UserNPC A fundamental building block: User N P C atom component medium weight, liquid, cold atom user identity role",
+    "metadata": {
+      "name": "UserNPC",
+      "level": "atom",
+      "prime": 77,
+      "tags": [
+        "atom",
+        "user",
+        "identity",
+        "role"
+      ],
+      "physics_summary": "medium weight, liquid, cold"
+    }
+  },
+  {
+    "id": "usernpc_active",
+    "namespace": "components",
+    "content": "UserNPC active A fundamental building block: User N P C atom component medium weight, solid, warm atom user identity role",
+    "metadata": {
+      "name": "UserNPC",
+      "level": "atom",
+      "prime": 77,
+      "variant": "active",
+      "tags": [
+        "atom",
+        "user",
+        "identity",
+        "role",
+        "active"
+      ],
+      "physics_summary": "medium weight, solid, warm"
+    }
+  },
+  {
+    "id": "token",
+    "namespace": "components",
+    "content": "Token A fundamental building block: Token atom component medium weight, solid, cold atom",
+    "metadata": {
+      "name": "Token",
+      "level": "atom",
+      "prime": 35,
+      "tags": [
+        "atom"
+      ],
+      "physics_summary": "medium weight, solid, cold"
+    }
+  },
+  {
+    "id": "token_selected",
+    "namespace": "components",
+    "content": "Token selected A fundamental building block: Token atom component medium weight, solid, hot atom",
+    "metadata": {
+      "name": "Token",
+      "level": "atom",
+      "prime": 35,
+      "variant": "selected",
+      "tags": [
+        "atom",
+        "selected"
+      ],
+      "physics_summary": "medium weight, solid, hot"
+    }
+  },
+  {
+    "id": "token_targeted",
+    "namespace": "components",
+    "content": "Token targeted A fundamental building block: Token atom component medium weight, solid, critical atom",
+    "metadata": {
+      "name": "Token",
+      "level": "atom",
+      "prime": 35,
+      "variant": "targeted",
+      "tags": [
+        "atom",
+        "targeted"
+      ],
+      "physics_summary": "medium weight, solid, critical"
+    }
+  },
+  {
+    "id": "token_dead",
+    "namespace": "components",
+    "content": "Token dead A fundamental building block: Token atom component light, gas, cold, sluggish atom",
+    "metadata": {
+      "name": "Token",
+      "level": "atom",
+      "prime": 35,
+      "variant": "dead",
+      "tags": [
+        "atom",
+        "dead"
+      ],
+      "physics_summary": "light, gas, cold, sluggish"
+    }
+  },
+  {
+    "id": "scatter3d",
+    "namespace": "components",
+    "content": "Scatter3D A fundamental building block: Scatter3 D atom component medium weight, void, warm, snappy atom 3d visual spatial",
+    "metadata": {
+      "name": "Scatter3D",
+      "level": "atom",
+      "prime": 77,
+      "tags": [
+        "atom",
+        "3d",
+        "visual",
+        "spatial"
+      ],
+      "physics_summary": "medium weight, void, warm, snappy"
+    }
+  },
+  {
+    "id": "cubechart",
+    "namespace": "components",
+    "content": "CubeChart A fundamental building block: Cube Chart atom component medium weight, dense, warm atom 3d visual spatial",
+    "metadata": {
+      "name": "CubeChart",
+      "level": "atom",
+      "prime": 49,
+      "tags": [
+        "atom",
+        "3d",
+        "visual",
+        "spatial"
+      ],
+      "physics_summary": "medium weight, dense, warm"
+    }
+  },
+  {
+    "id": "prism",
+    "namespace": "components",
+    "content": "Prism A fundamental building block: Prism atom component medium weight, solid, warm atom",
+    "metadata": {
+      "name": "Prism",
+      "level": "atom",
+      "prime": 35,
+      "tags": [
+        "atom"
+      ],
+      "physics_summary": "medium weight, solid, warm"
+    }
+  }
+]

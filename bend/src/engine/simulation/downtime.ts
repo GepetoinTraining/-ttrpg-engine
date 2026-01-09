@@ -151,6 +151,7 @@ export const DowntimeActionTemplateSchema = z.object({
           consumed: z.boolean().default(true),
         }),
       )
+      .optional()
       .default([]),
 
     // Prerequisites
@@ -162,7 +163,7 @@ export const DowntimeActionTemplateSchema = z.object({
 
     // Context
     requiredLocation: z.string().optional(),
-    requiresTarget: z.boolean().default(false),
+    requiresTarget: z.boolean().optional().default(false),
   }),
 
   // Duration
@@ -184,6 +185,7 @@ export const DowntimeActionTemplateSchema = z.object({
           bonus: z.number().int(),
         }),
       )
+      .optional()
       .default([]),
   }),
 
@@ -219,6 +221,15 @@ export const DowntimeActionTemplateSchema = z.object({
 
     failure: z.object({
       description: z.string(),
+      rewards: z
+        .array(
+          z.object({
+            type: ResourceTypeSchema,
+            amount: z.number(),
+          }),
+        )
+        .optional()
+        .default([]),
       penalties: z
         .array(
           z.object({
@@ -226,8 +237,9 @@ export const DowntimeActionTemplateSchema = z.object({
             amount: z.number(),
           }),
         )
+        .optional()
         .default([]),
-      effects: z.array(z.string()).default([]),
+      effects: z.array(z.string()).optional().default([]),
     }),
 
     criticalFailure: z
@@ -253,6 +265,10 @@ export const DowntimeActionTemplateSchema = z.object({
   tags: z.array(z.string()).default([]),
 });
 export type DowntimeActionTemplate = z.infer<
+  typeof DowntimeActionTemplateSchema
+>;
+// Input type allows optional fields that have defaults
+export type DowntimeActionTemplateInput = z.input<
   typeof DowntimeActionTemplateSchema
 >;
 
@@ -478,7 +494,7 @@ export type DowntimePeriod = z.infer<typeof DowntimePeriodSchema>;
 // STANDARD DOWNTIME ACTIONS
 // ============================================
 
-export const StandardDowntimeActions: DowntimeActionTemplate[] = [
+export const StandardDowntimeActions: DowntimeActionTemplateInput[] = [
   // ═══════════════════════════════════════
   // POLITICAL
   // ═══════════════════════════════════════

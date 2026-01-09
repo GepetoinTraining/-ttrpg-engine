@@ -2,6 +2,42 @@
    GLOBAL STYLES
    ============================================ */
 
+/* ============================================
+   PHI CSS VARIABLES
+   The physics engine theming layer
+   ============================================ */
+
+:root {
+  /* Core palette */
+  --surface: #1e293b;
+  --surface-elevated: #334155;
+  --surface-void: transparent;
+  --border: #475569;
+  --border-subtle: rgba(255, 255, 255, 0.05);
+
+  /* Energy spectrum (temperature) */
+  --energy: #0ea5e9;
+  --energy-cold: #334155;
+  --energy-warm: #0ea5e9;
+  --energy-hot: #f59e0b;
+  --energy-critical: #ef4444;
+  --energy-fusion: #8b5cf6;
+
+  /* Text hierarchy */
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  /* Role colors (matryoshka identity) */
+  --gm-energy: #f59e0b;
+  --player-energy: #0ea5e9;
+  --npc-energy: #64748b;
+
+  /* 3D perspective */
+  --perspective: 800px;
+  --preserve-3d: preserve-3d;
+}
+
 /* Reset & Base */
 *, *::before, *::after {
   box-sizing: border-box;

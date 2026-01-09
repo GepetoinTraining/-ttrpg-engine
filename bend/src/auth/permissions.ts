@@ -4,7 +4,6 @@ import type {
   CampaignRole,
   CampaignMembership,
   SessionAuth,
-  CharacterOwnership,
 } from "./types";
 import { CampaignRolePermissions } from "./types";
 

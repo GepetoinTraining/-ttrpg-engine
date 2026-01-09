@@ -22,7 +22,7 @@ export const combatRouter = router({
   /**
    * Get combat by ID
    */
-  get: campaignProcedure.input(IdInput).query(async ({ ctx, input }) => {
+  get: campaignProcedure.input(IdInput).query(async ({ input }) => {
     const combat = await db.getCombat(input.id);
     if (!combat) notFound("Combat", input.id);
     return combat;
@@ -33,7 +33,7 @@ export const combatRouter = router({
    */
   active: campaignProcedure
     .input(z.object({ sessionId: z.string().uuid() }))
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       return db.getActiveCombat(input.sessionId);
     }),
 
@@ -42,7 +42,7 @@ export const combatRouter = router({
    */
   participants: campaignProcedure
     .input(IdInput)
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const combat = await db.getCombat(input.id);
       if (!combat) notFound("Combat", input.id);
       return db.getParticipants(input.id);
@@ -79,7 +79,7 @@ export const combatRouter = router({
         limit: z.number().int().min(1).max(100).default(50),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       return db.getCombatLog(input.id, input.limit);
     }),
 
@@ -93,7 +93,7 @@ export const combatRouter = router({
         round: z.number().int().min(1),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       return db.getRoundLog(input.combatId, input.round);
     }),
 
@@ -146,7 +146,7 @@ export const combatRouter = router({
   /**
    * Start combat
    */
-  start: gmProcedure.input(IdInput).mutation(async ({ ctx, input }) => {
+  start: gmProcedure.input(IdInput).mutation(async ({ input }) => {
     const combat = await db.getCombat(input.id);
     if (!combat) notFound("Combat", input.id);
 
@@ -163,7 +163,7 @@ export const combatRouter = router({
   /**
    * End combat
    */
-  end: gmProcedure.input(IdInput).mutation(async ({ ctx, input }) => {
+  end: gmProcedure.input(IdInput).mutation(async ({ input }) => {
     const combat = await db.getCombat(input.id);
     if (!combat) notFound("Combat", input.id);
 
@@ -173,14 +173,14 @@ export const combatRouter = router({
   /**
    * Pause combat
    */
-  pause: gmProcedure.input(IdInput).mutation(async ({ ctx, input }) => {
+  pause: gmProcedure.input(IdInput).mutation(async ({ input }) => {
     return db.pauseCombat(input.id);
   }),
 
   /**
    * Resume combat
    */
-  resume: gmProcedure.input(IdInput).mutation(async ({ ctx, input }) => {
+  resume: gmProcedure.input(IdInput).mutation(async ({ input }) => {
     return db.resumeCombat(input.id);
   }),
 
@@ -191,7 +191,7 @@ export const combatRouter = router({
   /**
    * Next turn
    */
-  nextTurn: gmProcedure.input(IdInput).mutation(async ({ ctx, input }) => {
+  nextTurn: gmProcedure.input(IdInput).mutation(async ({ input }) => {
     const combat = await db.getCombat(input.id);
     if (!combat) notFound("Combat", input.id);
 
@@ -215,7 +215,7 @@ export const combatRouter = router({
         participantId: z.string().uuid(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       return db.setTurn(input.combatId, input.participantId);
     }),
 
@@ -245,7 +245,7 @@ export const combatRouter = router({
         groupId: z.string().uuid().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       // Explicitly construct to satisfy TypeScript
       return db.addParticipant(input.combatId, {
         entityType: input.entityType,
@@ -273,7 +273,7 @@ export const combatRouter = router({
         participantId: z.string().uuid(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       await db.removeParticipant(input.participantId);
       return { success: true };
     }),
@@ -288,7 +288,7 @@ export const combatRouter = router({
         initiative: z.number().int(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       await db.setInitiative(input.participantId, input.initiative);
       return { success: true };
     }),
@@ -308,7 +308,7 @@ export const combatRouter = router({
         ),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       // Explicitly type the rolls array to satisfy TypeScript
       const typedRolls: { participantId: string; roll: number }[] = input.rolls.map(r => ({
         participantId: r.participantId,
@@ -411,7 +411,7 @@ export const combatRouter = router({
         condition: z.string().min(1).max(50),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       await db.addCondition(input.participantId, input.condition);
       return { success: true };
     }),
@@ -426,7 +426,7 @@ export const combatRouter = router({
         condition: z.string(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       await db.removeCondition(input.participantId, input.condition);
       return { success: true };
     }),
@@ -465,7 +465,7 @@ export const combatRouter = router({
         visible: z.boolean(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       await db.setVisibility(input.participantId, input.visible);
       return { success: true };
     }),

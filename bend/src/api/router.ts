@@ -1,4 +1,5 @@
 import { router } from "./trpc";
+import { authRouter } from "./routers/auth";
 import { campaignRouter } from "./routers/campaign";
 import { characterRouter } from "./routers/character";
 import { combatRouter } from "./routers/combat";
@@ -11,7 +12,10 @@ import { questRouter } from "./routers/quest";
 import { downtimeRouter } from "./routers/downtime";
 import { economyRouter } from "./routers/economy";
 import { gmRouter } from "./routers/gm";
+import { gmOrchestratorRouter } from "./routers/gm-orchestrator";
 import { userRouter } from "./routers/user";
+import { inventoryRouter } from "./routers/inventory";
+import { genesisRouter } from "./routers/genesis";
 
 // ============================================
 // APP ROUTER
@@ -32,9 +36,13 @@ import { userRouter } from "./routers/user";
 //   api.world.*      - World nodes, edges, factions
 //   api.sync.*       - Delta sync for real-time
 //   api.gm.*         - GM-only tools, notes, secrets
+//   api.inventory.*  - Inventory systems, items, equipment, currency
+//   api.genesis.*    - World seeding, canonical data
+//   api.auth.*       - Topology authentication, enrollment, challenges
 //
 
 export const appRouter = router({
+  auth: authRouter,
   campaign: campaignRouter,
   party: partyRouter,
   character: characterRouter,
@@ -47,7 +55,10 @@ export const appRouter = router({
   world: worldRouter,
   sync: syncRouter,
   gm: gmRouter,
+  gmOrchestrator: gmOrchestratorRouter,
   user: userRouter,
+  inventory: inventoryRouter,
+  genesis: genesisRouter,
 });
 
 // Export type for client

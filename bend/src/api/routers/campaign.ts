@@ -2,7 +2,6 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import {
   router,
-  publicProcedure,
   protectedProcedure,
   campaignProcedure,
   gmProcedure,
@@ -85,27 +84,26 @@ export const campaignRouter = router({
     .input(
       z.object({
         name: z.string().min(1).max(100),
+        tagline: z.string().max(150).optional(),
         description: z.string().max(2000).optional(),
         system: z.string().default("dnd5e"),
         primaryWorldId: z.string().uuid().optional(),
+        startingRegionId: z.string().uuid().optional(),
         settings: z.record(z.string(), z.any()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Explicitly construct the input to satisfy TypeScript
       const createInput: db.CreateCampaignInput = {
         name: input.name,
+        tagline: input.tagline,
         description: input.description,
         primaryWorldId: input.primaryWorldId,
+        startingRegionId: input.startingRegionId,
         settings: input.settings,
         ownerId: ctx.auth.userId,
       };
 
       const campaign = await db.createCampaign(createInput);
-
-      // Note: createCampaign already adds owner as member internally
-      // No need to call addCampaignMember here
-
       return campaign;
     }),
 

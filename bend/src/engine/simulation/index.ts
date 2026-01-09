@@ -26,6 +26,8 @@ export * from "./settlements";
 export * from "./factions";
 export * from "./contributions";
 export * from "./economy";
+export * from "./survival";
+export * from "./authority";
 
 // ============================================
 // THE COMPLETE DOWNTIME LOOP

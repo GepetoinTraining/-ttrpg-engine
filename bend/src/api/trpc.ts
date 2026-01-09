@@ -6,9 +6,10 @@ import type {
   Permission,
 } from "../auth/types";
 import { PermissionChecker, createChecker } from "../auth/permissions";
-import type { ClerkJWTClaims } from "../auth/clerk";
-import { claimsToSessionAuth } from "../auth/clerk";
-import { ensureUser } from "../db/queries/users";
+import {
+  verifyTopologyAuth,
+  verifyTopologyAuthQuick,
+} from "../auth/topology";
 
 // ============================================
 // tRPC SETUP
@@ -58,7 +59,11 @@ export interface CampaignContext extends AuthenticatedContext {
 // ============================================
 
 export interface CreateContextOptions {
-  claims: ClerkJWTClaims | null;
+  // Topology auth (new)
+  certificateHash?: string;
+  challengeId?: string;
+  trajectory?: string;
+
   getMembership: (
     userId: string,
     campaignId: string,
@@ -72,9 +77,19 @@ export interface CreateContextOptions {
 export async function createContext(
   opts: CreateContextOptions,
 ): Promise<Context> {
-  const { claims, getMembership, campaignId, requestId, ip, userAgent } = opts;
+  const {
+    certificateHash,
+    challengeId,
+    trajectory,
+    getMembership,
+    campaignId,
+    requestId,
+    ip,
+    userAgent,
+  } = opts;
 
-  if (!claims) {
+  // No auth credentials provided
+  if (!certificateHash) {
     return {
       auth: null,
       membership: null,
@@ -85,21 +100,33 @@ export async function createContext(
     };
   }
 
-  // Sync Clerk user to our database
-  await ensureUser({
-    id: claims.sub,
-    email: claims.email,
-    displayName: claims.name,
-    avatarUrl: claims.picture,
-  });
+  // Verify topology auth
+  let auth: SessionAuth | null = null;
 
-  // Build auth from claims
-  const auth = claimsToSessionAuth(claims);
+  if (challengeId && trajectory) {
+    // Full challenge/response verification
+    auth = await verifyTopologyAuth(certificateHash, challengeId, trajectory);
+  } else {
+    // Quick verification using certificate hash only
+    // (for subsequent requests after initial challenge/response)
+    auth = await verifyTopologyAuthQuick(certificateHash);
+  }
+
+  if (!auth) {
+    return {
+      auth: null,
+      membership: null,
+      checker: null,
+      requestId: requestId || crypto.randomUUID(),
+      ip,
+      userAgent,
+    };
+  }
 
   // Get membership if campaign specified
   let membership: CampaignMembership | null = null;
   if (campaignId) {
-    membership = await getMembership(claims.sub, campaignId);
+    membership = await getMembership(auth.userId, campaignId);
   }
 
   // Build checker
@@ -120,7 +147,7 @@ export async function createContext(
 // ============================================
 
 const t = initTRPC.context<Context>().create({
-  errorFormatter({ shape, error }) {
+  errorFormatter({ shape }) {
     return {
       ...shape,
       data: {

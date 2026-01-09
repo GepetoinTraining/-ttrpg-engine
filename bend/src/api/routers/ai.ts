@@ -1,10 +1,17 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { router, protectedProcedure, campaignProcedure, gmProcedure } from "../trpc";
-import { query, queryOne, queryAll, uuid, now, toJson, parseJson } from "../../db/client";
+import { router, campaignProcedure, gmProcedure } from "../trpc";
+import { query, queryOne, uuid, now, toJson, parseJson } from "../../db/client";
 import { NPCAI } from "../../ai/npc";
 import { GeminiClient } from "../../ai/client";
-import { buildContext } from "../../ai/context";
+import { buildContext, createContext } from "../../ai/context";
+import type { NPCProfile } from "../../ai/context";
+import {
+  fetchSimulationState,
+  abilityScoreToModifier,
+  inferEconomicPressure,
+  inferNPCRole,
+} from "../../ai/simulation-bridge";
 
 // =============================================================================
 // AI ROUTER
@@ -19,6 +26,7 @@ export const aiRouter = router({
       npcId: z.string().uuid(),
       message: z.string().min(1).max(2000),
       sessionId: z.string().uuid().optional(),
+      locationId: z.string().uuid().optional(),
       speakerContext: z.object({
         isGM: z.boolean(),
         speakAs: z.enum(["gm", "character"]),
@@ -30,18 +38,24 @@ export const aiRouter = router({
       })).max(20).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      // Get NPC
+      // Get NPC with full data
       const npc = await queryOne<{
         id: string;
         name: string;
         role: string;
+        race: string;
         personality: string;
         background: string;
         secrets: string;
         voice_style: string;
         depth: number;
+        location_id: string;
+        data_static: string;
+        data_dynamic: string;
       }>(
-        "SELECT id, name, role, personality, background, secrets, voice_style, depth FROM npcs WHERE id = ? AND campaign_id = ?",
+        `SELECT id, name, role, race, personality, background, secrets, voice_style,
+                depth, location_id, data_static, data_dynamic
+         FROM npcs WHERE id = ? AND campaign_id = ?`,
         [input.npcId, ctx.campaignId]
       );
 
@@ -49,27 +63,109 @@ export const aiRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "NPC not found" });
       }
 
-      // Build context
-      const context = await buildContext(ctx.campaignId, {
+      // Parse NPC data
+      const staticData = parseJson<any>(npc.data_static) || {};
+      const dynamicData = parseJson<any>(npc.data_dynamic) || {};
+
+      // Determine location
+      const locationId = input.locationId || npc.location_id;
+
+      // Build phenomenological context if we have a location
+      let simulationState;
+      if (locationId) {
+        try {
+          simulationState = await fetchSimulationState({
+            settlementId: locationId,
+            campaignId: ctx.campaignId,
+            npcId: input.npcId,
+          });
+        } catch {
+          // Simulation state is optional - continue without it
+        }
+      }
+
+      // Build NPC profile with attributes for phenomenological translation
+      const npcProfile: NPCProfile = {
+        id: npc.id,
+        name: npc.name,
+        race: npc.race,
+        occupation: npc.role,
+        personality: npc.personality || staticData.personality || '',
+        voice: npc.voice_style || staticData.voiceStyle || '',
+        publicGoals: staticData.goals || [],
+        secretGoals: staticData.secretGoals,
+        knowledgeAreas: staticData.knowledgeAreas || [],
+        relationships: staticData.relationships || [],
+        factionMemberships: staticData.factionMemberships,
+        currentMood: dynamicData.mood || dynamicData.currentMood || 'neutral',
+        currentActivity: dynamicData.activity,
+        depth: npc.depth,
+        // Attributes for phenomenological lens
+        intelligence: staticData.intelligence
+          ? abilityScoreToModifier(staticData.intelligence)
+          : 0,
+        wisdom: staticData.wisdom
+          ? abilityScoreToModifier(staticData.wisdom)
+          : 0,
+        charisma: staticData.charisma
+          ? abilityScoreToModifier(staticData.charisma)
+          : 0,
+        role: inferNPCRole(npc.role || 'commoner'),
+        economicPressure: inferEconomicPressure(dynamicData),
+        recentEvents: dynamicData.recentEvents || [],
+      };
+
+      // Build context with simulation state
+      const contextBuilder = createContext()
+        .setNPC(npcProfile);
+
+      // Add simulation state for phenomenological translation
+      if (simulationState) {
+        contextBuilder.setSimulationState({
+          economy: simulationState.economy,
+          factions: simulationState.factions,
+          threats: simulationState.threats,
+          guild: simulationState.guild,
+        });
+      }
+
+      // Load location if available
+      if (locationId) {
+        await contextBuilder.loadLocation(locationId);
+      }
+
+      const fullContext = contextBuilder.build();
+
+      // Also get campaign context for world info
+      const campaignContext = await buildContext(ctx.campaignId, {
         sessionId: input.sessionId,
         includeLocation: true,
       });
 
-      // Generate response
-      const npcAI = new NPCAI(npc, context);
-      const response = await npcAI.generateDialogue(input.message, {
+      // Generate response using the new context
+      const npcAI = new NPCAI(npcProfile, campaignContext);
+
+      // Override with phenomenological system prompt
+      const systemPrompt = contextBuilder.buildSystemPrompt();
+      const response = await npcAI.chat(input.message, {
         speakerContext: input.speakerContext,
         conversationHistory: input.conversationHistory,
+        systemPromptOverride: systemPrompt,
       });
 
       // Log interaction
       await query(
         `INSERT INTO npc_interactions (id, npc_id, campaign_id, user_id, message, response, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [uuid(), input.npcId, ctx.campaignId, ctx.auth.userId, input.message, response.message, now()]
+        [uuid(), input.npcId, ctx.campaignId, ctx.auth.userId, input.message, response.text || '', now()]
       );
 
-      return response;
+      return {
+        message: response.text || '',
+        emotion: response.emotion,
+        action: response.action,
+        livedExperience: fullContext.livedExperience,
+      };
     }),
 
   // ---------------------------------------------------------------------------
@@ -104,7 +200,7 @@ export const aiRouter = router({
       // Get campaign context for coherent generation
       const context = await buildContext(ctx.campaignId, { includeWorld: true });
 
-      const client = new GeminiClient("gemini-2.5-pro"); // Pro for deep generation
+      const client = new GeminiClient({ model: "gemini-2.5-pro" }); // Pro for deep generation
       const result = await client.generate({
         systemInstruction: `You are a TTRPG content generator. Generate deeper character details that are coherent with the existing campaign world and character.`,
         prompt: `
@@ -178,7 +274,7 @@ Respond in JSON format:
     .mutation(async ({ ctx, input }) => {
       const campaignContext = await buildContext(ctx.campaignId, { includeWorld: true });
 
-      const client = new GeminiClient("gemini-2.5-flash");
+      const client = new GeminiClient({ model: "gemini-2.5-flash" });
       const result = await client.generate({
         systemInstruction: `You are a TTRPG NPC generator. Create interesting, memorable NPCs that fit the campaign world.`,
         prompt: `
@@ -243,7 +339,7 @@ Generate an NPC at Depth ${input.depth}. Respond in JSON:
     .mutation(async ({ ctx, input }) => {
       const context = await buildContext(ctx.campaignId, { includeLocation: true });
 
-      const client = new GeminiClient("gemini-2.5-flash");
+      const client = new GeminiClient({ model: "gemini-2.5-flash" });
       const result = await client.generate({
         systemInstruction: `You are a D&D 5e encounter designer. Create balanced, interesting combat encounters.`,
         prompt: `
@@ -280,8 +376,8 @@ Design an encounter. Respond in JSON:
       tier: z.enum(["individual", "hoard", "boss"]),
       theme: z.string().optional(),
     }))
-    .mutation(async ({ ctx, input }) => {
-      const client = new GeminiClient("gemini-2.5-flash");
+    .mutation(async ({ input }) => {
+      const client = new GeminiClient({ model: "gemini-2.5-flash" });
 
       const goldMultiplier = {
         individual: 1,
@@ -335,7 +431,7 @@ Include ${input.tier === "individual" ? "0-1" : input.tier === "hoard" ? "2-4" :
         includeParty: true,
       });
 
-      const client = new GeminiClient("gemini-2.5-flash");
+      const client = new GeminiClient({ model: "gemini-2.5-flash" });
       const result = await client.generate({
         systemInstruction: `You are an experienced TTRPG Game Master assistant. Help with rules questions, story advice, pacing, and improvisation. Be concise and practical. Reference D&D 5e rules when relevant but note that house rules may apply.`,
         prompt: `
@@ -376,7 +472,7 @@ GM Question: ${input.question}`,
     }))
     .mutation(async ({ ctx, input }) => {
       // First, classify the request
-      const client = new GeminiClient("gemini-2.5-flash");
+      const client = new GeminiClient({ model: "gemini-2.5-flash" });
 
       const classificationResult = await client.generate({
         systemInstruction: `Classify the user's TTRPG request into one category. Respond with only the category name.`,

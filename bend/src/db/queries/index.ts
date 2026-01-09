@@ -18,3 +18,4 @@ export * from "./combat";
 export * from "./factions";
 export * from "./sessions";
 export * from "./sync";
+export * from "./inventory";

@@ -671,7 +671,7 @@ export function compressDeltas(deltas: Delta[]): Delta[] {
   // Compress each group
   const compressed: Delta[] = [];
 
-  for (const [key, recordDeltas] of byRecord) {
+  for (const [_key, recordDeltas] of byRecord) {
     if (recordDeltas.length === 1) {
       compressed.push(recordDeltas[0]);
       continue;
