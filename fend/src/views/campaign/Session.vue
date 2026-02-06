@@ -50,6 +50,7 @@ function handleError(error: Error) {
     <GenesisViewport
       v-else
       :campaign-id="campaignId"
+      view="session"
       @exit="exitSession"
       @error="handleError"
     />

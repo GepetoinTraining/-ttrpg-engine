@@ -86,7 +86,7 @@ async function buildCharacterBuilderWorld(campaignId: string): Promise<string> {
       </header>
 
       <!-- Main form - scrollable -->
-      <form style="display: flex; flex-wrap: wrap; gap: 1.5rem; flex: 1; overflow-y: auto; align-content: flex-start;">
+      <form id="character-birth-form" style="display: flex; flex-wrap: wrap; gap: 1.5rem; flex: 1; overflow-y: auto; align-content: flex-start;">
 
         <!-- Column 1: Identity -->
         <section style="flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 1rem;">
@@ -184,7 +184,7 @@ async function buildCharacterBuilderWorld(campaignId: string): Promise<string> {
         }
         ${birthButton
           ? precipitateDbAtom(birthButton, campaignId)
-          : `<button type="submit" data-dest-type="mutation" data-dest="character.birth" style="padding: 0.75rem 1.5rem; border: none; border-radius: 6px; background: #f59e0b; color: #0f172a; font-weight: 600; cursor: pointer;">Birth Character</button>`
+          : `<button type="submit" form="character-birth-form" data-dest-type="mutation" data-dest="character.birth" style="padding: 0.75rem 1.5rem; border: none; border-radius: 6px; background: #f59e0b; color: #0f172a; font-weight: 600; cursor: pointer;">Birth Character</button>`
         }
       </footer>
 
@@ -199,7 +199,7 @@ async function buildCharacterBuilderWorld(campaignId: string): Promise<string> {
  * Build the main campaign world view
  */
 function buildCampaignWorld(campaignId: string): string {
-  // Build content
+  // Build content with data-dest wiring for navigation
   const content = `
     <div style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
       <header style="margin-bottom: 2rem;">
@@ -210,24 +210,24 @@ function buildCampaignWorld(campaignId: string): string {
         ${molecules.card([
           atoms.heading('Characters', 3),
           atoms.text('Manage your party members', 'muted'),
-          atoms.button('View Characters', 'secondary')
+          atoms.button('View Characters', 'secondary', { 'data-dest-type': 'route', 'data-dest': 'campaign-characters' })
         ], 'elevated')}
 
         ${molecules.card([
           atoms.heading('World', 3),
           atoms.text('Explore regions and locations', 'muted'),
-          atoms.button('View World', 'secondary')
+          atoms.button('View World', 'secondary', { 'data-dest-type': 'route', 'data-dest': 'campaign-world' })
         ], 'elevated')}
 
         ${molecules.card([
           atoms.heading('Session', 3),
           atoms.text('Start or continue a session', 'muted'),
-          atoms.button('Enter Session', 'primary')
+          atoms.button('Enter Session', 'primary', { 'data-dest-type': 'route', 'data-dest': 'campaign-session' })
         ], 'elevated')}
       </div>
 
       <footer style="margin-top: 3rem; text-align: center;">
-        <button onclick="window.dispatchEvent(new CustomEvent('genesis:exit'))" style="background: transparent; border: 1px solid #475569; color: #94a3b8; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">
+        <button data-dest-type="event" data-dest="genesis:exit" style="background: transparent; border: 1px solid #475569; color: #94a3b8; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">
           Exit to Campaigns
         </button>
       </footer>
@@ -247,7 +247,7 @@ function buildSessionWorld(campaignId: string): string {
     <div style="display: flex; flex-direction: column; min-height: 100vh;">
       <header style="padding: 1rem 2rem; border-bottom: 1px solid #475569; display: flex; justify-content: space-between; align-items: center;">
         ${atoms.heading('Session', 2)}
-        <button onclick="window.dispatchEvent(new CustomEvent('genesis:exit'))" style="background: transparent; border: 1px solid #475569; color: #94a3b8; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">
+        <button data-dest-type="event" data-dest="genesis:exit" style="background: transparent; border: 1px solid #475569; color: #94a3b8; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">
           Exit
         </button>
       </header>
@@ -270,8 +270,8 @@ function buildSessionWorld(campaignId: string): string {
 
       <footer style="padding: 1rem 2rem; border-top: 1px solid #1e293b; background: linear-gradient(to top, #0a0a0f, transparent);">
         <div style="max-width: 800px; margin: 0 auto; display: flex; gap: 1rem;">
-          ${atoms.input('What do you do?', 'default', { style: 'flex: 1;' })}
-          ${atoms.button('Act', 'primary')}
+          ${atoms.input('What do you do?', 'default', { name: 'action', style: 'flex: 1;' })}
+          ${atoms.button('Act', 'primary', { 'data-dest-type': 'mutation', 'data-dest': 'session.act' })}
         </div>
       </footer>
     </div>

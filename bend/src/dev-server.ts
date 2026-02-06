@@ -14,6 +14,7 @@ import { createContext } from './api/trpc'
 import { getCampaignMembership as getMembership } from './db/queries/campaigns'
 import { initDatabase } from './db/client'
 import { runMigrations } from './db/migrations'
+import { isSeedImported, importWithLogging, formatImportResult } from './db/seeds'
 
 // Load .env.local first if it exists (overrides .env)
 const envLocalPath = resolve(import.meta.dir, '../.env.local')
@@ -50,6 +51,28 @@ async function initSchema() {
     console.log(`[DEV] Schema ready: ${result.tablesCreated.length} tables`)
   } else {
     console.error('[DEV] Migration errors:', result.errors)
+    return
+  }
+
+  // Auto-seed world data on first run
+  const CORE_SEED_ID = 'seed-core-realms-001'
+  try {
+    const alreadySeeded = await isSeedImported(CORE_SEED_ID)
+    if (!alreadySeeded) {
+      console.log('[DEV] First run detected — seeding world data...')
+      const manifestPath = resolve(import.meta.dir, 'db/seeds/00_system/manifest.json')
+      const seedResult = await importWithLogging(manifestPath, {
+        onConflict: 'skip',
+        batchSize: 50,
+        validateFirst: true,
+      })
+      console.log('[DEV]', formatImportResult(seedResult))
+    } else {
+      console.log('[DEV] World data already seeded')
+    }
+  } catch (e) {
+    // Seeding failure is non-fatal — server still starts
+    console.warn('[DEV] Auto-seed failed (non-fatal):', e instanceof Error ? e.message : e)
   }
 }
 
