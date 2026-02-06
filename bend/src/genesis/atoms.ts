@@ -78,68 +78,70 @@ export const VARIANT_PHYSICS: Record<string, Record<string, Partial<PhysicsState
   WorldSurface: {
     default: { mass: 0, density: 0, temperature: 0.1, charge: 0, friction: 0, pressure: 1, buoyancy: 1 },
   },
-  // Surface - container that stacks children vertically, fills width
+  // Surface - transparent container, stacks children vertically, fills width
   Surface: {
-    default: { mass: 0.1, density: 0.2, temperature: 0.2, friction: 0.1, pressure: 0.8, buoyancy: 1 },
+    default: { mass: 0.08, density: 0.3, temperature: 0.2, friction: 0.1, pressure: 0.8, buoyancy: 1 },
     void: { mass: 0, density: 0, temperature: 0, friction: 0, pressure: 1, buoyancy: 1 },
   },
-  // Buttons - inline, don't expand (pressure < 0.5)
+  // Buttons - compact inline elements (pressure < 0.5)
+  // All variants specify density to prevent bloated padding from seed factorization
   Button: {
-    primary: { mass: 0.7, temperature: 0.8, friction: 0.2, pressure: 0.3, buoyancy: 0 },
-    secondary: { mass: 0.5, temperature: 0.6, friction: 0.3, pressure: 0.3, buoyancy: 0 },
-    ghost: { mass: 0.3, density: 0.2, friction: 0.2, pressure: 0.3, buoyancy: 0 },
-    danger: { mass: 0.7, temperature: 0.95, friction: 0.2, pressure: 0.3, buoyancy: 0 },
-    disabled: { mass: 0.2, density: 0.2, friction: 0.8, pressure: 0.3, buoyancy: 0 },
-    selected: { mass: 0.6, temperature: 0.7, friction: 0.2, pressure: 0.3, buoyancy: 0, density: 0.8 },
+    primary:  { mass: 0.8, density: 0.7, temperature: 0.8, friction: 0.2, pressure: 0.3, buoyancy: 0 },
+    secondary:{ mass: 0.45, density: 0.7, temperature: 0.4, friction: 0.3, pressure: 0.3, buoyancy: 0 },
+    ghost:    { mass: 0, density: 0.7, temperature: 0.3, friction: 0.2, pressure: 0.3, buoyancy: 0 },
+    danger:   { mass: 0.8, density: 0.7, temperature: 0.95, friction: 0.2, pressure: 0.3, buoyancy: 0 },
+    disabled: { mass: 0.15, density: 0.7, temperature: 0.2, friction: 0.8, pressure: 0.3, buoyancy: 0 },
+    selected: { mass: 0.7, density: 0.7, temperature: 0.7, friction: 0.2, pressure: 0.3, buoyancy: 0 },
   },
   // Inputs - fill width (pressure > 0.5), row layout
   Input: {
-    default: { mass: 0.4, density: 0.6, temperature: 0.3, pressure: 0.8, buoyancy: 0 },
-    focused: { mass: 0.5, temperature: 0.5, friction: 0.2, pressure: 0.8, buoyancy: 0 },
-    error: { mass: 0.5, temperature: 0.9, friction: 0.3, pressure: 0.8, buoyancy: 0 },
-    disabled: { mass: 0.2, density: 0.2, friction: 0.8, pressure: 0.8, buoyancy: 0 },
+    default:  { mass: 0.3, density: 0.65, temperature: 0.2, friction: 0.3, pressure: 0.8, buoyancy: 0 },
+    focused:  { mass: 0.4, density: 0.65, temperature: 0.4, friction: 0.2, pressure: 0.8, buoyancy: 0 },
+    error:    { mass: 0.4, density: 0.65, temperature: 0.9, friction: 0.3, pressure: 0.8, buoyancy: 0 },
+    disabled: { mass: 0.15, density: 0.65, temperature: 0.2, friction: 0.8, pressure: 0.8, buoyancy: 0 },
   },
-  // Cards - stack children vertically (buoyancy > 0), fill width (pressure > 0.5)
+  // Cards - stack children vertically (buoyancy > 0.5), fill width
   Card: {
-    default: { mass: 0.6, density: 0.7, charge: 0.5, pressure: 0.8, buoyancy: 1 },
-    elevated: { mass: 0.8, density: 0.8, pressure: 0.8, buoyancy: 1 },
-    floating: { mass: -0.3, density: 0.5, pressure: 0.8, buoyancy: 1 },
-    glass: { mass: 0.4, density: 0.4, friction: 0.3, pressure: 0.8, buoyancy: 1 },
+    default:  { mass: 0.5, density: 0.5, temperature: 0.25, pressure: 0.8, buoyancy: 1 },
+    elevated: { mass: 0.7, density: 0.5, temperature: 0.25, pressure: 0.8, buoyancy: 1 },
+    floating: { mass: 0.2, density: 0.45, temperature: 0.2, pressure: 0.8, buoyancy: 1 },
+    glass:    { mass: 0.15, density: 0.45, temperature: 0.2, friction: 0.3, pressure: 0.8, buoyancy: 1 },
   },
-  // Badges - inline, shrink to content
+  // Badges - compact inline, visible background
   Badge: {
-    default: { mass: 0.3, density: 0.7, temperature: 0.3, pressure: 0.2, buoyancy: 0 },
-    success: { mass: 0.4, temperature: 0.4, pressure: 0.2, buoyancy: 0 },
-    warning: { mass: 0.4, temperature: 0.7, pressure: 0.2, buoyancy: 0 },
-    error: { mass: 0.4, temperature: 0.9, pressure: 0.2, buoyancy: 0 },
-    info: { mass: 0.3, temperature: 0.5, pressure: 0.2, buoyancy: 0 },
+    default:  { mass: 0.5, density: 0.8, temperature: 0.3, pressure: 0.5, buoyancy: 0 },
+    success:  { mass: 0.5, density: 0.8, temperature: 0.45, pressure: 0.5, buoyancy: 0 },
+    warning:  { mass: 0.5, density: 0.8, temperature: 0.7, pressure: 0.5, buoyancy: 0 },
+    error:    { mass: 0.5, density: 0.8, temperature: 0.95, pressure: 0.5, buoyancy: 0 },
+    info:     { mass: 0.4, density: 0.8, temperature: 0.35, pressure: 0.5, buoyancy: 0 },
   },
-  // Text - inline by default
+  // Text - transparent (mass 0), minimal padding (high density)
+  // Temperature < 0.25 → muted color, >= 0.25 → bright color
   Text: {
-    default: { mass: 0.3, density: 0.5, pressure: 0.3, buoyancy: 0 },
-    heading: { mass: 0.6, density: 0.6, pressure: 0.8, buoyancy: 0 },
-    muted: { mass: 0.2, density: 0.3, temperature: 0.2, pressure: 0.3, buoyancy: 0 },
-    label: { mass: 0.25, density: 0.4, temperature: 0.3, pressure: 0.3, buoyancy: 0 },
+    default:  { mass: 0, density: 0.95, temperature: 0.3, pressure: 0.3, buoyancy: 0 },
+    heading:  { mass: 0, density: 0.9, temperature: 0.4, pressure: 0.8, buoyancy: 0 },
+    muted:    { mass: 0, density: 0.95, temperature: 0.2, pressure: 0.3, buoyancy: 0 },
+    label:    { mass: 0, density: 0.9, temperature: 0.2, pressure: 0.3, buoyancy: 0 },
   },
-  // Form - HORIZONTAL layout (buoyancy: 0 = row), fills width, wraps children
+  // Form - transparent horizontal container, wraps children
   Form: {
-    default: { mass: 0.5, density: 0.5, charge: 0.4, pressure: 1, buoyancy: 0 },
+    default: { mass: 0, density: 0.5, temperature: 0.2, charge: 0, pressure: 1, buoyancy: 0 },
   },
-  // Field - vertical stacking for label + input, shrinks to content width
+  // Field - transparent vertical container for label + input
   Field: {
-    default: { mass: 0.4, density: 0.4, charge: 0.3, pressure: 0.4, buoyancy: 1 },
+    default: { mass: 0, density: 0.6, temperature: 0.2, charge: 0, pressure: 0.4, buoyancy: 1 },
   },
-  // AbilityScore molecule (345 = 23×5×3) - vertical stack, centered
+  // AbilityScore molecule (345 = 23×5×3) - vertical stack
   AbilityScore: {
-    default: { mass: 0.5, density: 0.6, charge: 0.4, pressure: 0.3, buoyancy: 1 },
+    default: { mass: 0.3, density: 0.6, temperature: 0.25, charge: 0, pressure: 0.3, buoyancy: 1 },
   },
   // DicePool molecule (57 = 3×19) - horizontal row of dice badges
   DicePool: {
-    default: { mass: 0.4, density: 0.5, charge: 0.3, pressure: 0.4, buoyancy: 0 },
+    default: { mass: 0, density: 0.55, temperature: 0.3, charge: 0, pressure: 0.4, buoyancy: 0 },
   },
   // AbilityChooser organism (90 = 6×15) - tabbed card, fills width
   AbilityChooser: {
-    default: { mass: 0.6, density: 0.7, charge: 0.5, pressure: 0.9, buoyancy: 1 },
+    default: { mass: 0.4, density: 0.5, temperature: 0.25, charge: 0, pressure: 0.9, buoyancy: 1 },
   },
 };
 

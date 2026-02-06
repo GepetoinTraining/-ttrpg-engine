@@ -210,9 +210,10 @@ onUnmounted(() => {
   border-color: var(--energy);
 }
 
-/* The World container */
+/* The World container - positioned for WorldSurface (absolute) to anchor to */
 .viewport-world {
-  min-height: 100%;
-  padding: 1rem;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 </style>
