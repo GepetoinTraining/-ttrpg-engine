@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(for file:*)",
+      "Bash(do echo:*)",
+      "Read(//d/-ttrpg-engine/engine/**)",
+      "Bash(done)",
+      "Bash(grep -l \"import.*from\" *.ts)",
+      "Bash(ls -lh /d/-ttrpg-engine/docs/*.md)"
+    ]
+  }
+}

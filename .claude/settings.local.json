@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(awk '{print $NF}')",
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(mkdir -p /tmp/design-handoff)",
+      "Read(//tmp/**)",
+      "Bash(tar tzf *)",
+      "Bash(cp \"C:/Users/CLIENTE/.claude/projects/D---ttrpg-engine/92460290-3807-47be-aa30-110d925ae40a/tool-results/webfetch-1777469758517-wdgaow.bin\" /tmp/design-handoff/handoff.tar.gz)",
+      "Bash(tar xzf *)",
+      "Bash(npm test *)",
+      "Bash(xargs grep *)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}

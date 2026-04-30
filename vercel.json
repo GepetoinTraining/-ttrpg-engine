@@ -1,16 +1,13 @@
 {
-  "buildCommand": "bun run build",
-  "outputDirectory": "fend/dist",
-  "installCommand": "bun install",
-  "framework": null,
-  "rewrites": [
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
     {
-      "source": "/api/trpc/:path*",
-      "destination": "/api/trpc/[trpc]"
+      "path": "/api/cron/tick",
+      "schedule": "*/15 * * * *"
     },
     {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
+      "path": "/api/cron/drain-slots",
+      "schedule": "0 * * * *"
     }
   ]
 }

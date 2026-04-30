@@ -1,346 +1,287 @@
-# CLAUDE.md - Genesis Engine Knowledge Map
+# CLAUDE.md — TTRPG Engine
 
-This document helps Claude understand the codebase architecture and where knowledge lives.
+This file orients Claude in the codebase. **Memories take precedence over this doc** — see `~/.claude/projects/D---ttrpg-engine/memory/MEMORY.md` for live state. This doc covers the stable architecture that doesn't change conversation-to-conversation.
 
-## Core Philosophy
+## What this is
 
-**"No topology = no existence."**
+A solo-and-table TTRPG engine — D&D 5e-shaped, but engineered as a **persistent shared world** with multi-tenant accounts, deterministic worldline reconciliation, and append-only history. The architecture is closer to EVE Online's economy than to a typical chat-bot DM, dressed in the UX of a tabletop helper.
 
-Everything in this system exists as a **seed** - a number whose prime factorization encodes identity. The engine **precipitates** seeds into observable reality (HTML/CSS, game entities, NPCs, locations).
+Four play modes:
+- **player** — at a table with a human DM
+- **dm** — running someone's table (the "god lens")
+- **gm-ai** — solo with AI as DM
+- **dmless** — pure clockwork solo, no AI, world ticks autonomously
 
-```
-Seed → Topology → Physics → Φ() → Reality
-```
+## Core principles (non-negotiable)
 
-## Project Structure
+1. **No topology = no existence.** Everything has a numeric seed; the seed's prime factorization is its identity. The same math (φ, ζ, M^n trajectory) authenticates accounts, characters, and signs in-world receipts.
+2. **Observation is the only writer.** World content derived deterministically from the seed needs no row. Persistence happens *only* when interaction changes state. The append-only `.tpb` is the canonical record; `.tp` and `mm_states` are caches regenerable from the log.
+3. **Client computes, server appends.** The browser runs the engine math, produces `WorldTPBAction[]` + receipts, and pushes a *flywheel slot* to the server. The server validates shape (no engine compute), inserts. An hourly cron drains slots into the canonical ledger in arrival order.
+4. **Math is the gate; signatures are forensic.** Receipts are dual-signed (account cert × character cert) but the validator does NOT verify them on the happy path — only on detected divergence, trade dispute, or audit. "Compute isn't something we splurge on."
+5. **DM is a viewing mode, not a permission.** Personas (`player | dm | gm-ai | dmless`) are baked into a character cert at chargen and never user-toggled afterward. Switching personas = switching characters.
+
+## Project structure
 
 ```
 ttrpg-engine/
-├── bend/                 # Backend (Bun + tRPC + SQLite)
-│   └── src/
-│       ├── api/          # tRPC routers
-│       ├── auth/         # Topology-based authentication
-│       ├── db/           # Database schema, migrations, queries
-│       ├── engine/       # Game engine (combat, simulation, rules)
-│       └── genesis/      # THE CORE - Reality precipitation
+├── src/                          # Next.js app (browser-shipped + route handlers)
+│   ├── app/                      # Next 14 app router
+│   │   ├── api/                  # Route handlers (server-only)
+│   │   │   ├── account/create/        — mint account cert from (geo, serverNow)
+│   │   │   ├── character-cert/create/ — mint character cert (chargen-time)
+│   │   │   ├── auth/{enroll,challenge,verify}/  — legacy invite-flow auth
+│   │   │   ├── world/{state,log,replay,transport,slot/push}/
+│   │   │   ├── cron/{tick,drain-slots}/         — autonomous server jobs
+│   │   │   └── …                                — character, campaign, etc.
+│   │   └── page.tsx              — entrypoint, mounts DMHelperApp
+│   ├── components/design/        # All UI surfaces + shell
+│   │   ├── DMHelperApp.tsx       — workspace shell (Home/Player/DM/Table tabs)
+│   │   ├── ConfigMenu.tsx        — persona + character picker (legacy UI)
+│   │   ├── TweaksPanel.tsx       — dev controls
+│   │   └── surfaces/             — 47 surfaces (Auth, Chargen, Play, etc.)
+│   ├── lib/                      # Browser + shared logic
+│   │   ├── idb.ts                — IndexedDB wrapper (`claudedm` db, 7 stores)
+│   │   ├── account-cert.ts       — account cert IDB helpers
+│   │   ├── character-cert.ts     — character cert + active session helpers
+│   │   ├── engine-client.ts      — browser engine adapter (transport, observe, roll, applyIntent, push)
+│   │   ├── use-world.ts          — React hook: engine-client + log poll
+│   │   ├── world-state.ts        — server: world row hydration + transport (legacy path)
+│   │   ├── world-tpb.ts          — server: tpb_entries DB writes + read helpers
+│   │   ├── world-client.ts       — browser fetch wrappers (state/log/transport/cron)
+│   │   ├── auth.ts               — legacy invite-flow cert client (localStorage)
+│   │   ├── persona.ts            — legacy persona toggle (being deprecated)
+│   │   ├── session-context.tsx   — React context (legacy session)
+│   │   └── …                     — character, campaign, dungeon, sprite, etc.
+│   ├── auth/                     # Topology auth math (browser-safe)
+│   │   ├── seed.ts               — createSeedData(datetime, geo) → {seed, primes, zeta}
+│   │   ├── enroll.ts             — server: legacy invite enrollment
+│   │   ├── verify.ts             — server: challenge/verify
+│   │   └── math/{prime,phi,matrix}.ts — pure math (φ, ζ, M^n)
+│   ├── db/                       # Drizzle ORM schema + connection
+│   │   ├── schema.ts             — 130+ tables, 12 layers (see file header)
+│   │   └── connection.ts         — Turso/libSQL client
+│   └── game/                     # Worldgen + spatial layer (HEX, being migrated to square)
+│       ├── hex.ts                — axial coords, A*, scale levels (1m → 16.8km)
+│       ├── biome.ts, edges.ts, world.ts, regionFeatures.ts, flora-tree.ts, noise.ts
+│       └── hub/{generator,schema,topology,hubLayout}.ts
 │
-├── fend/                 # Frontend (Vue 3 + TypeScript)
-│   └── src/
-│       ├── api/          # tRPC client
-│       ├── components/   # Vue components
-│       ├── composables/  # Vue composables (useGenesis, useTrpc)
-│       ├── viewport/     # Genesis viewport (renders precipitated content)
-│       └── styles/processors/_internal/
-│           ├── definitions.ts  # Component physics definitions
-│           └── phi.ts          # Φ tensor reference
+├── engine/                       # Pure-compute engine (no DB imports anywhere)
+│   ├── tp.ts                     — TP class: world graph + κ resolve via ancestor walk
+│   ├── tpb.ts                    — TPB class: append-only history with branch/diff
+│   ├── tpb-world.ts              — WorldTPBAction Zod union (canonical wire format)
+│   ├── tp-write-capture.ts       — attachWriteLog: monkey-patches TP κ writes into a buffer
+│   ├── clockwork.ts              — Clockwork class: 7-layer dependency-ordered MM tick crank
+│   ├── mm-simulated.ts           — ISimulatedMM interface + base class (accumulate / resolve)
+│   ├── mf-{dice,check,damage}.ts — pure MFs (each returns {output, receipt})
+│   ├── mm-{character,scene,party,session,adventure,…}.ts — Player tree MMs
+│   ├── mm-{settlement,faction,economy,market,services,…}.ts — World tree MMs
+│   ├── world-tick.ts             — Multi-cadence world tick orchestrator
+│   ├── system-edges.ts           — Cross-system reactive wires
+│   └── …                         — 100 files total; see docs/mm_nesting.md
 │
-├── data/
-│   └── topology.json     # Pre-extracted component topologies
+├── docs/
+│   ├── mm_topology.md            — 6-mermaid topology diagram (READ FIRST for engine work)
+│   ├── mm_nesting.md             — Two-tree (world + player) hierarchy + tick rates
+│   ├── MM-MF-TP-TPB.md           — File-system spec: receipts as side effects, branch/diff
+│   ├── railgun-bridge.md         — Flywheel/cert/envelope/orbit primitives (subscription transport)
+│   ├── tp_schema.md              — TP node types + κ domains
+│   ├── db-schema.md              — Table reference
+│   ├── clockwork_{api,wiring}.md — Clockwork registration + cadence
+│   └── views_handoff_to_design.md — Tier-by-tier surface roadmap
 │
-└── docs/genesis/         # Genesis documentation
-    ├── PRECIPITATION.md  # How seeds become reality
-    └── CHARACTER_TOPOLOGY.md  # Character creation system
+└── archive/                      — pre-Next.js bend/ + fend/ + old genesis stuff (DO NOT REFERENCE)
 ```
 
-## Genesis Engine (bend/src/genesis/)
+## The cert hierarchy (current, post-2026-04-30)
 
-This is the heart of the system. Understanding these files is critical:
-
-| File | Purpose |
-|------|---------|
-| `elements.ts` | Prime number system, element types (FLUX, FORM, VITALITY, AETHER, ENTROPY) |
-| `laws.ts` | Universal constants: PHI, Fibonacci, entropy thresholds |
-| `precipitate.ts` | **THE Φ TENSOR** - Transforms topology → physics → CSS/HTML |
-| `atoms.ts` | UI component factory - creates buttons, inputs, forms from seeds |
-| `character.ts` | Character topology - races, classes as primes |
-| `observer.ts` | Wave function collapse - what exists when observed |
-| `identity.ts` | Self-sovereign identity, birth certificates |
-| `director.ts` | Evolutionary pressure system for game balance |
-| `materials.ts` | Crafting system using element composition |
-| `infer.ts` | Semantic inference - intent → topology |
-
-### Key Concepts
-
-**Prime Identity System:**
-```typescript
-// UI Components
-Button = 2   // Pure action
-Text = 3     // Pure structure  
-Input = 5    // Pure reception
-Icon = 7     // Pure visual
-Avatar = 11  // Identity visual
-
-// Molecules = products of primes
-Card = 6     // Button × Text = 2 × 3
-Form = 15    // Text × Input = 3 × 5
-Navbar = 42  // Button × Text × Icon = 2 × 3 × 7
-```
-
-**Character Primes:**
-```typescript
-// Races (primes 29-47)
-Human = 29, Elf = 31, Dwarf = 37, Halfling = 41
-
-// Classes (primes 53-79)
-Fighter = 53, Wizard = 59, Cleric = 61, Rogue = 67
-```
-
-**Physics → CSS (The Φ Tensor):**
-```typescript
-mass → shadow depth, border weight
-density → background opacity, padding
-temperature → color warmth (cold=blue, hot=red, critical=red glow)
-charge → spacing, alignment
-friction → transition duration
-pressure → border radius
-buoyancy → z-index, elevation
-```
-
-## Authentication (bend/src/auth/topology/)
-
-Custom topology-based auth. No external services.
-
-- `math.ts` - Core math (φ, ζ, M^n matrix operations)
-- `enrollment.ts` - Device enrollment with human verification
-- `challenge.ts` - Challenge/response authentication
-- `verify.ts` - Auth verification for tRPC context
-
-**Flow:** Enrollment captures datetime + geo → prime factorize → Fibonacci variant → ζ. Auth: both sides compute M^n trajectory, if match → authenticated.
-
-## Database (bend/src/db/)
-
-SQLite with Drizzle ORM.
-
-- `schema.ts` - Core tables
-- `migrations/` - Database migrations
-- `queries/` - Query helpers
-- `seeds/` - Seed data (Toril world, etc.)
-
-Key tables: `users`, `campaigns`, `characters`, `character_tokens`, `topology_seeds`, `topology_certificates`
-
-## API (bend/src/api/)
-
-tRPC v11 routers:
-
-| Router | Purpose |
-|--------|---------|
-| `auth` | Topology authentication |
-| `genesis` | Precipitation API - serves HTML to frontend |
-| `character` | Character CRUD, birthGenesis mutation |
-| `campaign` | Campaign management |
-| `combat` | Combat system |
-| `world` | World graph, regions, locations |
-| `npc` | NPC management |
-
-## Frontend Viewport
-
-The frontend **does not compute** - it displays what the backend precipitates.
-
-**CRITICAL: The viewport receives ONE HTML payload - the entire world.**
-
-The backend builds up: `atoms → molecules → organisms → WORLD`
-
-Then wraps EVERYTHING in a **WorldSurface** (prime 81 = 9×9 = Surface²).
-
-**Timespace requires a surface.** Without it, there's nowhere for reality to precipitate.
+Two cert types, both produced by the **same** `createSeedData(datetime, geo)` math. Browser stores them in IndexedDB; server stores them in `accounts` + `character_certs` tables.
 
 ```
-Backend: atoms → molecules → organisms → WORLD (complete HTML)
-         ↓
-Frontend: Display it (dumb viewport)
+Account cert  ← top identity, one per browser
+  ├── seed: bigint (string — from geo + serverNow)
+  ├── primes: number[]
+  ├── zeta: number
+  ├── geoLat, geoLon, createdAt
+  └── characterCreatedLog: [{ characterId, seed, createdAt }]  ← append-only origin record
+
+Character cert  ← per-character identity, owned by account
+  ├── seed, primes, zeta, geoLat, geoLon, createdAt  (same shape, different moment)
+  ├── ownerChain: [accountId₁, accountId₂, …]  ← last is current commander
+  ├── characterDataId: FK to characters table (sheet)
+  └── personaType: 'player' | 'dm' | 'gm-ai' | 'dmless'  ← FIXED at creation
 ```
 
-Key endpoint: `genesis.world` - Returns the complete precipitated world.
+**Trade** is 2-step (initiate + accept), both signatures recorded as a `characterTransfer` action variant in `tpb_entries`. Original creator stays in the account log forever, but the current commander signs going forward.
 
-```typescript
-// Backend builds content, wraps in WorldSurface
-const content = `...atoms, molecules, organisms...`;
-const html = worldSurface(content, campaignId, 'campaign');
-return { html }; // ONE payload, wrapped in surface
+**Persona drives time-flow:** session-time personas (player/dm/gm-ai) can fast-travel via DM authority; `dmless` lives at server-cron time and can't fast-travel. **DMless cannot party with DM-led characters** — different timelines.
 
-// Frontend just displays it
-<div v-html="world"></div>
+**One active character at a time** per browser, tracked in IDB `sessionState`.
+
+## World-state flow (the "client computes, server appends" loop)
+
+```
+[Browser]                                                       [Server]
+1. useWorld() hook hydrates from /api/world/state ────────▶  GET /api/world/state    → returns {worldDay, partyNodeId, destinations}
+2. Polls /api/world/log every 5s ─────────────────────────▶  GET /api/world/log      → returns recent tpb_entries
+3. EngineClient buffers actions locally:
+   transport(dest, days) → entityMove + observe
+   observe(node)         → observe action
+   roll(formula)         → mfDice + receipt
+   applyIntent(intent)   → writeKappa with system="client-intent:<certId>"
+4. push() ───────────────────────────────────────────────▶  POST /api/world/slot/push
+                                                              { kind: 'solo' | 'dm-session', actions[], receipts[], ... }
+                                                              → INSERT flywheel_slots, return slotId
+
+[Server cron — independent of any client]
+5. Every 15min:  /api/cron/tick           → cron-only `tick` action; UPDATE worlds.currentDay
+6. Every  1hr:   /api/cron/drain-slots    → drain pending flywheel_slots in arrival order
+                                            → bulk INSERT into tpb_entries
+                                            → mark processed_at
 ```
 
-**WorldSurface** (seed 81):
-- Physics: zero mass, zero density, minimal temperature
-- The timespace container onto which everything precipitates
-- Every world view MUST be wrapped in this
+**DM-hosted parties:** during a session, the DM's browser hosts the engine math for the whole party (peer-to-peer with player clients). The entire session bundle is signed by the DM cert and pushed at session **end** or **pause** — NOT hourly. The bundle lands "in the past" of server-cron time, which is fine — the .tpb is append-only and absorbs out-of-order timestamps via worldline reconciliation (Pratchett's *Long Earth* style: parallel consistent timelines converging into one canonical ledger).
 
-Key files:
-- `bend/src/api/routers/genesis.ts` - World builders, world endpoint
-- `fend/src/viewport/GenesisViewport.vue` - Dumb container, displays world HTML
-- `fend/src/composables/useGenesis.ts` - Helpers for fetching precipitated content
+## Engine architecture (engine/ — pure compute)
 
-## Token + Atom Pattern
+**Zero DB imports anywhere in `engine/`.** All 100 files are pure in-memory math over `TP` + MM state. The DB boundary lives entirely in `src/lib/world-tpb.ts` and `src/lib/world-state.ts`.
 
-Every entity has two parts:
+### MM/MF/TP/TPB primitives
 
-1. **Token** - The seed, source of truth. Exists in configuration space.
-2. **Atom** - Projected stats, cached. Derived from token.
+- **MF (manifold function)** — atomic transformation. `[x, K; K, x]` matrix. Forward pass produces `O + R` (output + receipt); receipt R is a side-effect of the matrix structure (Theorem 1 from `docs/MM-MF-TP-TPB.md`). Examples: `mfDice`, `mfCheck`, `mfDamage`. Pure, deterministic, invertible.
+- **MM (manifold matrix)** — container of MFs (or nested MMs). Provides time + aggregates Δω. Examples: `mm-character`, `mm-scene`, `mm-settlement`. Has `accumulatePotential(days)` (cheap, every tick) + `resolve(worldDay)` (expensive, on observation only).
+- **TP (topology pointer)** — world graph. `tp.resolve(nodeId)` walks ancestors and merges κ rules (child overrides parent). Read-mostly; mutation via `writeKappa`/`writeDomain` captured by `attachWriteLog`.
+- **TPB (backward topology)** — append-only history. `branch(fromIndex)` forks; `static diff(a, b)` finds divergence index. **No merge protocol.** Divergence triggers replay-from-divergence-point.
 
-```typescript
-// Token (physics-enabled, EXISTS)
-character_tokens: {
-  seed: "72392829002",
-  topology: { Fe: 5, Si: 1, Dwarf: 1, Fighter: 1 },
-  isRepresented: 1  // 0 = config space, 1 = world physics
-}
+### Two-tree hierarchy
 
-// Atom (projection, cached)
-characters: {
-  name: "Thorin",
-  hp: 12,
-  ac: 16,
-  // ... derived stats
-}
+**World tree** (autonomous, server-side, cron-driven):
+```
+MM_world
+├── MM_economy, MM_faction, MM_magic, MM_social, MM_weather
+├── MM_region → MM_settlement → MM_ecology + MM_hub (districts, NPCs, market, services, ...)
+└── MM_caravan, MM_edge (trade routes)
 ```
 
-## NPC Philosophy
-
-NPCs exist as seeds. Names are generated **only when observed**.
-
-```typescript
-// NPC has no name until interaction
-function observeNPC(seed: bigint) {
-  // Name derived deterministically from seed
-  const name = generateNameFromSeed(seed);
-  return { name, appearance: precipitate(seed) };
-}
+**Player tree** (observable, client-side-runnable):
+```
+MM_adventure (campaign)
+├── MM_session → MM_scene (combat, 6s tick)
+├── MM_downtime
+├── MM_party → MM_character[]
+├── MM_followers (local NPC companions + global remote ones)
+├── MM_narrative (arcs / quests / beats / rabbit holes)
+└── MM_intelligence (per-agent identity, knowledge, memory)
 ```
 
-## Common Tasks
+The two trees intersect at **.tp nodes** — wherever the party currently is.
 
-**Create a new UI atom:**
-1. Add prime to `UI_PRIMES` in `bend/src/genesis/atoms.ts`
-2. Add physics variants to `VARIANT_PHYSICS`
-3. Create helper function if needed
-4. Export from `bend/src/genesis/index.ts`
+### 7-layer Clockwork
 
-**Create a new character race/class:**
-1. Add prime to `CHARACTER_ELEMENTS` in `bend/src/genesis/character.ts`
-2. Add topology to `RACE_TOPOLOGIES` or `CLASS_TOPOLOGIES`
+`engine/clockwork.ts` runs the world tick in dependency order:
+- L0 PHYSICAL → L1 EXTRACTION → L2 ECONOMY → L3 FACTION → L4 SETTLEMENT → L5 ECOLOGY → L6 HUB SERVICES
 
-**Add new tRPC endpoint:**
-1. Add to appropriate router in `bend/src/api/routers/`
-2. Use `publicProcedure`, `protectedProcedure`, or `campaignProcedure`
+Daily tick is the heartbeat; weekly/monthly/quarterly/semesterly/yearly fire when their counter thresholds hit. Observation triggers MM resolves regardless of cadence.
 
-**Precipitate custom content:**
-```typescript
-import { precipitateHTML, precipitateCustom } from './genesis';
+## Surface architecture (UI)
 
-// From seed
-const html = precipitateHTML(42n, 'div', 'Hello');
+47 surfaces in `src/components/design/surfaces/`. Workspace shell (`DMHelperApp.tsx`) groups them into Home/Player/DM/Table tabs. Active workspace driven by current persona type.
 
-// With custom physics
-const html = precipitateCustom(42n, { mass: 0.8, temperature: 0.9 }, 'Hot!');
+### Critical surfaces (Tier 1 — wired)
+
+- **Auth** (#auth) — landing, account-cert mint OR legacy invite redeem
+- **CharacterSelect** (#character-select) — persona picker, character list, "log into world"
+- **Chargen** (#chargen) — character sheet creation; reads `?certId=X` to bind a pre-minted cert
+- **Sheet** (#sheet) — character sheet view
+- **Combat** (#combat) — combat runner
+- **Play** (#play) — singular HUD-driven play surface (uses `useWorld()`)
+- **Onboarding** (#onboarding) — DM campaign setup
+
+### Tier 2/3 (mostly strip-only — see views_handoff_to_design.md)
+
+DMConsole, Settlement, Roster, Markets, Spells, TPEditor, Lore, Quests, SceneEditor, Diplomacy, Warfare, Dungeon, plus ~20 more.
+
+## Where state lives
+
+```
+LOCATION              | WHAT'S THERE                                | LIFETIME
+──────────────────────┼─────────────────────────────────────────────┼──────────
+IndexedDB (claudedm)  | account cert, character certs, characterTpb,| browser-local
+                      | flywheelSlot (pending), partyMembers,       | (per device)
+                      | sessionState (active char), tradeLog        |
+──────────────────────┼─────────────────────────────────────────────┼──────────
+localStorage          | legacy invite-flow cert (claudedm:cert)     | being deprecated
+──────────────────────┼─────────────────────────────────────────────┼──────────
+Server SQLite (Turso) | accounts, character_certs, character_trades,| canonical
+                      | flywheel_slots (pending), tpb_entries (log),| (per world)
+                      | mm_states (cache), worlds (singleton),      |
+                      | + 130+ tables for game content              |
+──────────────────────┼─────────────────────────────────────────────┼──────────
+Engine RAM (request)  | TP graph + Clockwork + MMs                  | per request
+                      | (rebuilt from worlds.currentDay each call)  |
 ```
 
-## Key Documentation
+## Common tasks
 
-- `docs/genesis/PRECIPITATION.md` - Full precipitation pipeline docs
-- `docs/genesis/CHARACTER_TOPOLOGY.md` - Character creation system
-- `fend/src/styles/processors/_internal/definitions.ts` - All component physics
-- `fend/src/styles/processors/_internal/phi.ts` - Φ tensor implementation
+**Add a new in-world action type:**
+1. Add a Zod variant to `engine/tpb-world.ts` `WorldTPBActionSchema`
+2. Update `targetIdForAction` in `src/lib/world-tpb.ts` (exhaustiveness check)
+3. Update `targetIdForAction` in `src/app/api/cron/drain-slots/route.ts`
+4. Producer code in engine-client / a server route appends actions of this type
 
-## Running the Project
+**Add a new MM:**
+1. Extend `SimulatedMMBase` (in `engine/mm-simulated.ts`) — implement `onAccumulate` + `onResolve`
+2. Register with Clockwork at appropriate layer + cadence (`docs/clockwork_wiring.md`)
+3. Append `mm_states` rows on resolve via `snapshotMm` (server-side bridge)
+
+**Add a new surface:**
+1. Create `src/components/design/surfaces/MySurface.tsx` (mark `// @ts-nocheck` + `'use client'` if matching existing pattern)
+2. Register in `src/components/design/DMHelperApp.tsx` `SURFACES` array (give it a slot number)
+3. Add to a workspace category if it should appear in the sidebar
+
+**Mint a new cert (account or character):**
+- Account: client calls `createAccount({ lat, lon })` from `@/lib/account-cert`; server runs `createSeedData(now, geo)` and inserts into `accounts`
+- Character: client calls `createCharacterCert({ accountId, geo, personaType })`; server inserts into `character_certs` and appends to `accounts.characterCreatedLog`
+
+**Wire a player intent into the slot push:**
+- Client surface calls `useWorld().applyIntent(name, params)` then `useWorld().push()`
+- The action lands in `flywheel_slots` as a `writeKappa` with system=`client-intent:<certId>`
+- Hourly cron drains it into `tpb_entries`
+
+## Running locally
 
 ```bash
-# Backend
-cd bend && bun run dev
-
-# Frontend  
-cd fend && bun run dev
+npm run dev            # Next dev server with turbopack
+npm run test           # vitest one-shot (88 files, 1856 tests target)
+npm run test:watch     # vitest watch mode
+npm run db:generate    # drizzle-kit migrations from schema
+npm run db:push        # apply schema to local DB
+npm run db:studio      # drizzle-kit studio
 ```
 
-## CRITICAL: Viewport Nucleation Breakthrough
+CRON_SECRET env var gates `/api/cron/*` endpoints in production (Vercel Cron sends `Authorization: Bearer ${CRON_SECRET}`).
 
-The viewport failed to fill the screen until ONE key change was made. This documents why.
+## Testing discipline
 
-### The Problem
+- `npm run test` must show 88 files / 1856 tests passing (the target keeps growing as features land)
+- `npx tsc --noEmit` must be clean — type drift between source schemas and test fixtures is a known historical issue and gets fixed eagerly
+- Engine modules have heavy coverage in `engine/__tests__/`; UI surfaces have lighter coverage (test pure helpers, mock IDB/fetch)
 
-Content rendered but stayed constrained - didn't fill the viewport. The precipitated form had:
-```css
-max-width: 600px;
-margin: 0 auto;
-```
+## Things this doc doesn't cover (look in memories)
 
-This created a centered column that ignored available space.
+- Current build slice + open questions → `~/.claude/projects/D---ttrpg-engine/memory/MEMORY.md` is the live handover
+- Pedro-specific architectural decisions (cert hierarchy, dual-sig forensic rule, DM-as-shard-host, hex→square migration, etc.) → individual project memos
+- Pedro's collaboration style + feedback rules → `feedback_*.md` memos
 
-### The Solution
+## Things to NEVER do
 
-Remove constraints. Let the world FILL its container:
-
-```css
-/* WRONG - constrains content */
-max-width: 600px;
-margin: 0 auto;
-
-/* RIGHT - fills viewport */
-width: 100%;
-height: 100%;
-```
-
-### The Chain of Responsibility
-
-The viewport fills the screen through a chain of `100%` dimensions:
-
-1. **GenesisViewport.vue** - `position: fixed; inset: 0;` (fills browser)
-2. **WorldSurface** - `position: absolute; inset: 0;` (fills viewport)
-3. **Content wrapper** - `width: 100%; height: 100%;` (fills surface)
-4. **Form** - `flex: 1;` (fills remaining space after header/footer)
-
-Each layer MUST NOT introduce constraints (`max-width`, fixed `width`, etc.) or the chain breaks.
-
-### The Physics Law
-
-This connects to **pressure** in the Φ tensor:
-- `pressure > 0.5` = expand to fill container
-- `pressure < 0.5` = shrink to content size
-
-When pressure is high, the component should have `width: 100%` and `flex-grow: 1`. The character builder form needs high pressure to fill the viewport.
-
-### Multi-Column Layout
-
-For responsive multi-column forms that fill the viewport:
-
-```css
-/* Container - fills viewport, vertical stack */
-display: flex;
-flex-direction: column;
-width: 100%;
-height: 100%;
-
-/* Form - horizontal, wrapping, fills space */
-display: flex;
-flex-wrap: wrap;
-gap: 1.5rem;
-flex: 1;
-overflow-y: auto;
-
-/* Each column - grows, has minimum width for responsiveness */
-flex: 1;
-min-width: 280px;
-display: flex;
-flex-direction: column;
-```
-
-This creates columns that:
-- Fill horizontal space equally
-- Wrap to new rows on narrow screens
-- Stack vertically within each column
-
-### Summary
-
-**"DOM IS YOUR BITCH"** - The viewport owns the browser. WorldSurface owns the viewport. Content fills the surface. No element should constrain itself unless it has a specific physics reason (low pressure).
+- Don't reference `bend/` or `fend/` — those directories are deleted (lived in `archive/` only). The live code is `src/` + `engine/`.
+- Don't write to `tpb_entries` directly from in-world action paths — go through `flywheel_slots` + cron drain.
+- Don't add per-receipt signature verification to `/api/world/append` or `/api/world/slot/push` — signatures are forensic-only.
+- Don't add `isDM` flag to accounts or runtime persona toggles — persona is per-character cert and FIXED at creation.
+- Don't propose email/password account creation — accounts are minted from geolocation + server datetime, full stop.
+- Don't run `db:push` against the production DB unless we're doing the planned wipe-and-reseed.
+- Don't trim the schema — 130+ tables are intentional. Propose additions, never deletions, until a coordinated wipe.
 
 ---
 
-## Philosophy Reminders
-
-1. **Everything is topology** - Buttons, characters, NPCs, locations
-2. **Φ is universal** - Same math renders UI and dragons
-3. **Frontend is a viewport** - It displays, not computes
-4. **Observation precipitates** - Things exist when seen
-5. **Seeds are forever** - The number 42 IS Navbar. Always.
-6. **DOM IS YOUR BITCH** - Fill the viewport. No artificial constraints.
+*"clockwork isn't a metaphor — one breaking test literally breaks everything else."* — Pedro
