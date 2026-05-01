@@ -51,6 +51,17 @@ export const WorldTPBActionSchema = z.discriminatedUnion('type', [
     paths: z.array(z.string()),
     /** Which engine system performed the write (e.g. "weather.ts", "market.ts") */
     system: z.string(),
+    /**
+     * Optional κ delta payload. The path-level new state(s) the writer
+     * computed locally — drain-side application merges this into the
+     * canonical κ store at (nodeId, domain). Old writes (pre-Phase-2.9)
+     * omit this field and only record the audit trail.
+     *
+     * For partial-domain writes (most writeKappa intents), the value is
+     * a partial of the domain's `Rules` shape — e.g. for a hunt at a
+     * region, value = `{ herds: { [herdId]: <updatedWildHerd> } }`.
+     */
+    value: z.unknown().optional(),
   }),
 
   // ── Edge ──

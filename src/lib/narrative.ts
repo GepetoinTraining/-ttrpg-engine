@@ -44,10 +44,33 @@ export async function loadWiki(opts: { type?: string; nodeId?: string; limit?: n
 
 // ── Quests + beats ─────────────────────────────────────────────────────────
 
-export async function loadQuests(adventureId?: string): Promise<{ arcs: any[]; total: number }> {
+export interface LoadQuestsOptions {
+  /** Filter by specific adventure id (direct) */
+  adventureId?: string
+  /** Filter by campaign id (server resolves campaign → adventure) */
+  campaignId?: string
+}
+
+/**
+ * Loads quest arcs (with quests + beats).
+ *
+ * Three forms:
+ *   - `loadQuests()` — all arcs across the DB (cross-campaign view)
+ *   - `loadQuests('adv-id')` — positional adventureId for back-compat
+ *   - `loadQuests({ campaignId })` — campaign-scoped (server does lookup)
+ */
+export async function loadQuests(
+  arg?: string | LoadQuestsOptions,
+): Promise<{ arcs: any[]; total: number; resolved?: { adventureId: string | null; campaignId: string | null } }> {
   const params = new URLSearchParams()
-  if (adventureId) params.set('adventureId', adventureId)
-  return getJson(`/api/quest/list?${params}`)
+  if (typeof arg === 'string') {
+    params.set('adventureId', arg)
+  } else if (arg && typeof arg === 'object') {
+    if (arg.adventureId) params.set('adventureId', arg.adventureId)
+    if (arg.campaignId) params.set('campaignId', arg.campaignId)
+  }
+  const qs = params.toString()
+  return getJson(`/api/quest/list${qs ? `?${qs}` : ''}`)
 }
 
 // ── Scenes ─────────────────────────────────────────────────────────────────

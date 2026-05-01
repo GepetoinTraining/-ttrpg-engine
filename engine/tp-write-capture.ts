@@ -68,6 +68,7 @@ export function attachWriteLog(tp: TP, system: string): WriteCapture {
         domain,
         paths,
         system,
+        value,
       })
     }
     return ok
@@ -78,19 +79,22 @@ export function attachWriteLog(tp: TP, system: string): WriteCapture {
     const ok = origWriteKappa(nodeId, overrides)
     if (ok) {
       // Group writes by their top-level domain so the log entry shape stays consistent.
-      const byDomain = new Map<string, string[]>()
+      const byDomain = new Map<string, { paths: string[]; value: Record<string, unknown> }>()
       for (const path of Object.keys(overrides)) {
         const d = path.split('.')[0]
-        if (!byDomain.has(d)) byDomain.set(d, [])
-        byDomain.get(d)!.push(path)
+        if (!byDomain.has(d)) byDomain.set(d, { paths: [], value: {} })
+        const slot = byDomain.get(d)!
+        slot.paths.push(path)
+        slot.value[path] = overrides[path]
       }
-      for (const [domain, paths] of byDomain) {
+      for (const [domain, slot] of byDomain) {
         entries.push({
           type: 'writeKappa',
           nodeId,
           domain,
-          paths,
+          paths: slot.paths,
           system,
+          value: slot.value,
         })
       }
     }

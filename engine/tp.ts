@@ -161,6 +161,30 @@ export const EcologyRulesSchema = z.object({
       lastSeenAtGen: z.number().int().nonnegative().default(0),
     })).default({}),
   })).optional(),
+  // Wild herds with persistence-required deviations from biome baseline.
+  // Keyed by herd id. Mirrors `WildHerd` shape from engine/wild-fauna.ts.
+  // Unobserved regions don't allocate this — herds derive from biome+seed
+  // until the first interaction or autonomous tick produces a delta.
+  herds: z.record(z.string(), z.object({
+    id: z.string(),
+    speciesId: z.string(),
+    currentNodeId: z.string(),
+    destinationNodeId: z.string().nullable(),
+    edgeId: z.string().nullable(),
+    edgeMile: z.number().nonnegative(),
+    edgeTotalMiles: z.number().nonnegative(),
+    population: z.number().int().nonnegative(),
+    daysHungry: z.number().int().nonnegative(),
+    foodSecurity: z.number().min(0).max(1),
+    formation: z.enum(['column', 'defensive_box', 'spread', 'scattered']),
+    status: z.enum(['grazing', 'migrating', 'fleeing', 'starving', 'decimated']),
+    bornDay: z.number().int().nonnegative(),
+    lastTransitionDay: z.number().int().nonnegative(),
+  })).optional(),
+  // Per-species deviation from biome baseline density for ecology
+  // interactables (Δ.1: flora / fauna / fungi / moss). Default 1.0 = at
+  // baseline; harvest reduces, regen restores toward baseline.
+  interactableDensity: z.record(z.string(), z.number().min(0).max(1)).optional(),
 }).partial()
 export type EcologyRules = z.infer<typeof EcologyRulesSchema>
 
@@ -294,6 +318,20 @@ export const InfrastructureRulesSchema = z.object({
   knowledgeTier: z.number().optional(),
   workshops: z.array(z.string()).default([]),
   recipes: z.array(z.string()).default([]),
+  // Mining strata at this leaf node (Δ.4). Mirrors `MineLayer` shape from
+  // engine/mining-layers.ts. The first layer (layerId 0) is created on
+  // first observation; deeper layers are revealed by `mfMineReveal`.
+  mineLayers: z.array(z.object({
+    layerId: z.number().int().min(0).max(10),
+    depth: z.number().nonnegative(),
+    resourceType: z.string(),
+    initialReserve: z.number().nonnegative(),
+    reserve: z.number().nonnegative(),
+    depletionRate: z.number().nonnegative(),
+    structuralIntegrity: z.number().min(0).max(1),
+    hazardThreshold: z.number().min(0).max(1),
+    revealed: z.boolean(),
+  })).optional(),
 }).partial()
 export type InfrastructureRules = z.infer<typeof InfrastructureRulesSchema>
 
@@ -310,6 +348,10 @@ export const KnowledgeRulesSchema = z.object({
     scrolls: z.number().optional(),
     researchSpeed: z.number().optional(),
   }).optional(),
+  // Unlocked tech blobs at this settlement (Δ.6). Maps purpose
+  // (e.g. 'fishing-tool', 'mining-tool') → highest tier reached
+  // (one of TIER_ORDER from engine/tier.ts: F, E, D, C, B, A, S, SS, SSS, EX).
+  unlockedTech: z.record(z.string(), z.string()).optional(),
 }).partial()
 export type KnowledgeRules = z.infer<typeof KnowledgeRulesSchema>
 

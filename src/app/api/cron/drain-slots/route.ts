@@ -10,9 +10,9 @@
  * Out-of-order timestamps inside slots are expected and OK — the .tpb is
  * append-only and absorbs out-of-order naturally (worldline reconciliation).
  *
- * Invoked by:
- *   - Vercel Cron (configure separately from /api/cron/tick)
- *   - Manual trigger for admin/dev
+ * No engine compute, no signature/hash verification: math is the gate. A
+ * `dm-session` push from a DM-as-shard-host carries the actions the DM's
+ * client already computed; we just append them in arrival order.
  *
  * Auth: same `CRON_SECRET` pattern as /api/cron/tick.
  */
@@ -27,6 +27,14 @@ interface SlotPayload {
   actions: WorldTPBAction[]
   receipts?: unknown[]
   dmSignature?: string
+}
+
+interface TpbInsertRow {
+  worldDay: number
+  actionType: string
+  targetId: string | null
+  deltaJson: string
+  timestamp: string | null
 }
 
 function targetIdForAction(action: WorldTPBAction): string | null {
@@ -55,7 +63,6 @@ export async function POST(req: NextRequest) {
   const url = new URL(req.url)
   const maxBatch = Math.max(1, Math.min(10000, Number(url.searchParams.get('max') ?? '1000')))
 
-  // Pull pending slots in arrival order.
   const pending = await db
     .select()
     .from(flywheelSlots)
@@ -75,7 +82,6 @@ export async function POST(req: NextRequest) {
     try {
       payload = JSON.parse(slot.payloadJson) as SlotPayload
     } catch {
-      // Bad payload — mark processed so we don't reprocess, log to console.
       // eslint-disable-next-line no-console
       console.error(`drain-slots: slot ${slot.id} has invalid JSON, skipping`)
       await db
@@ -86,17 +92,17 @@ export async function POST(req: NextRequest) {
     }
 
     const actions = payload.actions ?? []
-    if (actions.length > 0) {
-      // Bulk-insert this slot's actions into tpb_entries.
-      const rows = actions.map((action) => ({
-        worldDay: slot.atDay,
-        actionType: action.type,
-        targetId: targetIdForAction(action),
-        deltaJson: JSON.stringify(action),
-        timestamp: slot.queuedAt,
-      }))
-      await db.insert(tpbEntries).values(rows)
-      actionsWritten += rows.length
+    const inserts: TpbInsertRow[] = actions.map((action) => ({
+      worldDay: slot.atDay,
+      actionType: action.type,
+      targetId: targetIdForAction(action),
+      deltaJson: JSON.stringify(action),
+      timestamp: slot.queuedAt,
+    }))
+
+    if (inserts.length > 0) {
+      await db.insert(tpbEntries).values(inserts)
+      actionsWritten += inserts.length
     }
 
     await db

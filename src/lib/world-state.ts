@@ -20,9 +20,11 @@
 
 import { eq } from 'drizzle-orm'
 import { db } from '@/db/connection'
-import { worlds } from '@/db/schema'
+import { worlds, tpbEntries } from '@/db/schema'
 import { TP, type WorldNode } from '../../engine/tp'
 import { Clockwork } from '../../engine/clockwork'
+import { MMTechnologyWeb } from '../../engine/mm-technology-web'
+import { applyKappaLog } from './kappa-log'
 import {
   attachWriteLog,
   appendAction,
@@ -43,8 +45,16 @@ export interface WorldState {
   seed: number
 }
 
-// TP graph is constant data — cache it in module scope.
-let _tpCache: TP | null = null
+/**
+ * TP is rebuilt every request from (static base nodes + tpb_entries replay).
+ * The static base is cheap (sync new TP + loadNodes). The replay query
+ * scales with audit-log size; for the dev playing surface it stays small.
+ *
+ * No module cache: per `feedback_observation_writes.md` "the world is
+ * regenerable from (seed, currentWorldDay, observed_kappa_log,
+ * player_actions_log)" — rebuilding from the log every request keeps that
+ * property strictly true and avoids cross-request stale-cache bugs.
+ */
 
 function buildDefaultTp(): TP {
   const tp = new TP()
@@ -63,9 +73,17 @@ function buildDefaultTp(): TP {
   return tp
 }
 
-function getTp(): TP {
-  if (!_tpCache) _tpCache = buildDefaultTp()
-  return _tpCache
+/**
+ * Hydrate κ from the canonical tpb_entries log. The audit log IS the
+ * persistence layer until the per-region-table architecture lands. Pure
+ * replay logic lives in `./kappa-log.ts`.
+ */
+async function hydrateKappaFromLog(tp: TP): Promise<void> {
+  const rows = await db
+    .select({ deltaJson: tpbEntries.deltaJson })
+    .from(tpbEntries)
+    .where(eq(tpbEntries.actionType, 'writeKappa'))
+  applyKappaLog(tp, rows.map((r) => r.deltaJson))
 }
 
 /**
@@ -92,13 +110,37 @@ async function getOrBootstrapRow() {
 }
 
 /**
- * Hydrate the live world from DB. Cheap in-process Clockwork is built at
- * the DB's current day so observation/transport ops can run.
+ * Settlement node IDs the static TP currently exposes — used to register
+ * per-settlement MMs (mm-technology-web, future mm-* hub services).
+ *
+ * When the per-region-table architecture lands, this becomes a query against
+ * the region tables. For now it's the static set baked into buildDefaultTp().
+ */
+const SETTLEMENT_NODE_IDS = ['suzail', 'wheloon', 'marsember'] as const
+
+/**
+ * Register the new Phase-2 MMs into a clockwork. Called per-request after
+ * Clockwork construction. Layer 6 HUB SERVICES, weekly cadence — fires when
+ * the weekly delta hits 7-day threshold. Resolves are observation-driven.
+ */
+function registerHubServiceMMs(clockwork: Clockwork, worldDay: number): void {
+  for (const nodeId of SETTLEMENT_NODE_IDS) {
+    const techWeb = new MMTechnologyWeb({ settlementNodeId: nodeId, worldDay })
+    clockwork.register(techWeb, 6, 'weekly')
+  }
+}
+
+/**
+ * Hydrate the live world from DB. Per request: rebuild TP from static nodes,
+ * replay κ from audit log, register Phase-2 MMs into the Clockwork at the
+ * DB's current day.
  */
 export async function getWorldState(): Promise<WorldState> {
   const row = await getOrBootstrapRow()
-  const tp = getTp()
+  const tp = buildDefaultTp()
+  await hydrateKappaFromLog(tp)
   const clockwork = new Clockwork(tp, row.currentDay)
+  registerHubServiceMMs(clockwork, row.currentDay)
   return {
     tp,
     clockwork,
@@ -111,16 +153,66 @@ export async function getWorldState(): Promise<WorldState> {
 }
 
 /**
- * Reset — test-only, drops the in-memory TP cache. The DB row persists
- * unless the test also wipes the table.
+ * Reset — kept for back-compat with tests that import it. Now a no-op since
+ * there's no module-scoped state to reset; each `getWorldState` call rebuilds
+ * fresh from DB.
  */
 export function resetWorldState(): void {
-  _tpCache = null
+  /* no module state to reset */
 }
 
 // ============================================================
 // TRANSPORT
 // ============================================================
+
+/**
+ * Heuristic travel-day estimator. Pre-A*-edge-distance placeholder.
+ *
+ * Uses TP node types + ancestor sharing to give a sensible default per
+ * destination type. Real implementation (when world_edges has seeded
+ * distances + tile coordinates per node) will compute via A* over the grid
+ * + per-edge terrain modifiers.
+ *
+ *   - both settlements, same parent kingdom : 2 days
+ *   - both settlements, different kingdoms  : 6 days
+ *   - destination is `edge_site`            : 1 day
+ *   - destination is `poi`                  : 3 days
+ *   - default                               : 3 days
+ *
+ * Returns 0 if dest unknown.
+ */
+function estimateTravelDays(tp: TP, fromNodeId: string, toNodeId: string): number {
+  const fromNode = tp.getNode(fromNodeId)
+  const toNode = tp.getNode(toNodeId)
+  if (!toNode) return 0
+
+  const fromType = fromNode?.type ?? null
+  const toType = toNode.type
+
+  if (toType === 'edge_site') return 1
+  if (toType === 'poi') return 3
+
+  if (fromType === 'settlement' && toType === 'settlement') {
+    // Walk ancestors looking for shared kingdom/region.
+    const fromKingdom = findAncestorOfType(tp, fromNodeId, 'kingdom')
+    const toKingdom = findAncestorOfType(tp, toNodeId, 'kingdom')
+    if (fromKingdom && toKingdom && fromKingdom === toKingdom) return 2
+    return 6
+  }
+
+  return 3
+}
+
+function findAncestorOfType(tp: TP, nodeId: string, type: string): string | null {
+  let cur: string | null | undefined = nodeId
+  for (let i = 0; i < 16 && cur; i++) {
+    const n = tp.getNode(cur)
+    if (!n) return null
+    if (n.type === type) return n.id
+    cur = n.parentId
+  }
+  return null
+}
 
 export type TimeMode = 'instant' | 'travel' | 'days'
 
@@ -152,7 +244,7 @@ export async function transportParty(req: TransportRequest): Promise<TransportRe
       daysAdvanced = 0
       break
     case 'travel':
-      daysAdvanced = 3 // placeholder; real edge-distance calc in v2
+      daysAdvanced = estimateTravelDays(state.tp, state.partyNodeId, req.destNodeId)
       break
     case 'days':
       daysAdvanced = Math.max(0, Math.floor(req.days ?? 1))

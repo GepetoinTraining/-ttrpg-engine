@@ -2,12 +2,14 @@
 'use client'
 
 import React from 'react'
-import { AdaptChips, AdaptWeights, AdaptLegend } from './_adaptations'
+import { Chip, FidelityBadge } from './_chips'
+import { AdaptChips, AdaptLegend } from './_adaptations'
 
-// surfaces/MonsterCamp.jsx — Surface 37. Monster actor inspector.
+// surfaces/MonsterCamp.tsx — Surface 37. Monster actor inspector.
 // Reads engine/mm-monster-actor.ts MMMonsterActorDomainState.
 
 export default function MonsterCamp() {
+  const [showNudge, setShowNudge] = React.useState(false)
   const cmp = {
     leader: {name:'Vergrath', species:'ettin', cr: 7, tenureMonths: 14, challengesSurvived: 3},
     campNodeId: 'node-cormanthor-01',
@@ -17,7 +19,7 @@ export default function MonsterCamp() {
     troops: 24,
     foodSecurity: 0.42,
     gold: 280,
-    lastGrade: 'partial', // backfire / failure / partial / success / great / critical
+    lastGrade: 'partial',
     lastAction: 'raid_settlement',
     adaptations: ['ADAPT','PACK','SWIFT','CUNNING'],
     dangerRadius: 6,
@@ -25,24 +27,31 @@ export default function MonsterCamp() {
     raidsConducted: 7,
     settlementsRaided: ['Saerb (3×)','Wheloon outskirts','East Reach cairn 7'],
     gateId: 'g-cormanthor',
-    pendingMigration: null,
-  };
+    pendingMigration: {
+      triggeredAtTenure: 14,
+      reason: 'carrying-capacity pressure (population 38/50, food 0.42)',
+      suggestedEdge: 'E15 : mile 4–6 (woodland fringe, no nearby settlements)',
+      candidateAlt: ['E11 : mile 9–11 (denser forest)', 'E17 : mile 0–3 (riverbend)'],
+      detachmentSize: 12,
+      lockoutDays: 14,
+    },
+  }
 
-  const grades = ['backfire','failure','partial','success','great','critical'];
-  const gradeIdx = grades.indexOf(cmp.lastGrade);
+  const grades = ['backfire','failure','partial','success','great','critical']
+  const gradeIdx = grades.indexOf(cmp.lastGrade)
   const gradeColor = (g, idx) => {
-    if (idx <= 1) return 'var(--accent-red)';
-    if (idx === 2) return 'var(--accent-gold)';
-    if (idx >= 3) return 'var(--accent-green)';
-    return 'var(--ink-3)';
-  };
+    if (idx <= 1) return 'var(--accent-red)'
+    if (idx === 2) return 'var(--accent-gold)'
+    if (idx >= 3) return 'var(--accent-green)'
+    return 'var(--ink-3)'
+  }
 
   return (
     <div>
       <div className="surface-head">
         <div>
           <div className="crumbs">37 · L5 · MMMonsterActor</div>
-          <h2>Monster camp · {cmp.leader.name}</h2>
+          <h2>Monster camp · {cmp.leader.name} <FidelityBadge level="partial" /></h2>
         </div>
         <span className="who">DM view · leader, troops, food, raids</span>
       </div>
@@ -54,15 +63,57 @@ export default function MonsterCamp() {
 
       {cmp.pendingMigration && (
         <div className="box" style={{borderColor:'var(--accent-red)', borderWidth: 2, background:'rgba(168,68,42,0.06)', marginBottom: 14}}>
-          <div className="row" style={{justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap: 10}}>
-            <div>
+          <div className="row" style={{justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap: 14}}>
+            <div style={{flex: 1, minWidth: 320}}>
               <span className="hand" style={{fontSize: 20}}>Pending migration</span>
-              <div style={{fontSize: 14, marginTop: 2}}>Leader has migrated to seed a new lair. Place the new gate on the map.</div>
+              <div style={{fontSize: 14, marginTop: 2, color:'var(--ink-2)'}}>
+                Leader is sending a detachment to seed a new lair. Place the new gate.
+              </div>
+              <div className="grid-2" style={{gap: 8, marginTop: 10, fontSize: 13}}>
+                <div><span className="tiny">REASON</span><div>{cmp.pendingMigration.reason}</div></div>
+                <div><span className="tiny">DETACHMENT</span><div><b>{cmp.pendingMigration.detachmentSize}</b> troops · lockout {cmp.pendingMigration.lockoutDays}d</div></div>
+                <div style={{gridColumn:'span 2'}}>
+                  <span className="tiny">SUGGESTED EDGE</span>
+                  <div style={{fontFamily:'var(--mono)', fontSize: 12}}>{cmp.pendingMigration.suggestedEdge}</div>
+                </div>
+                <div style={{gridColumn:'span 2'}}>
+                  <span className="tiny">ALTERNATES</span>
+                  <div className="col" style={{gap: 2, fontFamily:'var(--mono)', fontSize: 12, marginTop: 2}}>
+                    {cmp.pendingMigration.candidateAlt.map(c => <div key={c}>• {c}</div>)}
+                  </div>
+                </div>
+              </div>
             </div>
-            <button className="btn primary">Place new lair →</button>
+            <div className="col" style={{gap: 6}}>
+              <button className="btn primary">Place new lair →</button>
+              <button className="btn sm">Pick alternate edge</button>
+              <button className="btn sm danger">Cancel migration</button>
+            </div>
           </div>
         </div>
       )}
+
+      {/* DM nudge bar */}
+      <div className="box dashed" style={{marginBottom: 14, padding: '10px 14px'}}>
+        <div className="row" style={{justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap: 10}}>
+          <div className="row" style={{gap: 10, alignItems:'baseline'}}>
+            <span className="hand ink" style={{fontSize: 18}}>DM nudges</span>
+            <span className="tiny">force the camp&rsquo;s next tick instead of letting weights decide</span>
+          </div>
+          <div className="row" style={{gap: 4, flexWrap:'wrap'}}>
+            <button className="btn sm" onClick={() => setShowNudge('raid')}>force_raid → X</button>
+            <button className="btn sm" onClick={() => setShowNudge('fortify')}>force_fortify</button>
+            <button className="btn sm" onClick={() => setShowNudge('hunt')}>force_hunt</button>
+            <button className="btn sm" onClick={() => setShowNudge('challenge')}>spawn_challenger</button>
+            <button className="btn sm danger" onClick={() => setShowNudge('migrate')}>force_migration</button>
+          </div>
+        </div>
+        {showNudge && (
+          <div className="aside blue" style={{marginTop: 10, fontSize: 14}}>
+            ↳ nudge <b>{showNudge}</b> queued for next weekly tick. engine still rolls grade; nudge only sets the action. <span style={{cursor:'pointer', textDecoration:'underline'}} onClick={() => setShowNudge(false)}>clear</span>
+          </div>
+        )}
+      </div>
 
       {/* leader strip */}
       <div className="grid-3" style={{marginBottom: 14}}>
@@ -173,12 +224,12 @@ export default function MonsterCamp() {
           <table className="inv">
             <thead><tr><th>Day</th><th>Target</th><th>Action</th><th>Grade</th><th>Outcome</th></tr></thead>
             <tbody>
-              <tr><td className="stat">469</td><td><b>Saerb</b></td><td>raid_settlement</td><td><span className="chip sm gold">partial</span></td><td className="muted">−4 troops · +18gp · +6 food</td></tr>
-              <tr><td className="stat">462</td><td><b>cairn 7</b></td><td>raid_settlement</td><td><span className="chip sm green">success</span></td><td className="muted">+24gp · +9 food</td></tr>
-              <tr><td className="stat">455</td><td><b>—</b></td><td>fortify_camp</td><td><span className="chip sm green">great</span></td><td className="muted">capacity 45 → 50</td></tr>
-              <tr><td className="stat">448</td><td><b>Saerb</b></td><td>raid_settlement</td><td><span className="chip sm">success</span></td><td className="muted">+12gp</td></tr>
-              <tr><td className="stat">441</td><td><b>—</b></td><td>recruit</td><td><span className="chip sm">success</span></td><td className="muted">+6 troops</td></tr>
-              <tr><td className="stat">434</td><td><b>—</b></td><td>hunt</td><td><span className="chip sm red">failure</span></td><td className="muted">−1 troop · 0 food</td></tr>
+              <tr><td className="stat">469</td><td><b>Saerb</b></td><td>raid_settlement</td><td><Chip kind="grade" value="partial" /></td><td className="muted">−4 troops · +18gp · +6 food</td></tr>
+              <tr><td className="stat">462</td><td><b>cairn 7</b></td><td>raid_settlement</td><td><Chip kind="grade" value="success" /></td><td className="muted">+24gp · +9 food</td></tr>
+              <tr><td className="stat">455</td><td><b>—</b></td><td>fortify_camp</td><td><Chip kind="grade" value="great" /></td><td className="muted">capacity 45 → 50</td></tr>
+              <tr><td className="stat">448</td><td><b>Saerb</b></td><td>raid_settlement</td><td><Chip kind="grade" value="success" /></td><td className="muted">+12gp</td></tr>
+              <tr><td className="stat">441</td><td><b>—</b></td><td>recruit</td><td><Chip kind="grade" value="success" /></td><td className="muted">+6 troops</td></tr>
+              <tr><td className="stat">434</td><td><b>—</b></td><td>hunt</td><td><Chip kind="grade" value="failure" /></td><td className="muted">−1 troop · 0 food</td></tr>
             </tbody>
           </table>
           <div className="tiny" style={{marginTop: 6}}>
@@ -201,6 +252,5 @@ export default function MonsterCamp() {
         </div>
       </div>
     </div>
-  );
+  )
 }
-

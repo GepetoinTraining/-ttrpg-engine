@@ -42,6 +42,8 @@ import {
   generateChallengerCR,
   resolveLeadershipChallenge,
 } from './monster-actor.js'
+import { applyMonsterHunt } from './system-edges.js'
+import type { WildHerd } from './wild-fauna.js'
 import type { TP, EcologyRules } from './tp.js'
 
 // ============================================================
@@ -70,6 +72,10 @@ export interface MMMonsterActorDomainState {
     fledChallenges: number
     raidsConducted: number
     migrationsTriggered: number
+    /** Hunt actions that found nearby wild herds and triggered mfHerdPredation. */
+    huntsApplied: number
+    /** Total head count of wild herd kills across all huntsApplied. */
+    herdKills: number
   }
   lastAdvancement: AdvancementResult | null
   lastChallenge: ChallengeResult | null
@@ -107,6 +113,7 @@ export class MMMonsterActor extends SimulatedMMBase {
         monthsTicked: 0, advancementsRolled: 0,
         challenges: 0, challengerWins: 0, incumbentWins: 0, fledChallenges: 0,
         raidsConducted: 0, migrationsTriggered: 0,
+        huntsApplied: 0, herdKills: 0,
       },
       lastAdvancement: null,
       lastChallenge: null,
@@ -184,6 +191,8 @@ export class MMMonsterActor extends SimulatedMMBase {
     let fledChallenges = 0
     let migrationsTriggered = 0
     let raidsThisResolve = 0
+    let huntsThisResolve = 0
+    let killsThisResolve = 0
     let lastAdvancement: AdvancementResult | null = null
     let lastChallenge: ChallengeResult | null = null
 
@@ -197,6 +206,28 @@ export class MMMonsterActor extends SimulatedMMBase {
       advancementsRolled++
       if (advancement.action === 'raid_settlement') raidsThisResolve++
       lastAdvancement = advancement
+
+      // 1.5. Hunt action → consume nearby wild herds via mfHerdPredation.
+      // Replaces the abstract `+0.1 foodSecurity` placeholder in
+      // applyAdvancementEffects with real population-mutating predation.
+      // The placeholder bump still applies; this stacks REAL kill bumps on top.
+      if (advancement.action === 'hunt' && tp) {
+        const ecoCtx = tp.resolve(actor.campNodeId)
+        const ecoRules = ecoCtx?.ecology
+        const nearby = Object.values((ecoRules?.herds ?? {}) as Record<string, WildHerd>)
+        if (nearby.length > 0) {
+          const huntResult = applyMonsterHunt({ actor, herds: nearby, worldDay: monthDay })
+          if (huntResult.totalKilled > 0) {
+            huntsThisResolve++
+            killsThisResolve += huntResult.totalKilled
+            actor.foodSecurity = Math.min(1, actor.foodSecurity + huntResult.foodSecurityBoost)
+            // Project updated herds back to κ.
+            const herdMap: Record<string, WildHerd> = {}
+            for (const h of huntResult.herdsAfter) herdMap[h.id] = h
+            tp.writeDomain(actor.campNodeId, 'ecology', { herds: herdMap } as EcologyRules)
+          }
+        }
+      }
 
       // 2. Leadership challenge?
       const challengeRoll = this.getD20(monthDay, 2)
@@ -244,6 +275,8 @@ export class MMMonsterActor extends SimulatedMMBase {
     this.domain.cumulative.fledChallenges += fledChallenges
     this.domain.cumulative.raidsConducted += raidsThisResolve
     this.domain.cumulative.migrationsTriggered += migrationsTriggered
+    this.domain.cumulative.huntsApplied += huntsThisResolve
+    this.domain.cumulative.herdKills += killsThisResolve
     this.domain.lastAdvancement = lastAdvancement
     this.domain.lastChallenge = lastChallenge
 

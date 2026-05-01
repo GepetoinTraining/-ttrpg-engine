@@ -2,9 +2,10 @@
 'use client'
 
 import React from 'react'
-import { AdaptChips, AdaptWeights, AdaptLegend, ADAPTATIONS } from './_adaptations'
+import { FidelityBadge } from './_chips'
+import { ADAPTATIONS } from './_adaptations'
 
-// surfaces/Bestiary.jsx — Surface 39. Sprite QA + species reference grid.
+// surfaces/Bestiary.tsx — Surface 39. Sprite QA + species reference grid.
 // Reads engine/biome-fauna.ts SPECIES_TABLE + src/lib/sprite/generator.ts.
 // Dev tool aesthetic: minimal flourish, dense card grid.
 
@@ -38,10 +39,10 @@ const SPECIES_TABLE = [
   {id:'oni',        name:'oni',         cr:'7',   size:'L', kingdom:'planar',   color:'blue'},
   {id:'gibbering',  name:'gibberer',    cr:'2',   size:'M', kingdom:'aberrant', color:'gold'},
   {id:'beholder',   name:'beholder',    cr:'13',  size:'L', kingdom:'aberrant', color:'red'},
-];
+]
 
-const ADAPT_KEYS = (ADAPTATIONS || []).map(a => a.k);
-const SIZES = ['T','S','M','L','H','G'];
+const ADAPT_KEYS = ADAPTATIONS.map(a => a.k)
+const SIZES = ['T','S','M','L','H','G']
 
 function SpeciesCell({s, onClick, selected}) {
   return (
@@ -68,24 +69,24 @@ function SpeciesCell({s, onClick, selected}) {
         <div className="sprite-path">{s.id}.svg</div>
       </div>
     </div>
-  );
+  )
 }
 
 export default function Bestiary() {
-  const [sel, setSel] = React.useState(null);
-  const [colorOverride, setColorOverride] = React.useState(null);
-  const cur = SPECIES_TABLE.find(s => s.id === sel);
+  const [sel, setSel] = React.useState(null)
+  const [colorOverride, setColorOverride] = React.useState(null)
+  const cur = SPECIES_TABLE.find(s => s.id === sel)
 
   // group by kingdom
-  const groups = {};
-  SPECIES_TABLE.forEach(s => { (groups[s.kingdom] = groups[s.kingdom] || []).push(s); });
+  const groups = {}
+  SPECIES_TABLE.forEach(s => { (groups[s.kingdom] = groups[s.kingdom] || []).push(s) })
 
   return (
     <div>
       <div className="surface-head">
         <div>
           <div className="crumbs">39 · L5 · sprite QA · SPECIES_TABLE</div>
-          <h2>Bestiary · sprite generator reference</h2>
+          <h2>Bestiary · sprite generator reference <FidelityBadge level="draft" /></h2>
         </div>
         <span className="who">dev tool · 28 species × 10 adaptations</span>
       </div>
@@ -131,10 +132,45 @@ export default function Bestiary() {
             <button className="btn sm" onClick={() => setSel(null)}>close ✕</button>
           </div>
 
+          <div className="section-title" style={{margin:'18px 0 8px'}}>8-direction sheet</div>
+          <div className="box soft" style={{padding: 8, background:'var(--paper-2)'}}>
+            <div style={{display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap: 6}}>
+              {['N','NE','E','SE','S','SW','W','NW'].map((dir, i) => {
+                const angle = i * 45
+                const dx = Math.round(Math.sin(angle * Math.PI/180) * 10)
+                const dy = -Math.round(Math.cos(angle * Math.PI/180) * 10)
+                return (
+                  <div key={dir} className="sprite-cell" style={{aspectRatio:'1'}}>
+                    <div className="sprite-grid-bg" />
+                    <div style={{
+                      position:'relative', width:'48%', aspectRatio:'1', borderRadius:'50%',
+                      background: (colorOverride || cur.color) ? `var(--accent-${colorOverride || cur.color})` : 'var(--ink-3)',
+                      opacity: 0.85, border:'2px solid var(--paper)',
+                      boxShadow:'0 0 0 1px var(--ink-2)',
+                    }}>
+                      <div style={{
+                        position:'absolute', left: '50%', top: '50%',
+                        width: 4, height: 4, background:'var(--paper)', borderRadius: '50%',
+                        transform: `translate(${dx - 2}px, ${dy - 2}px)`,
+                      }} />
+                    </div>
+                    <div className="tiny" style={{
+                      position:'absolute', top: 2, left: 4, fontFamily:'var(--mono)',
+                      fontSize: 8, color:'var(--ink-3)',
+                    }}>{dir}</div>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="tiny" style={{marginTop: 6, textAlign:'center'}}>
+              eye-glint indicates facing · N / NE / E / SE / S / SW / W / NW
+            </div>
+          </div>
+
           <div className="section-title" style={{margin:'18px 0 8px'}}>Adaptation overlays · 10</div>
           <div style={{display:'grid', gridTemplateColumns:'repeat(5, 1fr)', gap: 6}}>
-            {ADAPT_KEYS.map((k, i) => {
-              const a = ADAPTATIONS.find(x => x.k === k);
+            {ADAPT_KEYS.map((k) => {
+              const a = ADAPTATIONS.find(x => x.k === k)
               return (
                 <div key={k} className="sprite-cell" style={{width:'100%', aspectRatio:'1', minHeight: 70}}>
                   <div className="sprite-grid-bg" />
@@ -150,14 +186,14 @@ export default function Bestiary() {
                     textAlign:'center', fontSize: 8, letterSpacing:'0.04em',
                   }}>{k.toLowerCase()}</div>
                 </div>
-              );
+              )
             })}
           </div>
 
           <div className="section-title" style={{margin:'18px 0 8px'}}>Sizes · D&amp;D 6</div>
           <div className="row" style={{gap: 6, alignItems:'flex-end'}}>
             {SIZES.map(sz => {
-              const px = {T: 22, S: 30, M: 38, L: 54, H: 70, G: 90}[sz];
+              const px = {T: 22, S: 30, M: 38, L: 54, H: 70, G: 90}[sz]
               return (
                 <div key={sz} style={{flex: 1, textAlign:'center'}}>
                   <div className="sprite-cell" style={{width:'100%', height: 100}}>
@@ -170,7 +206,7 @@ export default function Bestiary() {
                   </div>
                   <div className="tiny" style={{marginTop: 4, fontWeight: cur.size===sz?600:400, color: cur.size===sz?'var(--ink)':'var(--ink-3)'}}>{sz}</div>
                 </div>
-              );
+              )
             })}
           </div>
 
@@ -191,6 +227,5 @@ export default function Bestiary() {
         </div>
       )}
     </div>
-  );
+  )
 }
-

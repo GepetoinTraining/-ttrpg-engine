@@ -278,6 +278,78 @@ describe('MMMonsterActor — challenges and migration', () => {
   })
 })
 
+describe('MMMonsterActor + Wild Fauna — hunt wire (Δ.0.5 system-edge)', () => {
+  it('camp with low foodSecurity hunts → herd population drops + camp food rises', () => {
+    const tp = makeTP()
+    // Plant a herd at the camp's region so the hunt wire has prey.
+    tp.writeDomain('thundertree', 'ecology', {
+      herds: {
+        'thundertree:rabbit': {
+          id: 'thundertree:rabbit',
+          speciesId: 'rabbit',
+          currentNodeId: 'thundertree',
+          destinationNodeId: null,
+          edgeId: null,
+          edgeMile: 0,
+          edgeTotalMiles: 0,
+          population: 30,
+          daysHungry: 0,
+          foodSecurity: 1.0,
+          formation: 'spread',
+          status: 'grazing',
+          bornDay: 0,
+          lastTransitionDay: 0,
+        },
+      },
+    })
+
+    // Set foodSecurity < 0.3 to force selectAction → 'hunt'.
+    const a = freshActor({
+      population: 50, troops: 25, leaderCR: 4,
+      foodSecurity: 0.2,
+    })
+    // Force d20s such that grade >= 'partial' (no backfire).
+    const mm = new MMMonsterActor(a, 0, { getD20: () => 15 })
+    mm.accumulatePotential(30, 30)
+    mm.resolve(30, tp)
+
+    // Herd should have lost population.
+    const eco = tp.resolve('thundertree')?.ecology as EcologyRules | undefined
+    const after = eco?.herds?.['thundertree:rabbit']
+    expect(after).toBeDefined()
+    expect((after as { population: number }).population).toBeLessThan(30)
+
+    // Camp's food security should reflect a kill bump on top of the placeholder.
+    expect(a.foodSecurity).toBeGreaterThan(0.2 + 0.1)
+
+    // Cumulative counters bumped.
+    const dom = mm.serialize().domain as { cumulative: { huntsApplied: number; herdKills: number } }
+    expect(dom.cumulative.huntsApplied).toBeGreaterThanOrEqual(1)
+    expect(dom.cumulative.herdKills).toBeGreaterThan(0)
+  })
+
+  it('hunt action with no nearby herds → only the placeholder bump applies', () => {
+    const tp = makeTP()
+    // No herds planted at thundertree.
+
+    const a = freshActor({
+      population: 50, troops: 25, leaderCR: 4,
+      foodSecurity: 0.2,
+    })
+    const initialFood = a.foodSecurity
+    const mm = new MMMonsterActor(a, 0, { getD20: () => 15 })
+    mm.accumulatePotential(30, 30)
+    mm.resolve(30, tp)
+
+    // Food rose by the placeholder amount (no kill bonus possible).
+    expect(a.foodSecurity).toBeGreaterThan(initialFood)
+    // huntsApplied stays 0 since totalKilled is 0.
+    const dom = mm.serialize().domain as { cumulative: { huntsApplied: number; herdKills: number } }
+    expect(dom.cumulative.huntsApplied).toBe(0)
+    expect(dom.cumulative.herdKills).toBe(0)
+  })
+})
+
 describe('MMMonsterActor + MMGuild — integration', () => {
   it('a strong monster camp triggers a bounty quest at the same hub\'s guild', () => {
     const tp = makeTP()

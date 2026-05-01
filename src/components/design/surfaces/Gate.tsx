@@ -2,9 +2,10 @@
 'use client'
 
 import React from 'react'
-import { AdaptChips, AdaptWeights, AdaptLegend } from './_adaptations'
+import { FidelityBadge, STATUS_TAGS } from './_chips'
+import { AdaptChips, AdaptLegend } from './_adaptations'
 
-// surfaces/Gate.jsx — Surface 36. Single dungeon gate inspector.
+// surfaces/Gate.tsx — Surface 36. Single dungeon gate inspector.
 // Reads engine/mm-dungeon-gate.ts MMDungeonGateDomainState.
 
 export default function Gate() {
@@ -27,26 +28,38 @@ export default function Gate() {
     timesCleared: 1,
     leader: { name: 'Vergrath', species: 'ettin', cr: 7, monsterId: 'm-ett-04' },
     adaptations: ['ADAPT','PACK','SWIFT','CUNNING'],
-  };
+  }
 
-  const stateChip = {
-    dormant:    {tag:'',     label:'dormant'},
-    active:     {tag:'blue', label:'active'},
-    overflowing:{tag:'red',  label:'OVERFLOWING'},
-    capped:     {tag:'gold', label:'capped'},
-    cleared:    {tag:'green',label:'cleared'},
-  }[gate.state];
+  const stateLabel = gate.state === 'overflowing' ? 'OVERFLOWING' : gate.state
+  const stateTag = STATUS_TAGS.gate[gate.state] || ''
 
-  const fillPct = (gate.currentInternal / gate.internalCapacity) * 100;
-  const thresholdPct = gate.spilloverThreshold * 100;
-  const overflowing = gate.state === 'overflowing';
+  // clear-event history — every time party (or NPC) cleared this gate
+  const clearEvents = [
+    {day: 287, by:'Iron Hawk Co.',     leader:'Vergrath’s sire',  result:'cleared',   notes:'capped 60d · respawned with PACK+ARMORED'},
+    {day: 156, by:'Brass Blades',      leader:'Korrik (orc warlord)', result:'cleared', notes:'lost 1 PC · leader took CUNNING'},
+    {day:  42, by:'Pale Lantern',      leader:'—',                 result:'driven_off',notes:'too few · retreated at 60% fill'},
+  ]
+
+  // expected encounter preview — shown on hover/expand of "Attempt clear"
+  const encounterPreview = {
+    cr_band: '6–8',
+    suggested_level: '5–6',
+    party_size: '4–5',
+    expected_waves: 3,
+    leader_engagement: 'wave 3',
+    loot_estimate: '420–800gp + leader hoard',
+  }
+
+  const fillPct = (gate.currentInternal / gate.internalCapacity) * 100
+  const thresholdPct = gate.spilloverThreshold * 100
+  const overflowing = gate.state === 'overflowing'
 
   return (
     <div>
       <div className="surface-head">
         <div>
           <div className="crumbs">36 · L5 · MMDungeonGate</div>
-          <h2>{gate.name}</h2>
+          <h2>{gate.name} <FidelityBadge level="partial" /></h2>
         </div>
         <span className="who">DM view · single gate readout</span>
       </div>
@@ -81,12 +94,12 @@ export default function Gate() {
             </div>
           </div>
           <div style={{textAlign:'right'}}>
-            <span className={`chip ${stateChip.tag}`} style={{
+            <span className={`chip ${stateTag}`} style={{
               fontSize: 14, padding:'4px 12px',
               fontFamily:'var(--mono)', fontWeight: 600,
               animation: overflowing ? 'gate-pulse 1.6s ease-in-out infinite' : 'none',
             }}>
-              ● {stateChip.label}
+              ● {stateLabel}
             </span>
             {overflowing && (
               <div className="tiny" style={{color:'var(--accent-red)', marginTop: 6}}>
@@ -151,6 +164,17 @@ export default function Gate() {
           <hr className="rule dashed" />
           <button className="btn primary" style={{width:'100%'}}>Attempt clear →</button>
           <div className="tiny" style={{marginTop: 6, textAlign:'center'}}>routes via clearGateWithEcology()</div>
+          <div className="box soft" style={{marginTop: 8, padding: 8, background:'var(--paper-2)'}}>
+            <div className="tiny" style={{marginBottom: 4}}>ENCOUNTER PREVIEW</div>
+            <div className="col" style={{gap: 2, fontSize: 12, fontFamily:'var(--mono)'}}>
+              <div className="row" style={{justifyContent:'space-between'}}><span>CR band</span><b>{encounterPreview.cr_band}</b></div>
+              <div className="row" style={{justifyContent:'space-between'}}><span>suggested level</span><b>{encounterPreview.suggested_level}</b></div>
+              <div className="row" style={{justifyContent:'space-between'}}><span>party size</span><b>{encounterPreview.party_size}</b></div>
+              <div className="row" style={{justifyContent:'space-between'}}><span>waves</span><b>{encounterPreview.expected_waves}</b></div>
+              <div className="row" style={{justifyContent:'space-between'}}><span>leader at</span><b>{encounterPreview.leader_engagement}</b></div>
+              <div className="row" style={{justifyContent:'space-between'}}><span>loot est.</span><b>{encounterPreview.loot_estimate}</b></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -225,7 +249,33 @@ export default function Gate() {
       <div className="aside" style={{marginTop: 14}}>
         ↳ if not addressed, overflow extends to neighbouring edges in 2 wks. settlements within radius take raid rolls weekly via mm-monster-actor.
       </div>
-    </div>
-  );
-}
 
+      <div className="section-title">Clear history · {gate.timesCleared} successful</div>
+      <div className="box">
+        <table className="inv">
+          <thead>
+            <tr><th>Day</th><th>By</th><th>Leader killed</th><th>Result</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            {clearEvents.map((e, i) => (
+              <tr key={i}>
+                <td className="stat">{e.day}</td>
+                <td><b>{e.by}</b></td>
+                <td>{e.leader}</td>
+                <td>
+                  <span className={`chip sm ${e.result==='cleared'?'green':e.result==='driven_off'?'gold':''}`}>
+                    {e.result.replace('_',' ')}
+                  </span>
+                </td>
+                <td className="muted" style={{fontSize: 13}}>{e.notes}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="tiny" style={{marginTop: 8}}>
+          each successful clear hardens the surviving species&rsquo; dominant adaptation — see Ecology for drift.
+        </div>
+      </div>
+    </div>
+  )
+}

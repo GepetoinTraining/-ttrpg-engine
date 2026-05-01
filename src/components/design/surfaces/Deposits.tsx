@@ -2,8 +2,9 @@
 'use client'
 
 import React from 'react'
+import { FidelityBadge } from './_chips'
 
-// surfaces/Deposits.jsx — Surface 42. Slow-life: resource deposits + extraction.
+// surfaces/Deposits.tsx — Surface 42. Slow-life: resource deposits + extraction.
 // Reads engine/production-chain.ts + engine/material-mastery.ts + interactions.ts.
 // Mastery-gated visibility: 0=name, 1=base, 2=quality, 3=hidden affixes.
 
@@ -17,18 +18,18 @@ export default function Deposits() {
      hiddenAffix:'thaumaturgic resonance · +20% to enchantment yield', workers: 2, dailyOutput: 6},
     {id:'d-clay-1', resource:'clay bed', loc:'fen', mastery: 0, reserves: null, qualityBand:'?',
      hiddenAffix:'?', workers: 0, dailyOutput: 0},
-  ];
+  ]
 
   const masteryDot = (m) => Array.from({length:3}).map((_,i) => (
     <span key={i} style={{color: i<m ? 'var(--accent-gold)' : 'var(--ink-4)', fontFamily:'var(--mono)'}}>●</span>
-  ));
+  ))
 
   return (
     <div>
       <div className="surface-head">
         <div>
           <div className="crumbs">42 · L5 · slow-life · production</div>
-          <h2>Deposits</h2>
+          <h2>Deposits <FidelityBadge level="partial" /></h2>
         </div>
         <span className="who">visibility scales with mastery</span>
       </div>
@@ -84,10 +85,31 @@ export default function Deposits() {
                 </div>
               </div>
             </div>
+
+            {d.mastery >= 1 && d.reserves && d.dailyOutput > 0 && (
+              <div className="row" style={{justifyContent:'space-between', alignItems:'center',
+                                            marginTop: 10, padding:'8px 12px',
+                                            background:'var(--paper-2)', border:'1px solid var(--rule-soft)',
+                                            fontSize: 13, gap: 12, flexWrap:'wrap'}}>
+                <div>
+                  <span className="tiny">DEPLETION FORECAST</span>
+                  <div style={{marginTop: 2}}>
+                    <b>{Math.floor(d.reserves / d.dailyOutput)}</b> days at current pace
+                    <span className="muted" style={{marginLeft: 6}}>(≈ {Math.floor(d.reserves / d.dailyOutput / 7)}w)</span>
+                  </div>
+                </div>
+                <div className="bar" style={{flex: 1, minWidth: 160, maxWidth: 280}}>
+                  <span style={{width: `${Math.min(100, (d.reserves / 5000) * 100)}%`,
+                                background: d.reserves < 1000 ? 'var(--accent-red)' : 'var(--accent-gold)'}} />
+                </div>
+                <span className="tiny" style={{textDecoration:'underline', cursor:'pointer'}}>
+                  open Materials → {d.resource}
+                </span>
+              </div>
+            )}
           </div>
         ))}
       </div>
     </div>
-  );
+  )
 }
-

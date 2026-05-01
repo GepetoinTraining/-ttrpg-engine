@@ -2,7 +2,7 @@
 'use client'
 
 import React from 'react'
-import { RACES, CLASSES, BACKGROUNDS, BACKGROUND_LIST, ABILITIES, STANDARD_ARRAY, abilityModifier, calculateStartingHp, findSubrace } from '@/game/chargen'
+import { RACES, CLASSES, BACKGROUNDS, BACKGROUND_LIST, ABILITIES, STANDARD_ARRAY, abilityModifier, calculateStartingHp, findSubrace, rollStartingGold, STARTING_GOLD_DICE } from '@/game/chargen'
 import { createCharacter, setActiveCharacter, importPdf } from '@/lib/character'
 import { loadCert } from '@/lib/auth'
 import { attachCharacterData, setActiveCharacter as setActiveCharacterCert } from '@/lib/character-cert'
@@ -75,6 +75,12 @@ const DEFAULT_DRAFT = {
   background: 'acolyte',
   alignment: 'Chaotic Good',
   hook: '',
+  // Equipment V2: 'kit' uses class+background defaults (V1), 'roll' lets the player
+  // roll starting gold and shop the catalog.
+  equipmentMode: 'kit' as 'kit' | 'roll',
+  startingGold: 0,
+  /** Cart for 'roll' mode — itemKey → quantity. */
+  cart: {} as Record<string, number>,
 }
 
 function readCampaignFromHash(): string | null {
@@ -179,6 +185,49 @@ export default function Chargen() {
             Object.entries(imported.skills).map(([k, v]: any) => [k, { proficient: v.proficient, expertise: v.expertise }])
           )
         : undefined
+
+      // Compose starter inventory.
+      // V1 'kit' mode: class kit + background kit (+ imported equipment if any).
+      // V2 'roll' mode: expand cart entries → array of names (one per quantity unit).
+      const classKit = CLASS_STARTING_KITS[draft.classKey]?.items ?? []
+      const bgKit = BACKGROUNDS[draft.background]?.equipment ?? []
+      const importedEquipment: string[] = (imported?.equipment ?? []).map((e: any) =>
+        typeof e === 'string' ? e : (e?.name ?? '')
+      ).filter(Boolean)
+      let kitItems: string[]
+      if (draft.equipmentMode === 'roll' && draft.cart && Object.keys(draft.cart).length > 0) {
+        // Resolve cart entries against EQUIPMENT_CATALOG to get canonical names.
+        const expanded: string[] = []
+        for (const [itemKey, qty] of Object.entries(draft.cart)) {
+          const item = EQUIPMENT_CATALOG.find((c) => c.key === itemKey)
+          if (!item) continue
+          for (let i = 0; i < qty; i++) expanded.push(item.name)
+        }
+        // Imported equipment is additive even in roll mode (carries D&D Beyond gear).
+        kitItems = [...expanded, ...importedEquipment]
+      } else {
+        kitItems = [...classKit, ...bgKit, ...importedEquipment]
+      }
+
+      // Composed spells from prime-element steps (DMless caster path).
+      // Only send slots that have at least one element selected.
+      const startingSpells: { cantrip?: { name?: string; elements: Record<string, number> }; spell1?: { name?: string; elements: Record<string, number> } } = {}
+      if (draft.startingSpells?.cantrip?.elements && Object.keys(draft.startingSpells.cantrip.elements).length > 0) {
+        startingSpells.cantrip = {
+          name: draft.startingSpells.cantrip.name,
+          elements: draft.startingSpells.cantrip.elements,
+        }
+      }
+      if (draft.startingSpells?.spell1?.elements && Object.keys(draft.startingSpells.spell1.elements).length > 0) {
+        startingSpells.spell1 = {
+          name: draft.startingSpells.spell1.name,
+          elements: draft.startingSpells.spell1.elements,
+        }
+      }
+
+      // Cert id from hash — needed for first-creator attribution on the spell ledger.
+      const certIdForCommit = readCertIdFromHash() ?? undefined
+
       const result = await createCharacter({
         userId: userId ?? undefined,
         campaignId: campaignId ?? undefined,
@@ -199,6 +248,10 @@ export default function Chargen() {
         skipRacialBonus: !!imported,
         hpMax: imported?.combat?.hpMax,
         hpCurrent: imported?.combat?.hpCurrent ?? imported?.combat?.hpMax,
+        // chargen carryover (Pedro 2026-04-30): persist inventory + spell ledger
+        kitItems: kitItems.length > 0 ? kitItems : undefined,
+        startingSpells: Object.keys(startingSpells).length > 0 ? startingSpells : undefined,
+        certId: certIdForCommit,
       } as any)
       setCreated({ id: result.characterId, name: result.summary.name })
       setActiveCharacter(campaignId, result.characterId)
@@ -1753,74 +1806,213 @@ const CLASS_STARTING_KITS: Record<string, { items: string[]; gp?: number }> = {
   wizard:     { items: ['Quarterstaff', 'Component pouch', 'Scholar\'s pack', 'Spellbook'] },
 }
 
-function StepEquipment({draft}) {
+function StepEquipment({draft, update}) {
   const klass = CLASSES[draft.classKey]
   const bg = BACKGROUNDS[draft.background]
   const classKit = CLASS_STARTING_KITS[draft.classKey]?.items ?? []
   const bgKit = bg?.equipment ?? []
+  const mode = (draft.equipmentMode ?? 'kit') as 'kit' | 'roll'
+
+  // Cart math (V2 only).
+  const cart: Record<string, number> = draft.cart ?? {}
+  const cartTotal = Object.entries(cart).reduce((sum, [key, qty]) => {
+    const it = EQUIPMENT_CATALOG.find((c) => c.key === key)
+    return sum + (it ? it.valueGP * (qty as number) : 0)
+  }, 0)
+  const goldRemaining = (draft.startingGold ?? 0) - cartTotal
+  const overBudget = goldRemaining < 0
+
+  const formula = STARTING_GOLD_DICE[draft.classKey]
+  const formulaLabel = formula
+    ? `${formula.count}d4${formula.multiplier === 10 ? '×10' : ''}`
+    : '4d4×10 (default)'
+
+  const setQty = (itemKey: string, nextQty: number) => {
+    const q = Math.max(0, Math.floor(nextQty))
+    const newCart = { ...cart }
+    if (q === 0) delete newCart[itemKey]
+    else newCart[itemKey] = q
+    update({ cart: newCart })
+  }
+
+  const handleRollGold = () => {
+    update({ startingGold: rollStartingGold(draft.classKey) })
+  }
+
+  const handleClearCart = () => {
+    update({ cart: {} })
+  }
 
   return (
     <div className="box">
       <div className="box-title">
         <h3>Starting equipment</h3>
-        <span className="meta">class kit + background kit</span>
+        <span className="meta">{mode === 'kit' ? 'V1 · class + background kit' : 'V2 · roll gold + buy'}</span>
       </div>
 
-      <div className="grid-2" style={{gap: 14}}>
-        <div className="box soft">
-          <div className="box-title">
-            <h3>Class kit · {klass?.name ?? '—'}</h3>
-            <span className="meta">{classKit.length} items</span>
+      {/* Mode toggle */}
+      <div className="row" style={{ gap: 6, marginBottom: 12 }}>
+        <button
+          className={'btn sm' + (mode === 'kit' ? ' primary' : '')}
+          onClick={() => update({ equipmentMode: 'kit' })}
+        >
+          📜 Use class kit
+        </button>
+        <button
+          className={'btn sm' + (mode === 'roll' ? ' primary' : '')}
+          onClick={() => update({ equipmentMode: 'roll' })}
+        >
+          🎲 Roll gold + buy
+        </button>
+        <span className="tiny muted" style={{ alignSelf: 'center', marginLeft: 8 }}>
+          {mode === 'kit'
+            ? 'fastest path · take what your class + background ship with'
+            : `roll ${formulaLabel} starting gold and spend it on the SRD catalog (${EQUIPMENT_CATALOG.length} items)`}
+        </span>
+      </div>
+
+      {mode === 'kit' && (
+        <>
+          <div className="grid-2" style={{gap: 14}}>
+            <div className="box soft">
+              <div className="box-title">
+                <h3>Class kit · {klass?.name ?? '—'}</h3>
+                <span className="meta">{classKit.length} items</span>
+              </div>
+              <ul style={{margin: 0, paddingLeft: 16, fontSize: 13, lineHeight: 1.7}}>
+                {classKit.map((item, i) => <li key={i}>{item}</li>)}
+                {classKit.length === 0 && <li className="muted">no kit defined for this class yet</li>}
+              </ul>
+            </div>
+
+            <div className="box soft">
+              <div className="box-title">
+                <h3>Background kit · {bg?.name ?? '—'}</h3>
+                <span className="meta">{bgKit.length} items</span>
+              </div>
+              <ul style={{margin: 0, paddingLeft: 16, fontSize: 13, lineHeight: 1.7}}>
+                {bgKit.map((item, i) => <li key={i}>{item}</li>)}
+              </ul>
+            </div>
           </div>
-          <ul style={{margin: 0, paddingLeft: 16, fontSize: 13, lineHeight: 1.7}}>
-            {classKit.map((item, i) => <li key={i}>{item}</li>)}
-            {classKit.length === 0 && <li className="muted">no kit defined for this class yet</li>}
-          </ul>
-        </div>
 
-        <div className="box soft">
-          <div className="box-title">
-            <h3>Background kit · {bg?.name ?? '—'}</h3>
-            <span className="meta">{bgKit.length} items</span>
+          <div className="section-title">Final inventory · what you walk in with</div>
+          <div className="box" style={{padding: 0}}>
+            <table className="inv">
+              <thead>
+                <tr><th>item</th><th>source</th></tr>
+              </thead>
+              <tbody>
+                {classKit.map((item, i) => (
+                  <tr key={`c-${i}`}>
+                    <td><b>{item}</b></td>
+                    <td className="muted">class kit</td>
+                  </tr>
+                ))}
+                {bgKit.map((item, i) => (
+                  <tr key={`b-${i}`}>
+                    <td><b>{item}</b></td>
+                    <td className="muted">{bg?.name} background</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <ul style={{margin: 0, paddingLeft: 16, fontSize: 13, lineHeight: 1.7}}>
-            {bgKit.map((item, i) => <li key={i}>{item}</li>)}
-          </ul>
-        </div>
-      </div>
 
-      <div className="section-title">Final inventory · what you walk in with</div>
-      <div className="box" style={{padding: 0}}>
-        <table className="inv">
-          <thead>
-            <tr><th>item</th><th>source</th></tr>
-          </thead>
-          <tbody>
-            {classKit.map((item, i) => (
-              <tr key={`c-${i}`}>
-                <td><b>{item}</b></td>
-                <td className="muted">class kit</td>
-              </tr>
-            ))}
-            {bgKit.map((item, i) => (
-              <tr key={`b-${i}`}>
-                <td><b>{item}</b></td>
-                <td className="muted">{bg?.name} background</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          <EquipmentCatalogBrowser />
 
-      <EquipmentCatalogBrowser />
+          <div className="aside" style={{fontSize: 13, marginTop: 12}}>
+            ↳ this V1 path takes the class + background sets above. Switch to{' '}
+            <b>roll</b> mode if you'd rather buy from the catalog with starting gold.
+          </div>
+        </>
+      )}
 
-      <div className="aside" style={{fontSize: 13, marginTop: 12}}>
-        ↳ V1 (current): take the class + background sets above.{' '}
-        <b>V2 (next)</b>: roll starting gold (e.g. fighter 5d4×10gp), spend it from the catalog
-        below. The <span className="kbd">EQUIPMENT_CATALOG</span> in <span className="kbd">src/game/equipment.ts</span>{' '}
-        is the source of truth ({EQUIPMENT_CATALOG.length} SRD items) and will get a DB-backed
-        search + cart UI when V2 lands.
-      </div>
+      {mode === 'roll' && (
+        <>
+          {/* Gold strip */}
+          <div className="grid-3" style={{ gap: 12, marginBottom: 14 }}>
+            <div className="box">
+              <div className="tiny">STARTING GOLD ({formulaLabel})</div>
+              <div style={{ fontFamily: 'var(--serif)', fontSize: 28, fontWeight: 600, marginTop: 4 }}>
+                {draft.startingGold > 0 ? `${draft.startingGold} gp` : <span className="muted">— not yet rolled —</span>}
+              </div>
+              <button
+                className="btn sm"
+                onClick={handleRollGold}
+                style={{ marginTop: 8 }}
+              >
+                {draft.startingGold > 0 ? 'reroll' : '🎲 roll'}
+              </button>
+            </div>
+            <div className="box">
+              <div className="tiny">SPENT</div>
+              <div style={{ fontFamily: 'var(--serif)', fontSize: 28, fontWeight: 600, marginTop: 4 }}>
+                {cartTotal.toFixed(1)} gp
+              </div>
+              <div className="tiny muted" style={{ marginTop: 8 }}>
+                {Object.values(cart).reduce((s, q) => s + (q as number), 0)} item{Object.values(cart).length === 1 ? '' : 's'}
+              </div>
+            </div>
+            <div className="box" style={{ borderColor: overBudget ? 'var(--accent-red)' : 'var(--rule)' }}>
+              <div className="tiny">REMAINING</div>
+              <div style={{
+                fontFamily: 'var(--serif)', fontSize: 28, fontWeight: 600, marginTop: 4,
+                color: overBudget ? 'var(--accent-red)' : 'var(--accent-green)',
+              }}>
+                {goldRemaining.toFixed(1)} gp
+              </div>
+              {overBudget && (
+                <div className="tiny" style={{ color: 'var(--accent-red)', marginTop: 8 }}>
+                  ⚠ over budget — drop something
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Cart contents */}
+          {Object.keys(cart).length > 0 && (
+            <div className="box" style={{ marginBottom: 14 }}>
+              <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <div className="section-title" style={{ margin: 0 }}>Cart · {Object.keys(cart).length} types</div>
+                <button className="btn sm" onClick={handleClearCart}>clear cart</button>
+              </div>
+              <table className="inv">
+                <thead>
+                  <tr><th>item</th><th style={{ textAlign: 'right' }}>qty</th><th style={{ textAlign: 'right' }}>unit</th><th style={{ textAlign: 'right' }}>subtotal</th></tr>
+                </thead>
+                <tbody>
+                  {Object.entries(cart).map(([key, qty]) => {
+                    const it = EQUIPMENT_CATALOG.find((c) => c.key === key)
+                    if (!it) return null
+                    return (
+                      <tr key={key}>
+                        <td><b>{it.name}</b> <span className="muted tiny">· {it.category}</span></td>
+                        <td className="stat" style={{ textAlign: 'right' }}>{qty}</td>
+                        <td className="stat" style={{ textAlign: 'right' }}>
+                          {it.valueGP < 1 ? `${(it.valueGP * 10).toFixed(0)}sp` : `${it.valueGP}gp`}
+                        </td>
+                        <td className="stat" style={{ textAlign: 'right', fontWeight: 600 }}>
+                          {(it.valueGP * (qty as number)).toFixed(1)} gp
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Browser with cart controls */}
+          <EquipmentCatalogBrowser cart={cart} setQty={setQty} />
+
+          <div className="aside" style={{ fontSize: 13, marginTop: 12 }}>
+            ↳ V2: starting gold rolls per class formula. Cart total stays under budget; the{' '}
+            <span className="kbd">cart</span> resolves to <span className="kbd">kitItems</span>{' '}
+            on commit and persists into the character's inventory + items tables.
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -1846,7 +2038,14 @@ const CATEGORY_ORDER: EquipmentCategory[] = [
   'pack', 'tool', 'gear',
 ]
 
-function EquipmentCatalogBrowser() {
+function EquipmentCatalogBrowser({
+  cart,
+  setQty,
+}: {
+  cart?: Record<string, number>
+  setQty?: (key: string, qty: number) => void
+}) {
+  const showCart = !!cart && !!setQty
   const [query, setQuery] = React.useState('')
   const [activeCat, setActiveCat] = React.useState<EquipmentCategory | 'all'>('weapon-simple-melee')
 
@@ -1908,11 +2107,15 @@ function EquipmentCatalogBrowser() {
               <th>cost</th>
               <th>weight</th>
               <th>notes</th>
+              {showCart && <th style={{ textAlign: 'right' }}>qty</th>}
             </tr>
           </thead>
           <tbody>
-            {filtered.map((item) => (
-              <tr key={item.key}>
+            {filtered.map((item) => {
+              const qty = showCart ? (cart![item.key] ?? 0) : 0
+              const inCart = qty > 0
+              return (
+              <tr key={item.key} style={inCart ? { background: 'rgba(91, 138, 90, 0.08)' } : undefined}>
                 <td><b>{item.name}</b></td>
                 <td className="muted tiny">{CATEGORY_LABELS[item.category] ?? item.category}</td>
                 <td className="stat">
@@ -1954,11 +2157,30 @@ function EquipmentCatalogBrowser() {
                     <span className="muted">{item.description}</span>
                   )}
                 </td>
+                {showCart && (
+                  <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    <button
+                      className="btn sm"
+                      onClick={() => setQty!(item.key, qty - 1)}
+                      disabled={qty === 0}
+                      style={{ minWidth: 24 }}
+                    >−</button>
+                    <span className="stat" style={{ display: 'inline-block', minWidth: 28, textAlign: 'center', fontWeight: qty > 0 ? 600 : 400 }}>
+                      {qty}
+                    </span>
+                    <button
+                      className="btn sm"
+                      onClick={() => setQty!(item.key, qty + 1)}
+                      style={{ minWidth: 24 }}
+                    >＋</button>
+                  </td>
+                )}
               </tr>
-            ))}
+              )
+            })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="muted" style={{ textAlign: 'center', padding: 14 }}>
+                <td colSpan={showCart ? 6 : 5} className="muted" style={{ textAlign: 'center', padding: 14 }}>
                   no items match "{query}" in {CATEGORY_LABELS[activeCat] ?? activeCat}
                 </td>
               </tr>

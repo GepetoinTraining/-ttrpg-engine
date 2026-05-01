@@ -97,7 +97,17 @@ export class EngineClient {
    */
   transport(destNodeId: string, daysAdvanced: number = 0): ProducedActions {
     const fromNodeId = this.partyNodeId
-    const safeDays = Math.max(0, Math.floor(daysAdvanced))
+    let safeDays = Math.max(0, Math.floor(daysAdvanced))
+
+    // Time-flow rule (project_cert_hierarchy.md):
+    //   session-time personas (player / dm / gm-ai) can fast-travel via DM authority.
+    //   `dmless` lives at server-cron time and cannot skip days — their world
+    //   advances only via /api/cron/tick.
+    if (this.character.personaType === 'dmless' && safeDays > 0) {
+      // Silently clamp to 0; DMless transport is a free observe at the current
+      // world day. The cron heartbeat is the only thing that moves their clock.
+      safeDays = 0
+    }
 
     if (safeDays > 0) {
       this.worldDay += safeDays

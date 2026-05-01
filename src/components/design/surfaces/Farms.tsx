@@ -2,30 +2,46 @@
 'use client'
 
 import React from 'react'
+import { Chip, FidelityBadge } from './_chips'
 
-// surfaces/Farms.jsx — Surface 40. Slow-life: claimed farm plots.
+// surfaces/Farms.tsx — Surface 40. Slow-life: claimed farm plots.
 // Reads engine/agriculture.ts + engine/claims.ts + plant_crops intent.
 // Per Pedro: discovered, not advertised. No tutorial.
 
 export default function Farms() {
-  const today = 472;
+  const today = 472
+  // current weather window from engine/weather.ts (mock). modulates daily growth tick.
+  const weather = {
+    season: 'Eleasis · late summer',
+    today: 'warm · dry',
+    forecast7d: [
+      {d:'today',  cond:'warm · dry',     mod: 1.00},
+      {d:'+1',     cond:'warm · dry',     mod: 1.00},
+      {d:'+2',     cond:'overcast',         mod: 0.95},
+      {d:'+3',     cond:'rain',             mod: 1.10},
+      {d:'+4',     cond:'rain',             mod: 1.10},
+      {d:'+5',     cond:'cool · clear',    mod: 1.05},
+      {d:'+6',     cond:'warm · dry',     mod: 1.00},
+    ],
+    weeklyMod: 1.03, // avg over 7d
+    soilMoisture: 0.58,
+  }
+  const growthMod = weather.weeklyMod // applied to growth bar
+
   const plots = [
     {id:'p-saerb-3',  loc:'Saerb · plot 3',     status:'planted',    crop:'wheat',  plantedDay: 440, growthDays: 90, lastTended: 466, claim:'active'},
     {id:'p-saerb-4',  loc:'Saerb · plot 4',     status:'harvesting', crop:'barley', plantedDay: 380, growthDays: 80, lastTended: 471, claim:'active'},
     {id:'p-east-1',   loc:'East Reach · west',  status:'fallow',     crop:null,     plantedDay: null, growthDays: 0,  lastTended: 410, claim:'active'},
     {id:'p-east-2',   loc:'East Reach · east',  status:'fallow',     crop:null,     plantedDay: null, growthDays: 0,  lastTended: 380, claim:'lapsed'},
     {id:'p-whel-1',   loc:'Wheloon edge · 1',   status:'planted',    crop:'flax',   plantedDay: 455, growthDays: 70, lastTended: 470, claim:'contested'},
-  ];
-
-  const statusChip = {fallow:'', planted:'blue', harvesting:'gold'};
-  const claimChip = {active:'green', lapsed:'', contested:'red'};
+  ]
 
   return (
     <div>
       <div className="surface-head">
         <div>
           <div className="crumbs">40 · L5 · slow-life · agriculture</div>
-          <h2>Farm plots</h2>
+          <h2>Farm plots <FidelityBadge level="partial" /></h2>
         </div>
         <span className="who">player view · long horizon</span>
       </div>
@@ -33,6 +49,34 @@ export default function Farms() {
       <div className="aside" style={{maxWidth: 820, marginBottom: 18}}>
         ↳ engine/agriculture.ts ticks daily; growth advances on weather + tend cadence.
         a plot lapses if untended {`>`} 60d. contested = another claimant filed.
+      </div>
+
+      {/* Weather modulation strip */}
+      <div className="box dashed" style={{marginBottom: 14, padding:'10px 14px'}}>
+        <div className="row" style={{justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap: 12}}>
+          <div>
+            <span className="hand ink" style={{fontSize: 18}}>Weather · 7-day</span>
+            <span className="tiny" style={{marginLeft: 10}}>{weather.season} · today {weather.today} · soil {(weather.soilMoisture*100|0)}%</span>
+          </div>
+          <div className="row" style={{gap: 10, alignItems:'center'}}>
+            <span className="tiny">growth modulator</span>
+            <span className={`chip sm ${growthMod >= 1.05 ? 'green' : growthMod < 0.95 ? 'red' : ''}`}>
+              ×{growthMod.toFixed(2)}
+            </span>
+            <span className="tiny" style={{textDecoration:'underline', cursor:'pointer'}}>open Weather →</span>
+          </div>
+        </div>
+        <div className="row" style={{gap: 4, marginTop: 8, fontFamily:'var(--mono)', fontSize: 11}}>
+          {weather.forecast7d.map((w,i) => (
+            <div key={i} style={{flex:1, textAlign:'center', padding:'4px 0',
+                                 background: w.mod >= 1.05 ? 'rgba(91,138,90,0.12)' : w.mod < 0.95 ? 'rgba(168,68,42,0.10)' : 'var(--paper-2)',
+                                 border:'1px solid var(--rule-soft)'}}>
+              <div style={{fontWeight: 600}}>{w.d}</div>
+              <div style={{fontSize: 10, color:'var(--ink-3)'}}>{w.cond}</div>
+              <div style={{fontSize: 10}}>×{w.mod.toFixed(2)}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="grid-4" style={{marginBottom: 14}}>
@@ -56,12 +100,12 @@ export default function Farms() {
         </thead>
         <tbody>
           {plots.map(p => {
-            const grown = p.status==='planted' && p.plantedDay ? Math.min(100, ((today - p.plantedDay) / p.growthDays) * 100) : (p.status==='harvesting' ? 100 : 0);
-            const harvestDay = p.plantedDay ? p.plantedDay + p.growthDays : null;
+            const grown = p.status==='planted' && p.plantedDay ? Math.min(100, ((today - p.plantedDay) / p.growthDays) * 100) : (p.status==='harvesting' ? 100 : 0)
+            const harvestDay = p.plantedDay ? p.plantedDay + p.growthDays : null
             return (
               <tr key={p.id}>
                 <td><b>{p.loc}</b><div className="tiny muted">{p.id}</div></td>
-                <td><span className={`chip sm ${statusChip[p.status]}`}>{p.status}</span></td>
+                <td><Chip kind="plot" value={p.status} /></td>
                 <td>{p.crop || <span className="muted">—</span>}</td>
                 <td style={{minWidth: 160}}>
                   {p.status === 'fallow' ? <span className="muted">—</span> : (
@@ -74,7 +118,7 @@ export default function Farms() {
                   )}
                 </td>
                 <td className="stat">day {p.lastTended}</td>
-                <td><span className={`chip sm ${claimChip[p.claim]}`}>{p.claim}</span></td>
+                <td><Chip kind="claim" value={p.claim} /></td>
                 <td>
                   <div className="row" style={{gap: 4}}>
                     {p.status === 'fallow' && p.claim==='active' && <button className="btn sm">plant_crops</button>}
@@ -85,7 +129,7 @@ export default function Farms() {
                   </div>
                 </td>
               </tr>
-            );
+            )
           })}
         </tbody>
       </table>
@@ -119,6 +163,5 @@ export default function Farms() {
         </div>
       </div>
     </div>
-  );
+  )
 }
-

@@ -652,3 +652,47 @@ export function findSubrace(raceKey: string, subraceName: string | undefined): S
   if (!race) return null
   return race.subraces.find((s) => s.name === subraceName || s.key === subraceName) ?? null
 }
+
+// ────────────────────────────────────────────────────────────────────────
+// Equipment V2 — starting gold roll formulas (PHB pp.143)
+// ────────────────────────────────────────────────────────────────────────
+
+export interface GoldDiceFormula {
+  /** Number of d4s to roll. */
+  count: number
+  /** Multiplier on the dice sum. PHB classes use ×10 except monk (×1). */
+  multiplier: number
+}
+
+export const STARTING_GOLD_DICE: Record<string, GoldDiceFormula> = {
+  barbarian: { count: 2, multiplier: 10 },  // 2d4×10
+  bard:      { count: 5, multiplier: 10 },  // 5d4×10
+  cleric:    { count: 5, multiplier: 10 },  // 5d4×10
+  druid:     { count: 2, multiplier: 10 },  // 2d4×10
+  fighter:   { count: 5, multiplier: 10 },  // 5d4×10
+  monk:      { count: 5, multiplier: 1  },  // 5d4 (monks live ascetic)
+  paladin:   { count: 5, multiplier: 10 },  // 5d4×10
+  ranger:    { count: 5, multiplier: 10 },  // 5d4×10
+  rogue:     { count: 4, multiplier: 10 },  // 4d4×10
+  sorcerer:  { count: 3, multiplier: 10 },  // 3d4×10
+  warlock:   { count: 4, multiplier: 10 },  // 4d4×10
+  wizard:    { count: 4, multiplier: 10 },  // 4d4×10
+}
+
+/**
+ * Roll the class's starting gold.
+ *
+ * Optional `seed` lets callers reproduce a specific roll — caller wraps
+ * `Math.random` if they want determinism. Returns a positive integer (gp).
+ *
+ * Falls back to 4d4×10 (avg 100gp) for unknown classes — matches the most
+ * common formula and avoids returning 0.
+ */
+export function rollStartingGold(classKey: string, randomFn: () => number = Math.random): number {
+  const formula = STARTING_GOLD_DICE[classKey] ?? { count: 4, multiplier: 10 }
+  let sum = 0
+  for (let i = 0; i < formula.count; i++) {
+    sum += 1 + Math.floor(randomFn() * 4)  // 1..4 inclusive
+  }
+  return sum * formula.multiplier
+}

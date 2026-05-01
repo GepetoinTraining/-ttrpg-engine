@@ -10,13 +10,19 @@
  * system A and produces effects for system B.
  *
  * EDGES WIRED:
- *   1. Ecology → Husbandry:        Monster predation on herds
+ *   1. Ecology → Husbandry:        Monster predation on settlement livestock
  *   2. Social → Faction:            Contract events → loyalty shifts
  *   3. Knowledge → Magic:           Seeds lower lore gate DCs
  *   4. Guild Intel → Faction:       Discoveries feed faction decisions
  *   5. Dungeon → Knowledge Pool:    Loot produces knowledge seeds
  *   6. Followers → Combat:          Follower NPCs in combat scenes
+ *   7. Monster → Wild Fauna:        Camp hunt action consumes nearby wild herds
+ *                                   via mfHerdPredation (Δ.0.5 wiring)
  */
+
+import { mfHerdPredation } from './mf-herd-life.js'
+import { type WildHerd, getSpecies } from './wild-fauna.js'
+import type { MonsterActorState } from './monster-actor.js'
 
 // ============================================================
 // 1. ECOLOGY → HUSBANDRY: Monster Predation
@@ -433,4 +439,66 @@ export function generateFollowerCombatProfile(
     initiative: stats.init + Math.floor(level / 4),
     specialAbilities: stats.abilities,
   }
+}
+
+// ============================================================
+// 7. MONSTER → WILD FAUNA: Camp Hunt → Real Predation (Δ.0.5 wire)
+// ============================================================
+
+/**
+ * Replaces the abstract `+0.1 foodSecurity` placeholder for a monster camp's
+ * `hunt` action with real predation against nearby wild herds. Per-herd
+ * predation is folded via `mfHerdPredation` with a single-day pressure window
+ * scaled by camp size + leader CR.
+ *
+ * The result.foodSecurityBoost STACKS on top of the placeholder bump in
+ * `applyAdvancementEffects` (engine/monster-actor.ts) — past-Claude's hunt
+ * baseline becomes "minimum food bump even if no herds nearby"; real kills
+ * give more on top. Caller (mm-monster-actor.onResolve) writes the updated
+ * herds back to κ.ecology.herds.
+ */
+export interface MonsterHuntInput {
+  actor: MonsterActorState
+  /** Wild herds nearby — typically read from κ.ecology.herds at the camp's region. */
+  herds: WildHerd[]
+  worldDay: number
+}
+
+export interface MonsterHuntResult {
+  herdsAfter: WildHerd[]
+  totalKilled: number
+  /** Predator pressure used for mfHerdPredation, 0..1. Useful for narrative. */
+  pressure: number
+  /** Additional foodSecurity bump from real kills, capped at +0.2. Stacks with the placeholder. */
+  foodSecurityBoost: number
+}
+
+export function applyMonsterHunt(input: MonsterHuntInput): MonsterHuntResult {
+  const { actor, herds, worldDay } = input
+  // Predator pressure 0..1 — saturates around 50 troops + CR 5.
+  const troopFactor = Math.min(1, actor.troops / 50)
+  const crFactor = Math.min(1, actor.leaderCR / 5)
+  const pressure = Math.max(0, Math.min(1, troopFactor * 0.7 + crFactor * 0.3))
+
+  if (herds.length === 0 || pressure <= 0) {
+    return { herdsAfter: [], totalKilled: 0, pressure, foodSecurityBoost: 0 }
+  }
+
+  let totalKilled = 0
+  const herdsAfter: WildHerd[] = []
+  for (const herd of herds) {
+    const species = getSpecies(herd.speciesId)
+    const result = mfHerdPredation(herd, species, {
+      pressure,
+      days: 1,
+      worldDay,
+    })
+    totalKilled += result.output.predated
+    herdsAfter.push(result.output.herdAfter)
+  }
+
+  // Each kill ≈ +0.01 food security, capped at +0.2 per hunt action.
+  const foodSecurityBoost = Math.min(0.2, totalKilled * 0.01)
+
+  return { herdsAfter, totalKilled, pressure, foodSecurityBoost }
 }

@@ -5,11 +5,19 @@ import React from 'react'
 import {
   loadCharacterSheet,
   listCharacters,
+  loadInventory,
   type SheetData,
   type CharacterListItem,
+  type CharacterInventory,
 } from '@/lib/character'
 import { useSession } from '@/lib/session-context'
+import { EmptyState, FidelityBadge } from './_chips'
+
 // surfaces/Sheet.tsx — Character sheet wired to /api/character/:id.
+// Top half (identity, abilities, saves, skills, combat block, conditions,
+// resources, proficiencies) is fully derived from loadCharacterSheet().
+// Bottom half action/spell/inventory/features/notes panels are EmptyState
+// pending engine bridges — Sheet doesn't ship mock action data anymore.
 
 const ABILITY_LABEL: Record<string, string> = {
   strength: 'STR',
@@ -24,9 +32,10 @@ const fmtMod = (m: number) => `${m >= 0 ? '+' : ''}${m}`
 
 export default function Sheet() {
   const { campaignId, activeCharacterId, setActiveCharacterId, hydrated } = useSession()
-  const [tab, setTab] = React.useState('actions')
+  const [tab, setTab] = React.useState<'actions' | 'spells' | 'inventory' | 'features' | 'notes'>('actions')
   const [sheet, setSheet] = React.useState<SheetData | null>(null)
   const [list, setList] = React.useState<CharacterListItem[] | null>(null)
+  const [inventory, setInventory] = React.useState<CharacterInventory | null>(null)
   const [error, setError] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(true)
 
@@ -51,6 +60,12 @@ export default function Sheet() {
       .finally(() => setLoading(false))
   }, [activeCharacterId])
 
+  // Inventory is fetched separately so a slow inventory query doesn't block sheet render.
+  React.useEffect(() => {
+    if (!activeCharacterId) return
+    loadInventory(activeCharacterId).then(setInventory).catch(() => setInventory(null))
+  }, [activeCharacterId])
+
   const pickCharacter = (id: string) => {
     setActiveCharacterId(id)
     setList(null)
@@ -62,7 +77,7 @@ export default function Sheet() {
         <div className="surface-head">
           <div>
             <div className="crumbs">14 · Character Sheet</div>
-            <h2>Pick a character</h2>
+            <h2>Pick a character <FidelityBadge level="partial" /></h2>
           </div>
           <span className="who">no active character set</span>
         </div>
@@ -74,9 +89,10 @@ export default function Sheet() {
         )}
         {list === null && <div className="tiny muted">loading…</div>}
         {list && list.length === 0 && (
-          <div className="aside" style={{ fontSize: 16 }}>
-            ↳ no characters yet. <a onClick={() => { window.location.hash = 'chargen' }} style={{ cursor: 'pointer' }}>build one</a>.
-          </div>
+          <EmptyState
+            label="no characters yet"
+            hint={<a onClick={() => { window.location.hash = 'chargen' }} style={{ cursor: 'pointer', color: 'var(--accent-blue)' }}>build one →</a>}
+          />
         )}
         {list && list.length > 0 && (
           <div className="grid-3" style={{ gap: 10 }}>
@@ -129,18 +145,18 @@ export default function Sheet() {
       <div className="surface-head">
         <div>
           <div className="crumbs">14 · Character Sheet — hybrid</div>
-          <h2>{character.name} · sheet</h2>
+          <h2>{character.name} <FidelityBadge level="partial" /></h2>
         </div>
         <span className="who">
           {classLine} · derived live ·{' '}
-          <a onClick={() => { setActiveIdState(null); setSheet(null) }} style={{ cursor: 'pointer' }}>switch character</a>
+          <a onClick={() => { setActiveCharacterId(null); setSheet(null) }} style={{ cursor: 'pointer' }}>switch character</a>
         </span>
       </div>
 
       <p style={{maxWidth: 740, color:'var(--ink-2)', marginTop: 0}}>
         Top half is the <b>paper stat block</b> — abilities, saves, skills, combat numbers — derived
         from <span className="kbd">engine/mm-character.ts</span>. Bottom half flips to <b>modern action panels</b>:
-        what you can <i>do</i> right now. Player full view; DM gets a read-only mirror in the Console.
+        what you can <i>do</i> right now. <i>Action panels pending engine bridges (mm-character actions / spell registry / inventory).</i>
       </p>
 
       {/* ===== TOP: paper stat block ===== */}
@@ -277,14 +293,7 @@ export default function Sheet() {
         <div className="col">
           <div className="box">
             <div className="box-title"><h3>Conditions</h3><span className="meta">live</span></div>
-            <div className="row" style={{gap: 6, flexWrap:'wrap'}}>
-              {['concentrating','frightened','grappled','prone','restrained','poisoned','blinded','charmed','paralyzed','stunned','unconscious','exhaustion 0/6'].map((c) => (
-                <span key={c} className="chip sm" style={{fontSize: 9, opacity: 0.45}}>{c}</span>
-              ))}
-            </div>
-            <div className="aside" style={{marginTop: 10, fontSize: 16}}>
-              ↳ active right now: nothing. concentrate/exhaustion track here.
-            </div>
+            <EmptyState label="no active conditions" hint="bind to mm-character.conditions when concentration / status effects fire." />
           </div>
 
           <div className="box">
@@ -293,10 +302,10 @@ export default function Sheet() {
               <div>
                 <div className="row" style={{justifyContent:'space-between'}}>
                   <span className="stat">Hit dice ({primaryHitDie})</span>
-                  <span className="stat"><b>{level - 0}/{level}</b></span>
+                  <span className="stat"><b>{level}/{level}</b></span>
                 </div>
                 <div className="bar"><span style={{width: '100%'}} /></div>
-                <div className="tiny muted">spend during short rest</div>
+                <div className="tiny muted">spend during short rest · button pending</div>
               </div>
               <div className="tiny muted">
                 ↳ class resources (psi-dice, slots, ki) wired in a future pass
@@ -306,9 +315,7 @@ export default function Sheet() {
 
           <div className="box">
             <div className="box-title"><h3>Proficiencies</h3><span className="meta">tools · weapons · armor</span></div>
-            <div className="tiny muted" style={{lineHeight: 1.7}}>
-              <div>not yet wired — character_proficiencies table writes are a future pass.</div>
-            </div>
+            <EmptyState label="proficiencies pending" hint="character_proficiencies table writes are a future pass." />
           </div>
         </div>
       </div>
@@ -316,237 +323,107 @@ export default function Sheet() {
       {/* ===== BOTTOM: modern panels ===== */}
       <div className="section-title">In play · what you can do right now</div>
       <div className="tabs">
-        {[
+        {([
           ['actions', 'Actions'],
           ['spells', 'Spells / psionics'],
           ['inventory', 'Inventory'],
           ['features', 'Features'],
           ['notes', 'Notes'],
-        ].map(([k, lbl]) => (
+        ] as const).map(([k, lbl]) => (
           <div key={k} className={`tab ${tab===k?'active':''}`} onClick={() => setTab(k)}>{lbl}</div>
         ))}
       </div>
 
       <div className="box" style={{borderTop:'none', borderTopLeftRadius: 0, borderTopRightRadius: 0}}>
-        {tab === 'actions' && <SheetActions />}
-        {tab === 'spells' && <SheetSpells />}
-        {tab === 'inventory' && <SheetInventory />}
-        {tab === 'features' && <SheetFeatures />}
-        {tab === 'notes' && <SheetNotes />}
-      </div>
-    </div>
-  );
-}
-
-function SheetActions() {
-  const Row = ({type, n, dmg, range, notes, color}) => (
-    <tr>
-      <td><span className={`chip ${color||''} sm`} style={{fontSize: 9}}>{type}</span></td>
-      <td><b>{n}</b></td>
-      <td className="stat">{dmg}</td>
-      <td className="stat">{range}</td>
-      <td className="muted" style={{fontSize: 13}}>{notes}</td>
-      <td><button className="btn sm">→ use</button></td>
-    </tr>
-  );
-  return (
-    <div>
-      <div className="row" style={{gap: 8, marginBottom: 8, flexWrap:'wrap'}}>
-        <span className="tiny" style={{alignSelf:'center', marginRight: 4}}>BUDGET ·</span>
-        <span className="chip green sm">action ✓</span>
-        <span className="chip green sm">bonus ✓</span>
-        <span className="chip green sm">reaction ✓</span>
-        <span className="chip sm">movement 30 / 30</span>
-        <span style={{flex: 1}} />
-        <button className="btn sm">end turn</button>
-      </div>
-      <table className="inv">
-        <thead><tr><th></th><th>name</th><th>roll</th><th>range</th><th>notes</th><th></th></tr></thead>
-        <tbody>
-          <tr className="group"><td colSpan="6">attacks</td></tr>
-          <Row type="action" n="Shortsword +1" dmg="d20+9 · 1d6+4 pierce" range="melee · 5ft" notes="finesse · sneak applies" color="blue" />
-          <Row type="action" n="Hand crossbow" dmg="d20+8 · 1d6+3 pierce" range="30 / 120" notes="loading: bonus to reload" />
-          <Row type="action" n="Psychic blade · throw" dmg="d20+8 · 1d6+3 psychic" range="60ft" notes="sneak applies · summons free" color="gold" />
-          <Row type="bonus"  n="Off-hand psychic blade" dmg="d20+8 · 1d6 psychic" range="melee" notes="no DEX to dmg · sneak chains" color="gold" />
-
-          <tr className="group"><td colSpan="6">cunning action · bonus</td></tr>
-          <Row type="bonus" n="Dash" dmg="—" range="—" notes="+30ft this turn" />
-          <Row type="bonus" n="Disengage" dmg="—" range="—" notes="no OAs" />
-          <Row type="bonus" n="Hide" dmg="—" range="—" notes="re-stealth · sneak next turn" color="blue" />
-
-          <tr className="group"><td colSpan="6">reactions</td></tr>
-          <Row type="reaction" n="Uncanny Dodge" dmg="halve dmg" range="self" notes="vs one attacker you can see" color="blue" />
-          <Row type="reaction" n="Opportunity Attack" dmg="d20+9 · 1d6+4" range="reach" notes="vs leaving threat" />
-
-          <tr className="group"><td colSpan="6">other</td></tr>
-          <Row type="action" n="Help" dmg="—" range="5ft" notes="ally gets advantage" />
-          <Row type="action" n="Use object · potion" dmg="—" range="self" notes="3 healing potions on belt" />
-          <Row type="free" n="Speak · Thieves' Cant" dmg="—" range="—" notes="signal Doruk" />
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function SheetSpells() {
-  return (
-    <div>
-      <div className="row" style={{gap: 14, marginBottom: 12}}>
-        <span className="stat">Psi-dice <b>3/4</b> · d6</span>
-        <span className="stat">Save DC <b>13</b></span>
-        <span className="stat">Atk <b>+5</b></span>
-        <span className="stat">Slots · n/a (rogue)</span>
-      </div>
-      <div className="grid-2" style={{gap: 14}}>
-        <div className="box soft">
-          <div className="box-title"><h3>Psionic Power</h3><span className="meta">3/4</span></div>
-          <div className="col" style={{gap: 8}}>
-            {[
-              {n:'Psi-Bolstered Knack', d:'spend die · failed check → succeed', cost:'1 die'},
-              {n:'Psionic Whispers', d:'mental message · 1 mile', cost:'1 die'},
-              {n:'Psychic Veil', d:'invisible until you act · 1hr', cost:'1 die'},
-            ].map(p => (
-              <div key={p.n} className="box" style={{padding: 10}}>
-                <div className="row" style={{justifyContent:'space-between'}}>
-                  <b>{p.n}</b>
-                  <span className="chip gold sm" style={{fontSize: 9}}>{p.cost}</span>
-                </div>
-                <div className="muted" style={{fontSize: 13, marginTop: 4}}>{p.d}</div>
-                <div className="row" style={{gap: 6, marginTop: 6}}>
-                  <button className="btn sm">→ manifest</button>
-                  <button className="btn sm">read</button>
-                </div>
+        {tab === 'actions' && (
+          <EmptyState
+            label="actions panel pending"
+            hint="bind to engine/mm-character.ts derived actions: attacks (weapons + sneak/extra), bonus actions (cunning/two-weapon), reactions (uncanny dodge/OAs), use-object."
+          />
+        )}
+        {tab === 'spells' && (
+          <EmptyState
+            label="spell panel pending"
+            hint="bind via /api/character/[id]/spells (Spells surface 25 already wired) — surface a quick-cast strip here."
+          />
+        )}
+        {tab === 'inventory' && (
+          inventory && inventory.totals.items > 0 ? (
+            <div>
+              <div className="row" style={{ gap: 14, marginBottom: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                <span className="stat">
+                  Carry <b>{inventory.totals.weight.toFixed(1)} lb</b>
+                </span>
+                <span className="stat">
+                  Value <b>{inventory.totals.valueGP.toFixed(0)} gp</b>
+                </span>
+                <span className="stat">
+                  Containers <b>{inventory.totals.containers}</b>
+                </span>
+                <span className="stat">
+                  Items <b>{inventory.totals.items}</b>
+                </span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="box soft">
-          <div className="box-title"><h3>Items as spells</h3><span className="meta">scroll · wand</span></div>
-          <div className="col" style={{gap: 8}}>
-            <div className="box" style={{padding: 10}}>
-              <div className="row" style={{justifyContent:'space-between'}}>
-                <b>Scroll · Shield</b>
-                <span className="chip sm" style={{fontSize: 9}}>1 of 1</span>
-              </div>
-              <div className="muted" style={{fontSize: 13, marginTop: 4}}>reaction · +5 AC until next turn</div>
+              {inventory.inventories.map((inv) =>
+                inv.containers.map((c) => (
+                  <div key={c.id} className="box soft" style={{ marginBottom: 10 }}>
+                    <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <div>
+                        <b>{c.name}</b> <span className="tiny muted">· {c.type}</span>
+                      </div>
+                      <span className="tiny muted">
+                        {c.items.length} item{c.items.length === 1 ? '' : 's'} · {c.weightCapacity}lb cap
+                      </span>
+                    </div>
+                    {c.items.length === 0 ? (
+                      <div className="tiny muted" style={{ marginTop: 6 }}>empty</div>
+                    ) : (
+                      <table className="inv" style={{ marginTop: 6 }}>
+                        <thead><tr><th>item</th><th>qty</th><th>category</th><th>rarity</th><th style={{ textAlign: 'right' }}>weight</th><th style={{ textAlign: 'right' }}>value</th></tr></thead>
+                        <tbody>
+                          {c.items.map((it) => (
+                            <tr key={it.id}>
+                              <td>
+                                <b>{it.name}</b>
+                                {it.magical && <span className="chip sm gold" style={{ marginLeft: 6, fontSize: 9 }}>magical</span>}
+                                {it.requiresAttunement && <span className="chip sm blue" style={{ marginLeft: 4, fontSize: 9 }}>attune</span>}
+                              </td>
+                              <td className="stat">{it.quantity}</td>
+                              <td className="tiny muted">{it.category}</td>
+                              <td className="tiny">{it.rarity}</td>
+                              <td className="stat" style={{ textAlign: 'right' }}>{(it.weight * it.quantity).toFixed(1)}</td>
+                              <td className="stat" style={{ textAlign: 'right' }}>{(it.valueGP * it.quantity).toFixed(0)}gp</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                )),
+              )}
             </div>
-            <div className="box" style={{padding: 10}}>
-              <div className="row" style={{justifyContent:'space-between'}}>
-                <b>Hat of Disguise</b>
-                <span className="chip sm" style={{fontSize: 9}}>1/day</span>
-              </div>
-              <div className="muted" style={{fontSize: 13, marginTop: 4}}>action · attune · 1hr</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="aside" style={{marginTop: 14, fontSize: 16}}>
-        ↳ for full casters, this tab renders a leveled grimoire with prepared toggles, slots,
-        ritual marks. Same vocabulary.
-      </div>
-    </div>
-  );
-}
-
-function SheetInventory() {
-  return (
-    <div>
-      <div className="row" style={{gap: 10, marginBottom: 10, alignItems:'center'}}>
-        <span className="stat">Carry <b>23 / 60 lb</b> · light</span>
-        <div className="bar gold" style={{flex:1}}><span style={{width: '38%'}} /></div>
-        <span className="stat">Coin · <b>180gp</b> 12sp 4cp</span>
-        <button className="btn sm">＋ add</button>
-      </div>
-      <div className="muted" style={{fontSize: 13, marginBottom: 10}}>
-        Full inventory lives on your <a style={{color:'var(--accent-blue)'}}>Player Dashboard</a> (local · stash · ally · mount).
-        This panel surfaces only what you can <i>reach this turn</i>.
-      </div>
-      <table className="inv">
-        <thead><tr><th>item</th><th>qty</th><th>action to use</th><th></th></tr></thead>
-        <tbody>
-          <tr><td><b>Potion of healing</b></td><td>3</td><td className="muted">action · 2d4+2 HP</td><td><button className="btn sm">→ drink</button></td></tr>
-          <tr><td><b>Alchemist's fire</b></td><td>2</td><td className="muted">action · 1d4 fire/round · DC 10 dex</td><td><button className="btn sm">→ throw</button></td></tr>
-          <tr><td><b>Caltrops</b></td><td>1 bag</td><td className="muted">action · 5ft sq · DC 15 dex</td><td><button className="btn sm">→ scatter</button></td></tr>
-          <tr><td><b>Smokestick</b></td><td>2</td><td className="muted">bonus · 10ft cloud, 1 round</td><td><button className="btn sm">→ pop</button></td></tr>
-          <tr><td><b>Boots of Elvenkind</b></td><td>1 worn</td><td className="muted">passive · adv stealth</td><td></td></tr>
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function SheetFeatures() {
-  return (
-    <div className="grid-2" style={{gap: 14}}>
-      {[
-        {h:'Class · Rogue 7', items:[
-          {n:'Sneak Attack', d:'+4d6 · 1/turn · finesse or ranged · ally w/in 5ft of target or advantage'},
-          {n:'Cunning Action', d:'bonus: Dash / Disengage / Hide'},
-          {n:'Uncanny Dodge', d:'reaction: halve dmg from one seen attacker'},
-          {n:'Evasion', d:'DEX save: half → none, fail → half'},
-          {n:'Expertise', d:'×2 prof in Stealth, Deception'},
-        ]},
-        {h:'Subclass · Soulknife', items:[
-          {n:'Psionic Power · 4d6', d:'regen short rest'},
-          {n:'Psychic Blades', d:'1d6 psychic · finesse · throw 60'},
-          {n:'Psi-Bolstered Knack / Whispers', d:'spend dice'},
-        ]},
-        {h:'Race · Half-elf', items:[
-          {n:'Darkvision', d:'60ft'},
-          {n:'Fey Ancestry', d:'adv vs charm · immune sleep'},
-          {n:'Skill Versatility', d:'2 extra skills'},
-        ]},
-        {h:'Background · Charlatan', items:[
-          {n:'False Identity', d:'one alternate persona, fully documented'},
-          {n:'Forgery kit', d:'tool prof'},
-        ]},
-      ].map(g => (
-        <div key={g.h} className="box soft">
-          <div className="box-title"><h3>{g.h}</h3><span className="meta"></span></div>
-          <div className="col" style={{gap: 6}}>
-            {g.items.map(it => (
-              <div key={it.n} style={{borderBottom:'1px dashed var(--rule-soft)', paddingBottom: 6}}>
-                <b>{it.n}</b>
-                <div className="muted" style={{fontSize: 13, marginTop: 2}}>{it.d}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function SheetNotes() {
-  return (
-    <div className="grid-2" style={{gap: 14}}>
-      <div className="box soft">
-        <div className="box-title"><h3>Personality</h3><span className="meta">RP</span></div>
-        <ul style={{margin:0, paddingLeft: 16, fontSize: 13, lineHeight: 1.7}}>
-          <li><b>Trait</b> — keeps multiple holy symbols, just in case.</li>
-          <li><b>Ideal</b> — Independence. No god, no master.</li>
-          <li><b>Bond</b> — owes Pell more than I can ever repay.</li>
-          <li><b>Flaw</b> — trusts easy when there's gold on the table.</li>
-        </ul>
-      </div>
-      <div className="box soft">
-        <div className="box-title"><h3>Backstory · short</h3><span className="meta">DM read</span></div>
-        <p className="muted" style={{fontSize: 13, lineHeight: 1.7}}>
-          Mulmaster street kid. Old Pell took her in at 12 — fence work, then forgery. The Banite
-          priestess Selvys "questioned" Pell three winters ago; he came back wrong. Kaelith fled
-          to Waterdeep. The job in the Sunset Vault is the first time she's heard Selvys's name in
-          two years.
-        </p>
-      </div>
-      <div className="box dashed" style={{gridColumn:'span 2'}}>
-        <div className="box-title"><h3>Free notes</h3><span className="meta">scratchpad</span></div>
-        <div className="placeholder" style={{minHeight: 80}}>
-          markdown notes · auto-tagged by AI · searchable across sessions
-        </div>
+          ) : (
+            <EmptyState
+              label={inventory ? 'no items' : 'inventory pending'}
+              hint={inventory
+                ? 'inventory rows exist but no items yet. Loot, craft, or buy to populate.'
+                : 'bind to engine/inventory.ts polymorphic owner_type=character once the bag system seeds.'}
+            />
+          )
+        )}
+        {tab === 'features' && (
+          <EmptyState
+            label="features panel pending"
+            hint="bind to character_features (class/subclass/race/background) once seeded by chargen commit."
+          />
+        )}
+        {tab === 'notes' && (
+          <EmptyState
+            label="notes panel pending"
+            hint="markdown scratchpad with AI auto-tagging — wires once player-notes table lands."
+          />
+        )}
       </div>
     </div>
-  );
+  )
 }
-

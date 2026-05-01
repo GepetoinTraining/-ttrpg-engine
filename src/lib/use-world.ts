@@ -11,7 +11,8 @@
  *   2. Fetch current world state from /api/world/state
  *   3. Construct EngineClient
  *   4. Poll /api/world/log every 5s for live event feed
- *   5. Expose imperative methods (transport, observe, roll, applyIntent, push)
+ *   5. Bridge surface data: party members, nearby NPCs (scoped to partyNodeId), quest arcs
+ *   6. Expose imperative methods (transport, observe, roll, applyIntent, push)
  */
 
 'use client'
@@ -26,6 +27,9 @@ import {
   type TpbLogEntryClient,
 } from './world-client'
 import { EngineClient } from './engine-client'
+import { listCharacters, type CharacterListItem } from './character'
+import { listNPCs, type NPCSummary } from './world-detail'
+import { loadQuests } from './narrative'
 import type { DiceFormula } from '../../engine/mf-dice'
 
 const LOG_POLL_MS = 5000
@@ -45,6 +49,12 @@ export interface UseWorldState {
   log: TpbLogEntryClient[]
   /** Pending action count — surfaces can show "N pending" */
   pendingCount: number
+  /** All known characters — used as party roster surrogate until cert-hash party formation lands. */
+  partyMembers: CharacterListItem[]
+  /** NPCs at the current partyNodeId (settlement-scoped). Refetches when partyNodeId changes. */
+  nearbyNpcs: NPCSummary[]
+  /** Quest arcs (each with quests + beats). Currently global; scoped to adventureId once campaign linkage lands. */
+  arcs: any[]
 }
 
 export interface UseWorldApi extends UseWorldState {
@@ -60,7 +70,7 @@ export interface UseWorldApi extends UseWorldState {
   push: () => Promise<void>
   /** Discard buffered actions without pushing */
   discardPending: () => void
-  /** Manual refresh of world state + log */
+  /** Manual refresh of world state + log + party + nearby + quests */
   refresh: () => Promise<void>
 }
 
@@ -73,6 +83,9 @@ export function useWorld(): UseWorldApi {
     worldStatus: null,
     log: [],
     pendingCount: 0,
+    partyMembers: [],
+    nearbyNpcs: [],
+    arcs: [],
   })
 
   const engineRef = React.useRef<EngineClient | null>(null)
@@ -87,11 +100,13 @@ export function useWorld(): UseWorldApi {
     let cancelled = false
     async function boot() {
       try {
-        const [account, character, worldStatus, log] = await Promise.all([
+        const [account, character, worldStatus, log, charList, quests] = await Promise.all([
           loadAccount(),
           getActiveCharacterCert(),
           fetchWorldState().catch(() => null),
           fetchWorldLog(LOG_LIMIT).catch(() => []),
+          listCharacters().then(r => r.characters).catch(() => []),
+          loadQuests().then(r => r.arcs).catch(() => []),
         ])
 
         if (cancelled) return
@@ -109,6 +124,9 @@ export function useWorld(): UseWorldApi {
             worldStatus,
             log,
             pendingCount: 0,
+            partyMembers: charList,
+            nearbyNpcs: [],
+            arcs: quests,
           })
           return
         }
@@ -120,6 +138,13 @@ export function useWorld(): UseWorldApi {
           partyNodeId: worldStatus.partyNodeId,
         })
 
+        // Fire nearbyNpcs separately — needs partyNodeId we just got
+        const nearbyNpcs = await listNPCs({ settlementId: worldStatus.partyNodeId, limit: 100 })
+          .then(r => r.npcs)
+          .catch(() => [])
+
+        if (cancelled) return
+
         setState({
           loading: false,
           error: null,
@@ -128,6 +153,9 @@ export function useWorld(): UseWorldApi {
           worldStatus,
           log,
           pendingCount: 0,
+          partyMembers: charList,
+          nearbyNpcs,
+          arcs: quests,
         })
       } catch (e: unknown) {
         if (cancelled) return
@@ -162,6 +190,23 @@ export function useWorld(): UseWorldApi {
       clearInterval(id)
     }
   }, [state.loading, state.error])
+
+  // ── Refetch nearby NPCs when partyNodeId changes ──
+  const partyNodeId = state.worldStatus?.partyNodeId
+  React.useEffect(() => {
+    if (!partyNodeId) return
+    let cancelled = false
+    listNPCs({ settlementId: partyNodeId, limit: 100 })
+      .then(r => {
+        if (!cancelled) setState((s) => ({ ...s, nearbyNpcs: r.npcs }))
+      })
+      .catch(() => {
+        if (!cancelled) setState((s) => ({ ...s, nearbyNpcs: [] }))
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [partyNodeId])
 
   // ── Imperative actions ──
   const transport = React.useCallback(
@@ -219,15 +264,18 @@ export function useWorld(): UseWorldApi {
 
   const refresh = React.useCallback(async () => {
     try {
-      const [worldStatus, log] = await Promise.all([
+      const [worldStatus, log, charList, quests] = await Promise.all([
         fetchWorldState(),
         fetchWorldLog(LOG_LIMIT),
+        listCharacters().then(r => r.characters).catch(() => []),
+        loadQuests().then(r => r.arcs).catch(() => []),
       ])
       const eng = engineRef.current
       if (eng) {
         eng.hydrate({ worldDay: worldStatus.worldDay, partyNodeId: worldStatus.partyNodeId })
       }
-      setState((s) => ({ ...s, worldStatus, log, error: null }))
+      // nearbyNpcs refetch happens via the partyNodeId effect when worldStatus updates
+      setState((s) => ({ ...s, worldStatus, log, partyMembers: charList, arcs: quests, error: null }))
     } catch (e: unknown) {
       setState((s) => ({
         ...s,

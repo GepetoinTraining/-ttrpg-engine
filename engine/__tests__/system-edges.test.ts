@@ -9,7 +9,10 @@ import {
   computeFactionReaction,
   calculateDungeonKnowledgeYield,
   generateFollowerCombatProfile,
+  applyMonsterHunt,
 } from '../system-edges.js'
+import { createMonsterActor, resetMonsterActorIdCounter, type MonsterActorState } from '../monster-actor.js'
+import { getSpecies, type WildHerd } from '../wild-fauna.js'
 
 // ============================================================
 // 1. PREDATION — Ecology → Husbandry
@@ -229,5 +232,103 @@ describe('Follower Combat Profiles', () => {
   it('hireling has no special abilities', () => {
     const profile = generateFollowerCombatProfile('f7', 'Bob', 'hireling', 1, 10)
     expect(profile.specialAbilities).toHaveLength(0)
+  })
+})
+
+// ============================================================
+// 7. MONSTER HUNT — Camp → Wild Fauna (Δ.0.5 wire)
+// ============================================================
+
+function freshActor(over: Partial<MonsterActorState> = {}): MonsterActorState {
+  resetMonsterActorIdCounter()
+  const a = createMonsterActor('goblin', 2, 'forest-region-1', 30, 0)
+  return Object.assign(a, over)
+}
+
+function freshWildHerd(speciesId: string, over: Partial<WildHerd> = {}): WildHerd {
+  const sp = getSpecies(speciesId)
+  return {
+    id: `forest-region-1:${speciesId}`,
+    speciesId,
+    currentNodeId: 'forest-region-1',
+    destinationNodeId: null,
+    edgeId: null,
+    edgeMile: 0,
+    edgeTotalMiles: 0,
+    population: sp.baseHerdSize,
+    daysHungry: 0,
+    foodSecurity: 1.0,
+    formation: 'spread',
+    status: 'grazing',
+    bornDay: 0,
+    lastTransitionDay: 0,
+    ...over,
+  }
+}
+
+describe('Monster Hunt → Wild Fauna', () => {
+  it('no herds → no kills, no boost', () => {
+    const result = applyMonsterHunt({
+      actor: freshActor(),
+      herds: [],
+      worldDay: 1,
+    })
+    expect(result.totalKilled).toBe(0)
+    expect(result.foodSecurityBoost).toBe(0)
+    expect(result.herdsAfter).toEqual([])
+  })
+
+  it('camp with herds → real kills + foodSecurityBoost', () => {
+    const result = applyMonsterHunt({
+      actor: freshActor({ troops: 30, leaderCR: 4 }),
+      herds: [freshWildHerd('rabbit'), freshWildHerd('deer')],
+      worldDay: 1,
+    })
+    expect(result.totalKilled).toBeGreaterThan(0)
+    expect(result.foodSecurityBoost).toBeGreaterThan(0)
+    expect(result.foodSecurityBoost).toBeLessThanOrEqual(0.2)
+    expect(result.herdsAfter.length).toBe(2)
+    // Each herd's population should be ≤ original
+    expect(result.herdsAfter[0].population).toBeLessThanOrEqual(getSpecies('rabbit').baseHerdSize)
+  })
+
+  it('higher pressure with bigger camp → more kills', () => {
+    const small = applyMonsterHunt({
+      actor: freshActor({ troops: 5, leaderCR: 1 }),
+      herds: [freshWildHerd('rabbit')],
+      worldDay: 1,
+    })
+    const big = applyMonsterHunt({
+      actor: freshActor({ troops: 50, leaderCR: 5 }),
+      herds: [freshWildHerd('rabbit')],
+      worldDay: 1,
+    })
+    expect(big.pressure).toBeGreaterThan(small.pressure)
+    expect(big.totalKilled).toBeGreaterThanOrEqual(small.totalKilled)
+  })
+
+  it('foodSecurityBoost is capped at 0.2', () => {
+    // Throw a ton of herds at it to drive kills very high
+    const herds: WildHerd[] = []
+    for (let i = 0; i < 20; i++) {
+      herds.push(freshWildHerd('rabbit', { id: `forest-region-1:rabbit-${i}`, population: 100 }))
+    }
+    const result = applyMonsterHunt({
+      actor: freshActor({ troops: 100, leaderCR: 10 }),
+      herds,
+      worldDay: 1,
+    })
+    expect(result.foodSecurityBoost).toBeLessThanOrEqual(0.2)
+  })
+
+  it('zero troops → zero pressure → zero kills', () => {
+    const result = applyMonsterHunt({
+      actor: freshActor({ troops: 0, leaderCR: 0 }),
+      herds: [freshWildHerd('rabbit')],
+      worldDay: 1,
+    })
+    expect(result.pressure).toBe(0)
+    expect(result.totalKilled).toBe(0)
+    expect(result.foodSecurityBoost).toBe(0)
   })
 })

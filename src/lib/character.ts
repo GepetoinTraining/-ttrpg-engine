@@ -5,6 +5,13 @@
 
 import type { Ability } from '@/game/chargen'
 
+export interface ComposedSpellDraft {
+  /** Player-typed name; ignored if compositionSeed already exists in ledger. */
+  name?: string
+  /** Prime-element composition (e.g. { Fire: 2, Projectile: 1 }). */
+  elements: Record<string, number>
+}
+
 export interface CharacterDraft {
   userId?: string
   campaignId?: string
@@ -16,6 +23,26 @@ export interface CharacterDraft {
   background?: string
   alignment?: string
   hook?: string
+  /** Starter inventory (class kit + background kit item names). */
+  kitItems?: string[]
+  /** Composed cantrip + L1 spell at chargen. */
+  startingSpells?: {
+    cantrip?: ComposedSpellDraft
+    spell1?: ComposedSpellDraft
+  }
+  /** Character cert id — used to credit first-creator on the spell ledger. */
+  certId?: string
+}
+
+export interface SpellLedgerOutcome {
+  spellId: string
+  name: string
+  level: number
+  school: string
+  /** True if this character cert was the first to compose this seed. */
+  isFirstCreator: boolean
+  creatorCertId: string | null
+  compositionSeed: string
 }
 
 export interface CharacterCreateResult {
@@ -30,6 +57,8 @@ export interface CharacterCreateResult {
     finalScores: Record<Ability, number>
     modifiers: Record<Ability, number>
   }
+  inventory: { inventoryId: string; containerId: string; itemCount: number } | null
+  spells: SpellLedgerOutcome[]
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -123,6 +152,62 @@ export async function importPdf(file: File): Promise<{ imported: any }> {
     } catch {}
     throw new Error(msg)
   }
+  return res.json()
+}
+
+// ── Inventory ──────────────────────────────────────────────────────────────
+
+export interface InventoryItem {
+  id: string
+  name: string
+  category: string
+  rarity: string
+  weight: number
+  volume: number
+  valueGP: number
+  stackable: boolean
+  quantity: number
+  magical: boolean
+  requiresAttunement: boolean
+  sourceType: string
+  properties: Record<string, any> | null
+}
+
+export interface InventoryContainer {
+  id: string
+  name: string
+  type: string
+  weightCapacity: number
+  volumeCapacity: number
+  spatialMagic: string
+  locked: boolean
+  lockDC: number
+  currency: Record<string, number> | null
+  items: InventoryItem[]
+}
+
+export interface InventoryRoot {
+  id: string
+  locationNodeId: string
+  containers: InventoryContainer[]
+}
+
+export interface InventoryTotals {
+  containers: number
+  items: number
+  weight: number
+  valueGP: number
+}
+
+export interface CharacterInventory {
+  characterId: string
+  inventories: InventoryRoot[]
+  totals: InventoryTotals
+}
+
+export async function loadInventory(characterId: string): Promise<CharacterInventory> {
+  const res = await fetch(`/api/character/${characterId}/inventory`)
+  if (!res.ok) throw new Error(`${res.status}`)
   return res.json()
 }
 

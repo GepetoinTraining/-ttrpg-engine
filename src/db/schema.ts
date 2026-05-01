@@ -21,7 +21,7 @@
  *   Ω   Clockwork        (3)   mm states, tick log, tpb entries
  */
 
-import { sqliteTable, text, integer, real, blob } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, real, blob, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 // ============================================================
 // USERS & AUTH (Topology-First: φ + ζ = π)
@@ -1349,6 +1349,16 @@ export const spells = sqliteTable('spells', {
   description: text('description'),
   ritual: integer('ritual', { mode: 'boolean' }).notNull().default(false),
   concentration: integer('concentration', { mode: 'boolean' }).notNull().default(false),
+  // Per `project_cert_hierarchy.md` chargen carryover (2026-04-30):
+  // The spells table doubles as the canonical global namespace — first
+  // creator of a unique prime composition gets to name it; subsequent
+  // creations of the same composition link to the existing row.
+  /** BigInt prime composition stringified — unique constraint = one row per composition. */
+  compositionSeed: text('composition_seed').unique(),
+  /** The character cert that first composed this spell (the "creator"). */
+  creatorCertId: text('creator_cert_id'),
+  /** Original element list passed to composeSpell — for replay / re-derivation. */
+  elementsJson: text('elements_json'),
 })
 
 export const spellElements = sqliteTable('spell_elements', {
@@ -2428,6 +2438,77 @@ export const settlementCalendars = sqliteTable('settlement_calendars', {
   regionId: text('region_id').references(() => worldRegions.id),
   calendarId: text('calendar_id').notNull().references(() => calendars.id),
   dateOffset: integer('date_offset').notNull().default(0),  // days offset from world_day (timezone/era)
+})
+
+// ── Hub Runtime (shared compute lease over canonical hub geometry) ──
+// Per `docs/to-be implemented/hub-runtime-proposal.md` — pruned per Pedro
+// 2026-04-30: dropped α/Ω hash machinery. Determinism is the integrity:
+// any cheater forks themselves out of consensus by definition. Math is the
+// gate. The lease layer is pure coordination; receipts are append-only deltas.
+export const hubRuntimes = sqliteTable('hub_runtimes', {
+  id: text('id').primaryKey(),
+  settlementId: text('settlement_id').notNull().references(() => settlements.id),
+  /** Optional JSON array of districtHubs.id for partial-runtime scoping. */
+  districtIdsJson: text('district_ids_json'),
+  /** Per-proposal: identifier within the settlement. Today: same as settlementId. */
+  hubId: text('hub_id').notNull(),
+  /** Aperture tag — currently only 'A4_HUB' (3.9-mile L4 shared space). */
+  aperture: text('aperture').notNull().default('A4_HUB'),
+  /** TPB head id at runtime start — audit anchor for replay-from-here. */
+  canonicalHeadId: text('canonical_head_id').notNull(),
+  /** Number of currently-joined observers. Lease releases when 0. */
+  activeN: integer('active_n').notNull().default(0),
+  /** JSON array of session ids that have joined this runtime. */
+  joinedSessionIdsJson: text('joined_session_ids_json').notNull().default('[]'),
+  status: text('status', {
+    enum: ['open', 'closing', 'committed', 'failed', 'abandoned'],
+  }).notNull().default('open'),
+  openedAt: text('opened_at').notNull(),
+  /** Last activity heartbeat — used to detect abandoned leases. */
+  lastSeenAt: text('last_seen_at').notNull(),
+  /** Hard expiry — even with activity, a runtime closes by this time. */
+  leaseExpiresAt: text('lease_expires_at').notNull(),
+})
+
+// Sequenced audit log of receipts the shards posted during a lease. This is
+// HOW WE CHECK what shards sent: drain reads in seq order, deterministic
+// replay verifies. Not a chain hash — math is the gate.
+export const hubRuntimeReceipts = sqliteTable('hub_runtime_receipts', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  hubRuntimeId: text('hub_runtime_id').notNull().references(() => hubRuntimes.id),
+  /** Order within the runtime — server assigns sequentially. */
+  sequence: integer('sequence').notNull(),
+  /** Cert that signed this receipt (character cert id). */
+  actorCertId: text('actor_cert_id').notNull(),
+  /** Serialized WorldTPBAction (intent + params). */
+  actionJson: text('action_json').notNull(),
+  /** Serialized MF receipt (forward-pass artifact, audit-only). */
+  receiptJson: text('receipt_json').notNull(),
+  createdAt: text('created_at').notNull(),
+})
+
+// Tensor row — additive to receipts. Per Pedro 2026-05-01: "create a table
+// that acts like a tensor, every possible action type is a column and the
+// DMs shards both share it, any alteration gets posted there."
+//
+// One row per active hub_runtime; one column per WorldTPBAction variant.
+// Each column holds a JSON array of entries shaped:
+//   { seq, actorCertId, at, action, receipt }
+// Same data as hub_runtime_receipts, denormalized for fast live shared-view
+// reads ("show me writeKappas in this hub right now"). Receipts table is
+// the authoritative time-axis; this row is the dimension-axis. Drain uses
+// receipts (sequenced); shards reading the live state use this row.
+export const hubRuntimeState = sqliteTable('hub_runtime_state', {
+  hubRuntimeId: text('hub_runtime_id').primaryKey().references(() => hubRuntimes.id),
+  tickJson: text('tick_json').notNull().default('[]'),
+  writeKappaJson: text('write_kappa_json').notNull().default('[]'),
+  writeEdgeJson: text('write_edge_json').notNull().default('[]'),
+  entitySpawnJson: text('entity_spawn_json').notNull().default('[]'),
+  entityMoveJson: text('entity_move_json').notNull().default('[]'),
+  entityDespawnJson: text('entity_despawn_json').notNull().default('[]'),
+  observeJson: text('observe_json').notNull().default('[]'),
+  sessionJson: text('session_json').notNull().default('[]'),
+  characterTransferJson: text('character_transfer_json').notNull().default('[]'),
 })
 
 /**

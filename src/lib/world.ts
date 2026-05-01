@@ -16,18 +16,25 @@ async function getJson<T>(url: string): Promise<T> {
 }
 
 export interface CalendarData {
-  adventure: { id: string; name: string }
+  /** Canonical world clock (worlds.currentDay) — always present. */
+  worldDay: number
+  /** Party's session-time clock (parties.currentTick) — null when unscoped. */
+  partyDay: number | null
+  /** Party founding tick — null when unscoped. */
+  birthTick: number | null
+  /** Adventure metadata — null when unscoped. */
+  adventure: { id: string; name: string } | null
   party: { currentTick: number; birthTick: number; level: number; name: string } | null
-  today: number
-  recentSessions: any[]
-  upcoming: { id: string; eventType: string; title: string; description: string | null; sceneType: string; difficulty: string | null; worldDay: number }[]
+  sessions: any[]
+  upcomingEvents: { id: string; eventType: string; title: string; description: string | null; sceneType: string; difficulty: string | null; worldDay: number }[]
 }
 
-export async function loadCalendar(opts: { adventureId?: string; campaignId?: string }): Promise<CalendarData> {
+export async function loadCalendar(opts: { adventureId?: string; campaignId?: string } = {}): Promise<CalendarData> {
   const params = new URLSearchParams()
   if (opts.adventureId) params.set('adventureId', opts.adventureId)
   if (opts.campaignId) params.set('campaignId', opts.campaignId)
-  return getJson<CalendarData>(`/api/world/calendar?${params}`)
+  const qs = params.toString()
+  return getJson<CalendarData>(`/api/world/calendar${qs ? `?${qs}` : ''}`)
 }
 
 export interface WeatherSnapshot {

@@ -2,13 +2,34 @@
 'use client'
 
 import React from 'react'
-import { AdaptChips, AdaptWeights, AdaptLegend } from './_adaptations'
+import { FidelityBadge } from './_chips'
+import { ADAPTATIONS, AdaptWeights } from './_adaptations'
 
-// surfaces/Ecology.jsx — Surface 38. Region-scoped species evolution.
+// surfaces/Ecology.tsx — Surface 38. Region-scoped species evolution.
 // Reads engine/ecology-pool.ts via getAdaptationPool(tp, regionNodeId, speciesId).
 // Aesthetic: wildlife field guide. More whitespace; less chip noise.
 
 export default function Ecology() {
+  // synthetic per-species history. start near uniform 0.1 and drift toward target weights.
+  function makeHistory(target, gens = 10) {
+    const keys = ADAPTATIONS.map(a => a.k)
+    const out = []
+    for (let g = 0; g < gens; g++) {
+      const t = g / (gens - 1)
+      const row = {gen: g + 1}
+      let sum = 0
+      keys.forEach(k => {
+        const start = 0.1
+        const v = start + (target[k] - start) * t + (Math.sin((g+1) * (k.charCodeAt(0)%5+2)) * 0.015)
+        row[k] = Math.max(0.005, v)
+        sum += row[k]
+      })
+      keys.forEach(k => { row[k] = row[k] / sum })
+      out.push(row)
+    }
+    return out
+  }
+
   const region = {
     name: 'Eastern Cormyr · Cormanthor reach',
     biome: [
@@ -19,9 +40,9 @@ export default function Ecology() {
     ],
     danger: 0.62,
     dominantThreats: ['orc','ettin','goblin','undead'],
-  };
+  }
 
-  const species = [
+  const speciesRaw = [
     {id:'goblin', name:'goblin', gen: 14, baseCR: '1/4', kingdom:'humanoid',
      weights:{ARMORED:0.10, SWIFT:0.32, PACK:0.28, REGEN:0.02, STEALTH:0.20, REFLECT:0.00, DRAIN:0.00, SPLIT:0.00, ADAPT:0.05, CUNNING:0.20},
      fitness:{spawned: 412, survivedClears: 38, casualties: 24, lastSeenAtGen: 14}},
@@ -34,17 +55,18 @@ export default function Ecology() {
     {id:'wight', name:'wight', gen: 9, baseCR: '3', kingdom:'undead',
      weights:{ARMORED:0.18, SWIFT:0.14, PACK:0.10, REGEN:0.20, STEALTH:0.16, REFLECT:0.04, DRAIN:0.36, SPLIT:0.00, ADAPT:0.12, CUNNING:0.10},
      fitness:{spawned: 38, survivedClears: 9, casualties: 6, lastSeenAtGen: 9}},
-  ];
+  ]
+  const species = speciesRaw.map(s => ({...s, history: makeHistory(s.weights, Math.max(s.gen, 8))}))
 
-  const [sel, setSel] = React.useState('ettin');
-  const cur = species.find(s => s.id === sel);
+  const [sel, setSel] = React.useState('ettin')
+  const cur = species.find(s => s.id === sel)
 
   return (
     <div>
       <div className="surface-head">
         <div>
           <div className="crumbs">38 · L5 · region · ecology pool</div>
-          <h2>Ecology · {region.name}</h2>
+          <h2>Ecology · {region.name} <FidelityBadge level="partial" /></h2>
         </div>
         <span className="who">field-guide view · what's evolving here</span>
       </div>
@@ -145,9 +167,7 @@ export default function Ecology() {
           </div>
 
           <div className="section-title" style={{margin:'18px 0 8px'}}>Adaptation pool history</div>
-          <div className="placeholder" style={{height: 120}}>
-            line chart · pool weights × generation
-          </div>
+          <PoolHistoryChart history={cur.history} weights={cur.weights} />
 
           <div className="aside" style={{marginTop: 12, fontSize: 15}}>
             ↳ next clear hardens dominant trait. <i>{cur.name}</i>'s next gen will lean harder into{' '}
@@ -156,6 +176,78 @@ export default function Ecology() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
+// PoolHistoryChart — SVG line chart of weights × generation, top 5 traits highlighted.
+function PoolHistoryChart({history, weights}) {
+  const ranked = [...ADAPTATIONS].sort((a,b) => (weights[b.k]||0) - (weights[a.k]||0))
+  const featured = ranked.slice(0, 5).map(a => a.k)
+  const W = 560, H = 180, padL = 28, padR = 96, padT = 10, padB = 22
+  const x = (g) => padL + ((g - 1) / (history.length - 1)) * (W - padL - padR)
+  const y = (v) => padT + (1 - Math.min(1, v / 0.5)) * (H - padT - padB)
+
+  // separate label y-positions to avoid overlap
+  const last = history[history.length - 1]
+  const labelOrder = ADAPTATIONS
+    .filter(a => featured.includes(a.k))
+    .map(a => ({k: a.k, a, v: last[a.k]}))
+    .sort((a,b) => b.v - a.v)
+  const labelY = {}
+  let prev = -Infinity
+  labelOrder.forEach(({k, v}) => {
+    let yy = y(v)
+    if (yy - prev < 12) yy = prev + 12
+    labelY[k] = yy
+    prev = yy
+  })
+
+  return (
+    <div className="box soft" style={{padding: 8, background:'var(--paper-2)'}}>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%', height: 200, display:'block'}}>
+        {[0.1, 0.2, 0.3, 0.4, 0.5].map(v => (
+          <g key={v}>
+            <line x1={padL} x2={W-padR} y1={y(v)} y2={y(v)}
+                  stroke="var(--rule-soft)" strokeDasharray="2 4" />
+            <text x={padL - 4} y={y(v) + 3} fontSize="9" fontFamily="var(--mono)"
+                  textAnchor="end" fill="var(--ink-3)">{v.toFixed(1)}</text>
+          </g>
+        ))}
+        {history.map((row, i) => (
+          (i === 0 || i === history.length - 1 || (i+1) % 3 === 0) ? (
+            <text key={i} x={x(row.gen)} y={H - 6} fontSize="9"
+                  fontFamily="var(--mono)" textAnchor="middle" fill="var(--ink-3)">
+              g{row.gen}
+            </text>
+          ) : null
+        ))}
+
+        {ADAPTATIONS.filter(a => !featured.includes(a.k)).map(a => {
+          const d = history.map((r,i) => `${i===0?'M':'L'} ${x(r.gen)} ${y(r[a.k])}`).join(' ')
+          return <path key={a.k} d={d} fill="none" stroke="var(--ink-4)" strokeWidth="1" opacity="0.4" />
+        })}
+
+        {ADAPTATIONS.filter(a => featured.includes(a.k)).map(a => {
+          const stroke = a.tag ? `var(--accent-${a.tag})` : 'var(--ink)'
+          const d = history.map((r,i) => `${i===0?'M':'L'} ${x(r.gen)} ${y(r[a.k])}`).join(' ')
+          return (
+            <g key={a.k}>
+              <path d={d} fill="none" stroke={stroke} strokeWidth="1.6" />
+              <circle cx={x(last.gen)} cy={y(last[a.k])} r="2.5" fill={stroke} />
+              <line x1={x(last.gen) + 3} y1={y(last[a.k])}
+                    x2={x(last.gen) + 8} y2={labelY[a.k]}
+                    stroke={stroke} strokeWidth="0.6" opacity="0.6" />
+              <text x={x(last.gen) + 10} y={labelY[a.k] + 3} fontSize="10"
+                    fontFamily="var(--mono)" fill={stroke}>
+                {a.glyph} {a.k.toLowerCase()}
+              </text>
+            </g>
+          )
+        })}
+      </svg>
+      <div className="tiny" style={{marginTop: 4, textAlign:'center'}}>
+        weight × generation · top 5 traits highlighted · each clear hardens dominant
+      </div>
+    </div>
+  )
+}

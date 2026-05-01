@@ -26,9 +26,12 @@
 
 import * as React from 'react'
 import { useWorld } from '@/lib/use-world'
+import { usePersonaCapabilities } from '@/lib/persona-capabilities'
 import GridViewport, { type TileViewItem } from '@/components/grid/GridViewport'
 import { MAX_LEVEL, SCALE_LABELS, feetPerTile, type ScaleLevel } from '@/game/grid'
 import { clearActiveCharacter } from '@/lib/character-cert'
+import { loadInventory, type CharacterInventory } from '@/lib/character'
+import { EmptyState } from './_chips'
 
 const PERSONA_GLYPH: Record<string, string> = {
   player: '🛡',
@@ -47,20 +50,10 @@ const DRAWER_TABS: { id: DrawerTab; label: string; meta: string }[] = [
   { id: 'party',      label: 'Cert sync', meta: 'D09' },
 ]
 
-// Stub data for drawers until each is fully bound
-const COMPANIONS = [
-  { id: 'k', name: 'Kaelith', role: 'wizard',  hp: 24, maxHp: 30, you: true },
-  { id: 'b', name: 'Bren',    role: 'fighter', hp: 38, maxHp: 42 },
-  { id: 'i', name: 'Iris',    role: 'rogue',   hp: 22, maxHp: 25 },
-]
-
-const QUESTS = [
-  { id: 'q1', label: 'Retrieve mythril for Valk', src: 'Smithy', danger: 3, reward: 320 },
-  { id: 'q2', label: 'Bounty: brigand chief Rake', src: "Adventurer's Guild", danger: 3, reward: 500 },
-]
-
 export default function WorldDashboard() {
   const worldApi = useWorld()
+  const caps = usePersonaCapabilities()
+  const [inventory, setInventory] = React.useState<CharacterInventory | null>(null)
   const [centerX, setCenterX] = React.useState(0)
   const [centerY, setCenterY] = React.useState(0)
   const [level, setLevel] = React.useState<ScaleLevel>(0)
@@ -68,6 +61,15 @@ export default function WorldDashboard() {
   const [drawer, setDrawer] = React.useState<DrawerTab>('companions')
   const [busy, setBusy] = React.useState<string | null>(null)
   const [feedback, setFeedback] = React.useState<string | null>(null)
+
+  // Inventory loads once a character is active. character_certs.characterDataId
+  // FKs to characters.id (set after chargen commits). Falls back to cert.id for
+  // orphan certs — safe because the API just returns empty in that case.
+  React.useEffect(() => {
+    if (!worldApi.character) return
+    const charId = (worldApi.character as any).characterDataId ?? worldApi.character.id
+    loadInventory(charId).then(setInventory).catch(() => setInventory(null))
+  }, [worldApi.character])
 
   // Pan via WASD/arrows
   React.useEffect(() => {
@@ -185,7 +187,6 @@ export default function WorldDashboard() {
 
   const character = worldApi.character
   const persona = character.personaType
-  const isDM = persona === 'dm' || persona === 'gm-ai'
 
   return (
     <div
@@ -315,7 +316,7 @@ export default function WorldDashboard() {
         {selected && (
           <div className="aside" style={{ padding: '6px 10px', fontSize: 12 }}>
             ↳ ({selected.x}, {selected.y}) · <b>{selected.label}</b> · elev {(selected.elevation * 100).toFixed(0)}% · move-cost {selected.moveCost === Infinity ? '∞' : selected.moveCost.toFixed(1)}
-            {isDM && (
+            {caps?.canTransportParty && (
               <button
                 className="btn sm"
                 style={{ marginLeft: 8 }}
@@ -354,29 +355,38 @@ export default function WorldDashboard() {
           <div className="box">
             <div className="box-title">
               <h3>Party</h3>
-              <span className="meta">{COMPANIONS.length}</span>
+              <span className="meta">{worldApi.partyMembers.length}</span>
             </div>
-            <div className="col" style={{ gap: 6, marginTop: 8 }}>
-              {COMPANIONS.map((c) => (
-                <div key={c.id} className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <div style={{ fontWeight: c.you ? 700 : 500, fontFamily: 'var(--serif)' }}>
-                      {c.you && '› '}{c.name}
+            {worldApi.partyMembers.length === 0 ? (
+              <EmptyState label="no characters yet" hint="run chargen to create one." />
+            ) : (
+              <div className="col" style={{ gap: 6, marginTop: 8 }}>
+                {worldApi.partyMembers.map((c) => {
+                  const isYou = c.id === character?.id
+                  const classLine = c.classes.map((cl) => `${cl.className} ${cl.level}`).join(', ') || '—'
+                  const hpPct = c.hpMax > 0 ? Math.round((c.hpCurrent / c.hpMax) * 100) : 0
+                  return (
+                    <div key={c.id} className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: isYou ? 700 : 500, fontFamily: 'var(--serif)' }}>
+                          {isYou && '› '}{c.name}
+                        </div>
+                        <div className="tiny muted">{classLine}</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div className="bar gold" style={{ width: 64 }}>
+                          <span style={{ width: `${hpPct}%` }} />
+                        </div>
+                        <div className="tiny">{c.hpCurrent}/{c.hpMax}</div>
+                      </div>
                     </div>
-                    <div className="tiny muted">{c.role}</div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div className="bar gold" style={{ width: 64 }}>
-                      <span style={{ width: `${(c.hp / c.maxHp) * 100}%` }} />
-                    </div>
-                    <div className="tiny">{c.hp}/{c.maxHp}</div>
-                  </div>
+                  )
+                })}
+                <div className="tiny muted" style={{ marginTop: 4 }}>
+                  ↳ cert-hash party formation pending — lists all characters for now.
                 </div>
-              ))}
-            </div>
-            <div className="tiny muted" style={{ marginTop: 8 }}>
-              stub — bind to engine party state in Slice 6
-            </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -384,22 +394,25 @@ export default function WorldDashboard() {
           <div className="box">
             <div className="box-title">
               <h3>Quests</h3>
-              <span className="meta">{QUESTS.length} active</span>
+              <span className="meta">{worldApi.arcs.length} arc{worldApi.arcs.length === 1 ? '' : 's'}</span>
             </div>
-            <div className="col" style={{ gap: 6, marginTop: 8 }}>
-              {QUESTS.map((q) => (
-                <div key={q.id} style={{ borderBottom: '1px dashed var(--rule-soft)', paddingBottom: 4 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500 }}>{q.label}</div>
-                  <div className="row" style={{ justifyContent: 'space-between', marginTop: 2 }}>
-                    <span className="tiny muted">{q.src}</span>
-                    <span className="tiny">
-                      <span className="chip sm gold">{q.reward}gp</span>{' '}
-                      <span className="chip sm red">d{q.danger}</span>
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            {worldApi.arcs.length === 0 ? (
+              <EmptyState label="no quests" hint="seed arcs / quests via narrative authoring." />
+            ) : (
+              <div className="col" style={{ gap: 6, marginTop: 8 }}>
+                {worldApi.arcs.flatMap((arc: any) =>
+                  (arc.quests ?? []).map((q: any) => (
+                    <div key={q.id} style={{ borderBottom: '1px dashed var(--rule-soft)', paddingBottom: 4 }}>
+                      <div style={{ fontSize: 13, fontWeight: 500 }}>{q.objective ?? q.title ?? q.id}</div>
+                      <div className="row" style={{ justifyContent: 'space-between', marginTop: 2 }}>
+                        <span className="tiny muted">{arc.title ?? arc.kind ?? 'arc'}</span>
+                        <span className="chip sm">{q.status ?? '—'}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -430,12 +443,40 @@ export default function WorldDashboard() {
           <div className="box">
             <div className="box-title">
               <h3>Inventory</h3>
-              <span className="meta">stub</span>
+              <span className="meta">{inventory ? `${inventory.totals.items} items` : '—'}</span>
             </div>
-            <p className="tiny muted" style={{ marginTop: 8 }}>
-              Inventory drawer wires once the bag system lands. The `engine/inventory.ts`
-              module is built but not yet bound to the cert flow.
-            </p>
+            {!inventory ? (
+              <EmptyState
+                label="no inventory rows"
+                hint="character cert needs to link to a characters table row, and inventories must be seeded for that character."
+              />
+            ) : inventory.totals.items === 0 ? (
+              <EmptyState label="empty pack" hint="loot, craft, or buy to populate." />
+            ) : (
+              <div className="col" style={{ gap: 6, marginTop: 8 }}>
+                <div className="row" style={{ gap: 10, fontFamily: 'var(--mono)', fontSize: 11, flexWrap: 'wrap' }}>
+                  <span>weight <b>{inventory.totals.weight.toFixed(1)}lb</b></span>
+                  <span>value <b>{inventory.totals.valueGP.toFixed(0)}gp</b></span>
+                  <span>containers <b>{inventory.totals.containers}</b></span>
+                </div>
+                <div className="col" style={{ gap: 4, marginTop: 4, maxHeight: 320, overflowY: 'auto' }}>
+                  {inventory.inventories.flatMap((inv) =>
+                    inv.containers.flatMap((c) =>
+                      c.items.map((it) => (
+                        <div key={it.id} className="row" style={{ justifyContent: 'space-between', borderBottom: '1px dashed var(--rule-soft)', paddingBottom: 3, fontSize: 12 }}>
+                          <span>
+                            <b>{it.name}</b>
+                            {it.quantity > 1 && <span className="muted"> × {it.quantity}</span>}
+                            {it.magical && <span className="chip sm gold" style={{ marginLeft: 4, fontSize: 9 }}>★</span>}
+                          </span>
+                          <span className="tiny muted">{c.name}</span>
+                        </div>
+                      )),
+                    ),
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -494,14 +535,19 @@ export default function WorldDashboard() {
         <button className="btn sm" onClick={() => handleAction('tend_herd')}           disabled={busy !== null}>tend</button>
         <button className="btn sm" onClick={() => handleAction('plant_crops')}         disabled={busy !== null}>plant</button>
         <button className="btn sm" onClick={() => handleAction('sell_item')}           disabled={busy !== null}>sell</button>
-        {/* DM-only */}
-        {isDM && (
+        {/* GM-authority controls (DM + GM-AI) */}
+        {caps?.canInjectScene && (
           <>
-            <span className="tiny" style={{ marginLeft: 12, color: 'var(--accent-red)' }}>DM:</span>
+            <span className="tiny" style={{ marginLeft: 12, color: 'var(--accent-red)' }}>
+              {caps.personaType === 'gm-ai' ? 'GM-AI:' : 'DM:'}
+            </span>
             <button className="btn sm" onClick={() => handleAction('force_scene')}       disabled={busy !== null}>scene change</button>
             <button className="btn sm" onClick={() => handleAction('inject_npc')}        disabled={busy !== null}>inject NPC</button>
             <button className="btn sm" onClick={() => handleAction('random_encounter')}  disabled={busy !== null}>encounter</button>
           </>
+        )}
+        {caps?.canSecretRoll && (
+          <button className="btn sm" onClick={() => handleAction('secret_roll')} disabled={busy !== null}>secret roll</button>
         )}
 
         {/* Right-aligned status */}
