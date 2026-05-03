@@ -83,13 +83,23 @@ const DEFAULT_DRAFT = {
   cart: {} as Record<string, number>,
 }
 
+/**
+ * Read the campaign id from the URL hash OR the URL search string.
+ * Hash form (`#chargen?campaign=X`) is set when chargen is mounted inside
+ * the workspace shell. Search form (`/chargen?campaign=X`) is set by the
+ * `/onboarding/[token]` invite redemption flow. Without this fallback,
+ * invited players land on `/chargen?campaign=X` and the campaignId is
+ * silently dropped — character gets created with no party / no spawn.
+ */
 function readCampaignFromHash(): string | null {
   if (typeof window === 'undefined') return null
   const h = window.location.hash || ''
   const q = h.indexOf('?')
-  if (q === -1) return null
-  const params = new URLSearchParams(h.slice(q + 1))
-  return params.get('campaign')
+  if (q !== -1) {
+    const fromHash = new URLSearchParams(h.slice(q + 1)).get('campaign')
+    if (fromHash) return fromHash
+  }
+  return new URLSearchParams(window.location.search).get('campaign')
 }
 
 /**
