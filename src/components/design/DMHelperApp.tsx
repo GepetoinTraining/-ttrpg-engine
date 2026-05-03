@@ -14,6 +14,7 @@ import { useViewConfig } from '@/lib/view-config'
 import { usePersona, personaKey, PERSONA_LABELS, PERSONA_GLYPHS, type Persona, type PersonaType } from '@/lib/persona'
 import ConfigMenu from './ConfigMenu'
 import { loadAccount, type AccountCert } from '@/lib/account-cert'
+import { getActiveCharacterCert, type CharacterCert } from '@/lib/character-cert'
 
 import Sitemap from './surfaces/Sitemap'
 import Auth from './surfaces/Auth'
@@ -245,6 +246,30 @@ function DMHelperShell() {
   const certId = session.cert?.id ?? null
   const [persona, setPersona] = usePersona(certId)
 
+  // Active character cert (IDB) is the source of truth for personaType — it's
+  // FIXED at chargen and survives the legacy localStorage persona default. An
+  // invited player who never opens ConfigMenu would otherwise inherit the
+  // hardcoded `{ type: 'dm' }` default and land in the DM workspace.
+  const [activeCharCert, setActiveCharCert] = React.useState<CharacterCert | null>(null)
+  React.useEffect(() => {
+    let cancelled = false
+    const refresh = () => {
+      getActiveCharacterCert()
+        .then((c) => { if (!cancelled) setActiveCharCert(c) })
+        .catch(() => {})
+    }
+    refresh()
+    // setActiveCharacter writes to IDB then nav changes the hash; re-read
+    // on hashchange to pick up the new active cert immediately.
+    window.addEventListener('hashchange', refresh)
+    return () => {
+      cancelled = true
+      window.removeEventListener('hashchange', refresh)
+    }
+  }, [])
+
+  const effectivePersonaType: PersonaType = activeCharCert?.personaType ?? persona.type
+
   // View config keyed by persona — same persona always = same lens, regardless
   // of which cert is signed in (within the persona scope).
   const [viewConfig, setViewConfig] = useViewConfig(personaKey(persona))
@@ -252,7 +277,7 @@ function DMHelperShell() {
   // Active workspace: explicit override > surface's owning workspace > persona mapping
   const activeWorkspace: WorkspaceId = (() => {
     if (workspaceOverride) return workspaceOverride
-    const owning = findWorkspaceForSurface(active, PERSONA_TO_WORKSPACE[persona.type] ?? 'home')
+    const owning = findWorkspaceForSurface(active, PERSONA_TO_WORKSPACE[effectivePersonaType] ?? 'home')
     return owning.id
   })()
 
@@ -501,10 +526,10 @@ function DMHelperShell() {
         <div className="nav-group" style={{ marginTop: 8 }}>
           <div className="nav-label">Playing as</div>
           <div className="tiny" style={{ lineHeight: 1.5, marginBottom: 6 }}>
-            <span style={{ fontSize: 14, marginRight: 4 }}>{PERSONA_GLYPHS[persona.type]}</span>
-            <b>{PERSONA_LABELS[persona.type]}</b>
-            {persona.characterId && (
-              <> · <span className="kbd">{persona.characterId.slice(0, 8)}</span></>
+            <span style={{ fontSize: 14, marginRight: 4 }}>{PERSONA_GLYPHS[effectivePersonaType]}</span>
+            <b>{PERSONA_LABELS[effectivePersonaType]}</b>
+            {(activeCharCert?.id || persona.characterId) && (
+              <> · <span className="kbd">{(activeCharCert?.id ?? persona.characterId!).slice(0, 8)}</span></>
             )}
           </div>
           <button
