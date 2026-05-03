@@ -122,7 +122,7 @@ export function FidelityBadge({ level = 'strip-only' }) {
 // ---------------------------------------------------------------
 // EmptyState — uniform placeholder for empty rails / lists / tables.
 // ---------------------------------------------------------------
-export function EmptyState({ label, hint, arrow = false, children }) {
+export function EmptyState({ label, hint, arrow = false, children = null }) {
   return (
     <div className="muted" style={{ fontSize: 13, padding: '8px 0' }}>
       {arrow && (

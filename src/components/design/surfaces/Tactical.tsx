@@ -275,32 +275,52 @@ export default function Tactical() {
         right-click a tile for ctx menu (spawn / paint). right-click a token for damage / remove.
       </div>
 
-      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-        {/* main canvas */}
-        <div className="box" style={{ flex: 1, padding: 0, overflow: 'auto', minWidth: 0 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
+          gap: 12,
+          alignItems: 'flex-start',
+          minWidth: 0,
+        }}
+      >
+        {/* main canvas — flex-grow, scrolls horizontally if grid is wider than viewport */}
+        <div className="box" style={{ padding: 0, overflow: 'hidden', minWidth: 0, gridColumn: '1 / -1' }}>
           {banner && (
             <div style={{ padding: '6px 10px', background: banner.bg, color: 'var(--paper)', fontFamily: 'var(--mono)', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span>{banner.text}</span>
               <button className="btn sm" onClick={banner.cancel}>cancel</button>
             </div>
           )}
-          <div style={{ width: gridW * tileSize, height: gridH * tileSize, margin: 12 }}>
-            <TileWorld
-              tiles={tiles}
-              entities={positionedEntities}
-              tileSize={tileSize}
-              selectedEntityId={selectedTokenId}
-              onTileClick={handleTileClick}
-              onTileContextMenu={handleTileContextMenu}
-              onEntityClick={handleEntityClick}
-              onEntityContextMenu={handleEntityContextMenu}
-              showGrid
-            />
+          <div style={{ overflow: 'auto', padding: 12 }}>
+            <div style={{ width: gridW * tileSize, height: gridH * tileSize }}>
+              <TileWorld
+                tiles={tiles}
+                entities={positionedEntities}
+                tileSize={tileSize}
+                selectedEntityId={selectedTokenId}
+                onTileClick={handleTileClick}
+                onTileContextMenu={handleTileContextMenu}
+                onEntityClick={handleEntityClick}
+                onEntityContextMenu={handleEntityContextMenu}
+                showGrid
+              />
+            </div>
           </div>
         </div>
 
-        {/* right rail */}
-        <div className="col" style={{ width: 280, gap: 12, flexShrink: 0 }}>
+        {/* right rail — fluid, wraps onto its own row at narrow viewports */}
+        <div
+          className="col"
+          style={{
+            gap: 12,
+            minWidth: 0,
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
+            gridColumn: '1 / -1',
+            alignItems: 'flex-start',
+          }}
+        >
           {/* Spawn presets */}
           <div className="box">
             <div className="box-title">

@@ -1655,6 +1655,36 @@ export const characterAttunements = sqliteTable('character_attunements', {
 })
 
 /**
+ * Named NPCs assigned to a player.
+ *
+ * Per Pedro 2026-05-03: every entity is a character; NPCs reuse the full
+ * `characters` table (sheet + abilities + inventory + attunements). A
+ * "named NPC" is a character with cert persona='gm-ai' that has been
+ * bound to a specific player as their controlled NPC (follower, familiar,
+ * handler-claimed creature, etc.).
+ *
+ * The link is `players.id → characters.id (npc)`. The player's active
+ * character is on `players.activateCharacterId`; the NPCs they control
+ * are joined here.
+ *
+ * One NPC may be reassigned across players over a campaign — the row's
+ * `active` flag retires old assignments without losing the lineage.
+ */
+export const playerNpcs = sqliteTable('player_npcs', {
+  id: text('id').primaryKey(),
+  /** The player seat that controls this NPC (per-(user, adventure) row). */
+  playerId: text('player_id').notNull().references(() => players.id),
+  /** The NPC's character row — full sheet, persona='gm-ai' on its cert. */
+  npcCharacterId: text('npc_character_id').notNull().references(() => characters.id),
+  /** Role tag — 'follower' | 'familiar' | 'mount' | 'handler' | 'hireling' | 'henchman' */
+  role: text('role').notNull().default('follower'),
+  assignedDay: integer('assigned_day').notNull(),
+  active: integer('active', { mode: 'boolean' }).notNull().default(true),
+  /** Free-form note (e.g., "found in the Sunset Vault, sworn after the rescue"). */
+  note: text('note'),
+})
+
+/**
  * Per-character material mastery — what this character knows about a
  * given resource (commodity / item base / monster part / etc).
  *
