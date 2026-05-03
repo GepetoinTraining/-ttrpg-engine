@@ -20,8 +20,8 @@ import {
   SimulatedMMBase,
   type PendingDelta,
   type ResolveResult,
-} from './mm-simulated.js'
-import { MFPool, type PoolConfig } from './mf-pool.js'
+} from './mm-simulated'
+import { MFPool, type PoolConfig } from './mf-pool'
 
 // ============================================================
 // SETTLEMENT DOMAIN STATE

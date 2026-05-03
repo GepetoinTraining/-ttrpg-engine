@@ -9,9 +9,9 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { Clockwork } from '../clockwork.js'
-import { MMSettlement } from '../mm-settlement.js'
-import { TP, type WorldNode } from '../tp.js'
+import { Clockwork } from '../clockwork'
+import { MMSettlement } from '../mm-settlement'
+import { TP, type WorldNode } from '../tp'
 
 // ============================================================
 // HELPERS

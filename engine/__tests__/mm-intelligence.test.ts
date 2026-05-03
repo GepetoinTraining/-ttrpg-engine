@@ -3,15 +3,15 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { MMIntelligence, agentEntityId } from '../mm-intelligence.js'
-import { Clockwork } from '../clockwork.js'
-import { TP, type WorldNode } from '../tp.js'
+import { MMIntelligence, agentEntityId } from '../mm-intelligence'
+import { Clockwork } from '../clockwork'
+import { TP, type WorldNode } from '../tp'
 import {
   type IdentityAnchor,
   type KnowledgeBoundary,
   type AgentMemory,
   type MemoryType,
-} from '../intelligence.js'
+} from '../intelligence'
 
 function makeTP(): TP {
   const tp = new TP()

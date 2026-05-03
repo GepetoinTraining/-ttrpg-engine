@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { MMServices } from '../mm-services.js'
+import { MMServices } from '../mm-services'
 import {
   createProvider,
   createServiceContract,
   acceptServiceContract,
   type ServiceContract,
-} from '../services.js'
+} from '../services'
 
 function freshContract(providerId: string, worldDay = 0): ServiceContract {
   const c = createServiceContract(providerId, 'pc1', 'character', 'artisan_craft', worldDay, 'routine', 12)

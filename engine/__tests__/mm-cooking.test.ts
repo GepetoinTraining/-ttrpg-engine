@@ -3,9 +3,9 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { MMCooking } from '../mm-cooking.js'
-import { Clockwork } from '../clockwork.js'
-import { TP, type WorldNode } from '../tp.js'
+import { MMCooking } from '../mm-cooking'
+import { Clockwork } from '../clockwork'
+import { TP, type WorldNode } from '../tp'
 
 function makeTP(): TP {
   const tp = new TP()

@@ -17,7 +17,7 @@
  */
 
 import { z } from 'zod'
-import { SeededRNG } from './hub-topology.js'
+import { SeededRNG } from './hub-topology'
 
 // ============================================================
 // RESOURCE TYPES — what a layer can yield

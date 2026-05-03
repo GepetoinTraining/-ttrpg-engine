@@ -30,7 +30,7 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   weeklyYieldTick,
   monthlyHerdTick,
@@ -40,8 +40,8 @@ import {
   type WeeklyYield,
   type MonthlyTickResult,
   type BreedingSeason,
-} from './husbandry.js'
-import type { TP, WeatherRules } from './tp.js'
+} from './husbandry'
+import type { TP, WeatherRules } from './tp'
 
 export interface MMHusbandryDomainState {
   herd: Herd

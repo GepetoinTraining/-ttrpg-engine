@@ -21,15 +21,15 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   updateWaterLevel,
   type WaterBody,
   type WaterLevelState,
   type WaterInputs,
   type WaterBodyType,
-} from './water.js'
-import type { TP, WaterRules, WeatherRules } from './tp.js'
+} from './water'
+import type { TP, WaterRules, WeatherRules } from './tp'
 
 export interface MMWaterDomainState {
   waterBody: WaterBody
@@ -175,4 +175,4 @@ function evaporationFor(temperatureF: number | undefined): number {
 }
 
 // ── Re-exports for callers ──
-export type { WaterBody, WaterLevelState, WaterBodyType } from './water.js'
+export type { WaterBody, WaterLevelState, WaterBodyType } from './water'

@@ -4,10 +4,10 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { MMWarfare } from '../mm-warfare.js'
-import { Clockwork } from '../clockwork.js'
-import { TP, type WorldNode } from '../tp.js'
-import { type ArmyUnit, type DiplomaticRelation } from '../warfare.js'
+import { MMWarfare } from '../mm-warfare'
+import { Clockwork } from '../clockwork'
+import { TP, type WorldNode } from '../tp'
+import { type ArmyUnit, type DiplomaticRelation } from '../warfare'
 
 function makeTP(): TP {
   const tp = new TP()

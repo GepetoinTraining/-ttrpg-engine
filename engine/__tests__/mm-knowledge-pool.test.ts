@@ -3,16 +3,16 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { MMKnowledgePool } from '../mm-knowledge-pool.js'
-import { Clockwork } from '../clockwork.js'
-import { TP, type WorldNode } from '../tp.js'
+import { MMKnowledgePool } from '../mm-knowledge-pool'
+import { Clockwork } from '../clockwork'
+import { TP, type WorldNode } from '../tp'
 import {
   createKnowledgePool,
   addSeed,
   resetSeedIdCounter,
   resetPotentialIdCounter,
   type HubContext,
-} from '../knowledge-pool.js'
+} from '../knowledge-pool'
 
 beforeEach(() => {
   resetSeedIdCounter()

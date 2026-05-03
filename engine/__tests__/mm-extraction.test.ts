@@ -4,15 +4,15 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { MMExtraction } from '../mm-extraction.js'
-import { Clockwork } from '../clockwork.js'
-import { TP, type WorldNode } from '../tp.js'
+import { MMExtraction } from '../mm-extraction'
+import { Clockwork } from '../clockwork'
+import { TP, type WorldNode } from '../tp'
 import {
   DepositSchema,
   ExtractionSchema,
   type Deposit,
   type Extraction,
-} from '../production-chain.js'
+} from '../production-chain'
 
 function makeTP(): TP {
   const tp = new TP()

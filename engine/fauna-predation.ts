@@ -19,7 +19,7 @@
  */
 
 import { z } from 'zod'
-import { TrophicRoleSchema } from './wild-fauna.js'
+import { TrophicRoleSchema } from './wild-fauna'
 
 // ============================================================
 // SKILL — what the player rolls

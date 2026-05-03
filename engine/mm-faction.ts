@@ -36,15 +36,15 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   tickFaction,
   type Faction,
   type FactionGoalType,
   type FactionTickResult,
-} from './faction.js'
-import type { Drives } from './intent.js'
-import type { TP, FactionRules } from './tp.js'
+} from './faction'
+import type { Drives } from './intent'
+import type { TP, FactionRules } from './tp'
 
 // ============================================================
 // GOAL → DRIVE MAPPING — leader's drives bias which goals advance

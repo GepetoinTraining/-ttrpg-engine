@@ -14,7 +14,7 @@ import {
   calculateFoodVariety,
   EXTRACTION_INDUSTRY_DATA,
   type FisheryOperation,
-} from '../agriculture.js'
+} from '../agriculture'
 
 // ============================================================
 // CROP DATA

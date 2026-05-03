@@ -29,14 +29,14 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   decayMemories,
   type IdentityAnchor,
   type KnowledgeBoundary,
   type AgentMemory,
-} from './intelligence.js'
-import type { TP } from './tp.js'
+} from './intelligence'
+import type { TP } from './tp'
 
 export interface MMIntelligenceDomainState {
   agentId: string

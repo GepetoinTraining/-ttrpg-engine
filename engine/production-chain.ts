@@ -17,7 +17,7 @@
  */
 
 import { z } from 'zod'
-import { TierSchema, type Tier } from './tier.js'
+import { TierSchema, type Tier } from './tier'
 
 // ============================================================
 // COMMODITIES — What the world trades

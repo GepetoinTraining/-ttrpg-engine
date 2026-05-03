@@ -4,7 +4,7 @@ import {
   axesToAlignment, alignmentToAxes,
   type CampaignNarrative, type Beat, type Quest, type Arc,
   type RabbitHole, type MoralAxis,
-} from '../narrative.js'
+} from '../narrative'
 
 // ============================================================
 // HELPERS

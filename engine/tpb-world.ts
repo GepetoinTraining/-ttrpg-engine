@@ -20,9 +20,9 @@
  */
 
 import { z } from 'zod'
-import { EntityPositionSchema, type EntityPosition } from './tp.js'
-import type { TickCadence } from './clockwork.js'
-import type { TPB } from './tpb.js'
+import { EntityPositionSchema, type EntityPosition } from './tp'
+import type { TickCadence } from './clockwork'
+import type { TPB } from './tpb'
 
 // ============================================================
 // ACTION VARIANTS
@@ -138,7 +138,7 @@ export type { EntityPosition, TickCadence }
  * typed action union above.
  *
  * Use:
- *   import { TPB } from './tpb.js'
+ *   import { TPB } from './tpb'
  *   const worldTpb: WorldTPB = TPB.create<unknown, WorldTPBAction>(null)
  */
 export type WorldTPB = TPB<unknown, WorldTPBAction>

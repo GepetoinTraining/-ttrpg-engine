@@ -30,14 +30,14 @@ import type {
   WeatherRules,
   KnowledgeRules,
   InfrastructureRules,
-} from './tp.js'
+} from './tp'
 import {
   type Guild,
   type GuildChapter,
   type GuildJob,
   type JobType,
   postJob,
-} from './guild.js'
+} from './guild'
 
 // ============================================================
 // PROFESSION → REQUIRED ADVANCEMENT MATERIAL

@@ -28,13 +28,27 @@ import { db } from '@/db/connection'
 import { flywheelSlots } from '@/db/schema'
 import { WorldTPBActionSchema } from '../../../../../../engine/tpb-world'
 
+// W5.2 — tightened receipt schema. `mfId` is enumed against known MFs so a
+// malformed receipt is rejected at the boundary; `verification` stays
+// `unknown` (varies by mf) but the outer envelope is shape-validated.
+const ReceiptMfIdSchema = z.enum([
+  'mf_dice',
+  'mf_check',
+  'mf_damage',
+  'mf_smelt',
+  'mf_forge',
+  'mf_identify',
+  'mf_craft',
+  'mf_pool_dice',
+])
+
 const ReceiptSchema = z.object({
-  mfId: z.string(),
-  tick: z.number().int(),
+  mfId: ReceiptMfIdSchema,
+  tick: z.number().int().nonnegative(),
   input: z.unknown(),
   output: z.unknown(),
   verification: z.unknown(),
-  timestamp: z.number(),
+  timestamp: z.number().nonnegative(),
 })
 
 const SoloPushSchema = z.object({

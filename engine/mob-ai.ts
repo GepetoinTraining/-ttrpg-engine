@@ -30,12 +30,12 @@
 import type {
   Temperament,
   MobObjective,
-} from './biome-fauna.js'
-import type { Adaptation } from './adaptation.js'
-import { combineModifiers } from './adaptation.js'
+} from './biome-fauna'
+import type { Adaptation } from './adaptation'
+import { combineModifiers } from './adaptation'
 
 // Re-export the enums so consumers can import everything from mob-ai.
-export type { Temperament, MobObjective } from './biome-fauna.js'
+export type { Temperament, MobObjective } from './biome-fauna'
 
 // ============================================================
 // PRIMITIVES — What a mob can DO in a turn

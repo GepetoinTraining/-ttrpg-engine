@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none" color="#1f1b16">
+  
+  <rect width="100" height="100" fill="#a89070"></rect>
+  
+  <defs>
+    <pattern id="mosaic" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="9" height="9" fill="#c4a870" stroke="#7a6040" stroke-width="0.6"></rect>
+      <rect x="11" y="0" width="9" height="9" fill="#a87840" stroke="#7a6040" stroke-width="0.6"></rect>
+      <rect x="0" y="11" width="9" height="9" fill="#b89060" stroke="#7a6040" stroke-width="0.6"></rect>
+      <rect x="11" y="11" width="9" height="9" fill="#c4a870" stroke="#7a6040" stroke-width="0.6"></rect>
+    </pattern>
+  </defs>
+  <rect width="100" height="100" fill="url(#mosaic)"></rect>
+  
+  <rect x="10" y="10" width="9" height="9" fill="#3a5d7a" stroke="#7a6040" stroke-width="0.6"></rect>
+  <rect x="50" y="10" width="9" height="9" fill="#a8442a" stroke="#7a6040" stroke-width="0.6"></rect>
+  <rect x="90" y="10" width="9" height="9" fill="#3a5d7a" stroke="#7a6040" stroke-width="0.6"></rect>
+  <rect x="30" y="50" width="9" height="9" fill="#a8442a" stroke="#7a6040" stroke-width="0.6"></rect>
+  <rect x="70" y="50" width="9" height="9" fill="#3a5d7a" stroke="#7a6040" stroke-width="0.6"></rect>
+  <rect x="10" y="90" width="9" height="9" fill="#a8442a" stroke="#7a6040" stroke-width="0.6"></rect>
+  <rect x="50" y="90" width="9" height="9" fill="#3a5d7a" stroke="#7a6040" stroke-width="0.6"></rect>
+  <rect x="90" y="90" width="9" height="9" fill="#a8442a" stroke="#7a6040" stroke-width="0.6"></rect>
+</svg>

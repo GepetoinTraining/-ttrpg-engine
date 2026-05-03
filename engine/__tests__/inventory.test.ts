@@ -19,7 +19,7 @@ import {
   createChest, createVault, createWarehouse, createTreasury,
   resetIdCounter,
   type Item, type Container, type Currency, type Inventory,
-} from '../inventory.js'
+} from '../inventory'
 
 // ============================================================
 // HELPERS

@@ -25,7 +25,7 @@ import {
   revealNextLayer,
   shouldRollHazard,
   densityOf,
-} from './mining-layers.js'
+} from './mining-layers'
 
 // ============================================================
 // COMMON SHAPES

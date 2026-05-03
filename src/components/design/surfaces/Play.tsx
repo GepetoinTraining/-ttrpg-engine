@@ -13,6 +13,7 @@ import {
 import { useWorld } from '@/lib/use-world'
 import { usePersonaCapabilities } from '@/lib/persona-capabilities'
 import { EmptyState, FidelityBadge } from './_chips'
+import { ReceiptStrip } from '../ReceiptStrip'
 
 // surfaces/Play.tsx — Surface 45. The canonical playable surface.
 //
@@ -323,6 +324,15 @@ export default function Play() {
             ) : (
               <EmptyState label="no active character" hint="log into the world from CharacterSelect to bind a cert." />
             )}
+          </div>
+
+          {/* Receipt strip — math proof for recent computations */}
+          <div className="box">
+            <div className="box-title">
+              <h3>Receipts</h3>
+              <span className="meta">last {Math.min(10, worldApi.engine?.getRecentReceipts(10).length ?? 0)}</span>
+            </div>
+            <ReceiptStrip receipts={worldApi.engine?.getRecentReceipts(10) ?? []} limit={10} />
           </div>
 
           {/* Party — all known characters (cert-hash party formation pending) */}

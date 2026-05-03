@@ -3,14 +3,14 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { MMBanking, bankEntityId, resetShipmentIdCounter } from '../mm-banking.js'
-import { Clockwork } from '../clockwork.js'
-import { TP, type WorldNode } from '../tp.js'
+import { MMBanking, bankEntityId, resetShipmentIdCounter } from '../mm-banking'
+import { Clockwork } from '../clockwork'
+import { TP, type WorldNode } from '../tp'
 import {
   createVault,
   createAccount,
   resetLedgerSeq,
-} from '../banking.js'
+} from '../banking'
 
 function makeTP(): TP {
   const tp = new TP()

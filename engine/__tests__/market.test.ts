@@ -17,7 +17,7 @@ import {
   weeklyMarketTick,
   type CommodityPrice,
   type Merchant,
-} from '../market.js'
+} from '../market'
 
 // ============================================================
 // TIER REQUIREMENTS

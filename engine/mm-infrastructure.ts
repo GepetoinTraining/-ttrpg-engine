@@ -26,13 +26,13 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   tickInfrastructure,
   type InfrastructureState,
   type InfrastructureTickResult,
-} from './infrastructure-mm.js'
-import type { TP, InfrastructureRules } from './tp.js'
+} from './infrastructure-mm'
+import type { TP, InfrastructureRules } from './tp'
 
 export interface MMInfrastructureDomainState {
   state: InfrastructureState

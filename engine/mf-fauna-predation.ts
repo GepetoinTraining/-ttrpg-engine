@@ -34,16 +34,16 @@ import {
   type TrophicRole,
   defaultFormationFor,
   isViable,
-} from './wild-fauna.js'
+} from './wild-fauna'
 import {
   type EcologyKnowledgeLevel,
   KNOWLEDGE_DC_DISCOUNT,
-} from './ecology-interactables.js'
+} from './ecology-interactables'
 import {
   getPredationProfile,
   type PredationIntent,
   type PredationSkill,
-} from './fauna-predation.js'
+} from './fauna-predation'
 
 // ============================================================
 // COMMON RECEIPT

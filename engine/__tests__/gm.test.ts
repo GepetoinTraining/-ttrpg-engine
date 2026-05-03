@@ -4,8 +4,8 @@ import {
   selectSceneType, createCorridor, advanceCorridor,
   generateClockworkEvent, escalateHooks, buildContextPacket,
   type ContextPacket, type PlayModeConfig, type WorldSnapshot,
-} from '../gm.js'
-import type { BeatType, PacingSuggestion } from '../narrative.js'
+} from '../gm'
+import type { BeatType, PacingSuggestion } from '../narrative'
 
 // ============================================================
 // HELPERS

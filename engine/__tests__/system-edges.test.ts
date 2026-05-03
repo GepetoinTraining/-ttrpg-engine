@@ -10,9 +10,9 @@ import {
   calculateDungeonKnowledgeYield,
   generateFollowerCombatProfile,
   applyMonsterHunt,
-} from '../system-edges.js'
-import { createMonsterActor, resetMonsterActorIdCounter, type MonsterActorState } from '../monster-actor.js'
-import { getSpecies, type WildHerd } from '../wild-fauna.js'
+} from '../system-edges'
+import { createMonsterActor, resetMonsterActorIdCounter, type MonsterActorState } from '../monster-actor'
+import { getSpecies, type WildHerd } from '../wild-fauna'
 
 // ============================================================
 // 1. PREDATION — Ecology → Husbandry

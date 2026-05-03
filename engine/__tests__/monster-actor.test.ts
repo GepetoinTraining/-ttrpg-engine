@@ -9,7 +9,7 @@ import {
   resolveLeadershipChallenge, shouldChallenge,
   generateChallengerCR, resetMonsterActorIdCounter,
   type MonsterActorState,
-} from '../monster-actor.js'
+} from '../monster-actor'
 
 beforeEach(() => {
   resetMonsterActorIdCounter()

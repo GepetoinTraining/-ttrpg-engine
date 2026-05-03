@@ -21,14 +21,14 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   decayRumor,
   type Rumor,
   type KnowledgeEntry,
   type Library,
-} from './lore.js'
-import type { TP } from './tp.js'
+} from './lore'
+import type { TP } from './tp'
 
 export interface MMLoreDomainState {
   holderId: string

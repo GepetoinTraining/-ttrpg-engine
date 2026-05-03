@@ -3,10 +3,10 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { MMCurrency } from '../mm-currency.js'
-import { Clockwork } from '../clockwork.js'
-import { TP, type WorldNode } from '../tp.js'
-import { createCurrencySystem, type ExchangeRate } from '../currency.js'
+import { MMCurrency } from '../mm-currency'
+import { Clockwork } from '../clockwork'
+import { TP, type WorldNode } from '../tp'
+import { createCurrencySystem, type ExchangeRate } from '../currency'
 
 function makeTP(): TP {
   const tp = new TP()

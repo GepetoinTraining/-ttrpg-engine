@@ -20,13 +20,13 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   tickAgenda,
   type NPCAgenda,
   type AgendaTickResult,
-} from './npc-agenda.js'
-import type { TP } from './tp.js'
+} from './npc-agenda'
+import type { TP } from './tp'
 
 export interface MMNpcAgendaDomainState {
   npc: NPCAgenda

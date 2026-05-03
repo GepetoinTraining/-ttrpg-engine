@@ -34,15 +34,15 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   weeklyBankingTick,
   type BankVault,
   type BankAccount,
   type Loan,
   type BankingTickResult,
-} from './banking.js'
-import type { TP } from './tp.js'
+} from './banking'
+import type { TP } from './tp'
 
 // ============================================================
 // BULLION SHIPMENT — uncoined gold in transit between vaults

@@ -12,6 +12,7 @@
  */
 
 import { idbPut, idbGet, idbGetAll, idbDelete } from './idb'
+import { authFetch } from './auth-fetch'
 
 export type PersonaType = 'player' | 'dm' | 'gm-ai' | 'dmless'
 
@@ -46,7 +47,7 @@ export interface CreateCharacterCertInput {
  * BEFORE creating the character row, then update via `attachCharacterData`.
  */
 export async function createCharacterCert(input: CreateCharacterCertInput): Promise<CharacterCert> {
-  const res = await fetch('/api/character-cert/create', {
+  const res = await authFetch('/api/character-cert/create', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({

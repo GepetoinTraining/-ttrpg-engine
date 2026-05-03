@@ -3,17 +3,17 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { MMFaction, leaderProgressMultiplier, GOAL_DRIVE_ALIGNMENT } from '../mm-faction.js'
-import { Clockwork } from '../clockwork.js'
-import { TP, type WorldNode } from '../tp.js'
+import { MMFaction, leaderProgressMultiplier, GOAL_DRIVE_ALIGNMENT } from '../mm-faction'
+import { Clockwork } from '../clockwork'
+import { TP, type WorldNode } from '../tp'
 import {
   createFaction,
   addMember,
   addGoal,
   resetFactionIdCounter,
   type Faction,
-} from '../faction.js'
-import { DrivesSchema, type Drives } from '../intent.js'
+} from '../faction'
+import { DrivesSchema, type Drives } from '../intent'
 
 beforeEach(() => resetFactionIdCounter())
 

@@ -28,17 +28,17 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   type WildHerd,
   type Formation,
   type HerdStatus,
   speciesByBiome,
   getSpecies,
-} from './wild-fauna.js'
-import { mfHerdGraze, mfHerdMigrate } from './mf-herd-life.js'
-import type { TP, EcologyRules } from './tp.js'
-import { SeededRNG } from './hub-topology.js'
+} from './wild-fauna'
+import { mfHerdGraze, mfHerdMigrate } from './mf-herd-life'
+import type { TP, EcologyRules } from './tp'
+import { SeededRNG } from './hub-topology'
 
 // ============================================================
 // MM_WILD_FAUNA STATE

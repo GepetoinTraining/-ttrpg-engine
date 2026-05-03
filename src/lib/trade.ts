@@ -13,6 +13,7 @@
  */
 
 import type { CharacterCert } from './character-cert'
+import { authFetch } from './auth-fetch'
 
 export interface TradeRecord {
   tradeId: string
@@ -56,7 +57,7 @@ export async function initiateTrade(input: {
     Date.now(),
   ])
 
-  const res = await fetch('/api/character/trade/initiate', {
+  const res = await authFetch('/api/character/trade/initiate', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
@@ -94,7 +95,7 @@ export async function acceptTrade(input: {
     Date.now(),
   ])
 
-  const res = await fetch('/api/character/trade/accept', {
+  const res = await authFetch('/api/character/trade/accept', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({

@@ -5,92 +5,255 @@ import React from 'react'
 import Die from './Die'
 import { rollDice } from '@/lib/dice'
 import { EmptyState, FidelityBadge } from './_chips'
+import { MMScene } from '../../../../engine/mm-scene'
+import type { Combatant, RoundResult } from '../../../../engine/mm-scene'
 
-// surfaces/Combat.tsx — Combat Runner: tactical grid + side panel + card-pile resolution.
-// LiveRollWidget at top is fully wired through engine/mf-dice.ts → dice_receipts.
-// The runner body (initiative, board, side panel, card piles) is strip-only —
-// awaits mm-scene.executeRound + mmCombatAttack. All hardcoded mock content
-// has been replaced with EmptyState placeholders for semi-prod.
+// surfaces/Combat.tsx — Combat Runner.
+// W4.1: Math-symmetric combat. MMScene runs locally on the client. Mob-ai
+// drives enemy turns (W3.1). Each round fires `scene.executeRound()` and
+// produces receipts displayed in the strip. The full session bundle pushes
+// on combat end via DM-shard (when a session is active).
+
+const DEMO_PARTY: Combatant[] = [
+  {
+    id: 'arden',
+    name: 'Arden (Fighter 5)',
+    side: 'party',
+    initiativeModifier: 2,
+    hpCurrent: 42,
+    hpMax: 42,
+    tempHp: 0,
+    ac: 18,
+    attackModifier: 7,
+    damageDice: { count: 1, sides: 8, modifier: 4 },
+    damageType: 'slashing',
+    resistances: [],
+    vulnerabilities: [],
+    immunities: [],
+    status: 'active',
+  },
+  {
+    id: 'elara',
+    name: 'Elara (Wizard 5)',
+    side: 'party',
+    initiativeModifier: 4,
+    hpCurrent: 28,
+    hpMax: 28,
+    tempHp: 0,
+    ac: 14,
+    attackModifier: 6,
+    damageDice: { count: 2, sides: 6, modifier: 3 },
+    damageType: 'fire',
+    resistances: [],
+    vulnerabilities: [],
+    immunities: [],
+    status: 'active',
+  },
+]
+
+const DEMO_MOBS: Combatant[] = [
+  {
+    id: 'goblin_1',
+    name: 'Goblin Sneak',
+    side: 'enemy',
+    initiativeModifier: 3,
+    hpCurrent: 7,
+    hpMax: 7,
+    tempHp: 0,
+    ac: 13,
+    attackModifier: 4,
+    damageDice: { count: 1, sides: 6, modifier: 2 },
+    damageType: 'piercing',
+    resistances: [],
+    vulnerabilities: [],
+    immunities: [],
+    status: 'active',
+    mobBehavior: { objective: 'KILL_PCS', temperament: 'COWARD', adaptations: [] },
+  },
+  {
+    id: 'goblin_2',
+    name: 'Goblin Brute',
+    side: 'enemy',
+    initiativeModifier: 1,
+    hpCurrent: 12,
+    hpMax: 12,
+    tempHp: 0,
+    ac: 12,
+    attackModifier: 4,
+    damageDice: { count: 1, sides: 8, modifier: 2 },
+    damageType: 'slashing',
+    resistances: [],
+    vulnerabilities: [],
+    immunities: [],
+    status: 'active',
+    mobBehavior: { objective: 'KILL_PCS', temperament: 'AGGRESSIVE', adaptations: [] },
+  },
+  {
+    id: 'goblin_zealot',
+    name: 'Goblin Zealot',
+    side: 'enemy',
+    initiativeModifier: 2,
+    hpCurrent: 9,
+    hpMax: 9,
+    tempHp: 0,
+    ac: 11,
+    attackModifier: 3,
+    damageDice: { count: 1, sides: 6, modifier: 1 },
+    damageType: 'bludgeoning',
+    resistances: [],
+    vulnerabilities: [],
+    immunities: [],
+    status: 'active',
+    mobBehavior: { objective: 'KILL_PCS', temperament: 'BERSERKER', adaptations: [] },
+  },
+]
 
 export default function Combat() {
+  const [scene, setScene] = React.useState<MMScene | null>(null)
+  const [rounds, setRounds] = React.useState<RoundResult[]>([])
+  const [tick, setTick] = React.useState(0)
+
+  const startCombat = () => {
+    const seed = Math.floor(Math.random() * 2147483647)
+    const newScene = new MMScene([...DEMO_PARTY, ...DEMO_MOBS], seed)
+    setScene(newScene)
+    setRounds([])
+    setTick((t) => t + 1)
+  }
+
+  const runRound = () => {
+    if (!scene) return
+    const seed = Math.floor(Math.random() * 2147483647)
+    const r = scene.executeRound(seed)
+    setRounds((prev) => [...prev, r])
+    setTick((t) => t + 1)
+  }
+
+  const runToCompletion = () => {
+    if (!scene) return
+    let safety = 30
+    let r: RoundResult
+    do {
+      r = scene.executeRound(Math.floor(Math.random() * 2147483647))
+      setRounds((prev) => [...prev, r])
+      safety--
+    } while (!scene.isOver() && safety > 0)
+    setTick((t) => t + 1)
+  }
+
+  const reset = () => {
+    setScene(null)
+    setRounds([])
+    setTick((t) => t + 1)
+  }
+
+  const initiative = scene?.getInitiativeOrder() ?? []
+  const combatants = scene?.getCombatants() ?? []
+  const isOver = scene?.isOver() ?? false
+  const victor = scene?.getVictor()
+
   return (
     <div>
       <div className="surface-head">
         <div>
           <div className="crumbs">15 · Combat Runner — encounter live</div>
-          <h2>Combat <FidelityBadge level="strip-only" /></h2>
+          <h2>Combat <FidelityBadge level={scene ? 'fully-bound' : 'strip-only'} /></h2>
         </div>
         <span className="who">DM · live runner</span>
       </div>
 
       <p style={{maxWidth: 740, color:'var(--ink-2)', marginTop: 0}}>
         Engine map: <span className="kbd">engine/mm-scene.ts</span> — <span className="kbd">executeRound</span>,
-        <span className="kbd">mmCombatAttack</span>, concentration, reactions. Players roll on their sheets;
-        the runner accepts each roll as a <b>card</b>, queues it, resolves it, and drops it onto the round's
-        resolved pile. The DM watches and confirms outliers.
+        <span className="kbd">mob-ai</span>. Math runs on the client; the full session bundle pushes through
+        DM-shard at session end. Receipts are first-class.
       </p>
 
       {/* engine reach test — wired to /api/sim/roll → mfDice → dice_receipts */}
       <LiveRollWidget />
 
-      {/* Combat body — pending mm-scene wiring */}
+      {/* Combat controls */}
+      <div className="box" style={{marginTop: 18, padding: 14, borderColor: 'var(--accent-amber)'}}>
+        <div className="box-title">
+          <h3>Demo combat · 2 PCs + 3 mobs</h3>
+          <span className="meta">{scene ? `round ${scene.getRound()} · ${isOver ? 'OVER' : 'live'}` : 'no scene'}</span>
+        </div>
+        <div className="row" style={{gap: 6, flexWrap: 'wrap'}}>
+          <button className="btn sm" onClick={startCombat}>start combat</button>
+          <button className="btn sm primary" disabled={!scene || isOver} onClick={runRound}>run round →</button>
+          <button className="btn sm" disabled={!scene || isOver} onClick={runToCompletion}>run to completion</button>
+          <button className="btn sm" disabled={!scene} onClick={reset}>reset</button>
+          {isOver && victor && (
+            <span className="chip sm" style={{background: victor === 'party' ? 'var(--accent-green)' : 'var(--accent-red)', color: 'var(--paper)'}}>
+              winner: {victor}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Combat body */}
       <div className="grid-3" style={{gap: 14, marginTop: 18}}>
         <div className="box" style={{gridColumn: 'span 2'}}>
-          <div className="box-title"><h3>Tactical board</h3><span className="meta">—</span></div>
-          <EmptyState
-            label="no encounter active"
-            hint="bind to mm-scene once a fight starts. board renders tokens, AOEs, terrain, line of sight."
-          />
+          <div className="box-title"><h3>Tactical board</h3><span className="meta">— combatants</span></div>
+          {!scene ? (
+            <EmptyState label="no encounter active" hint="click 'start combat' to spawn the demo encounter." />
+          ) : (
+            <div className="col" style={{gap: 6}}>
+              {combatants.map((c) => (
+                <div key={c.id} className="row" style={{justifyContent: 'space-between', padding: '6px 8px', border: '1px solid var(--rule)', background: c.side === 'party' ? 'rgba(80,200,120,0.05)' : 'rgba(255,80,80,0.05)'}}>
+                  <span style={{fontFamily: 'var(--mono)', fontSize: 12}}>
+                    {c.side === 'party' ? '🛡' : '🗡'} {c.name}
+                  </span>
+                  <span style={{fontFamily: 'var(--mono)', fontSize: 12, color: c.status === 'active' ? 'var(--ink)' : 'var(--ink-3)'}}>
+                    {c.status === 'active' ? `HP ${c.hpCurrent}/${c.hpMax}` : c.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="box">
-          <div className="box-title"><h3>Initiative</h3><span className="meta">—</span></div>
-          <EmptyState label="no combat in progress" hint="bind to mm-scene.initiativeOrder when a fight starts." />
+          <div className="box-title"><h3>Initiative</h3><span className="meta">— order</span></div>
+          {initiative.length === 0 ? (
+            <EmptyState label="no combat in progress" hint="bind to mm-scene.initiativeOrder when a fight starts." />
+          ) : (
+            <div className="col" style={{gap: 4}}>
+              {initiative.map((entry, i) => (
+                <div key={entry.id} className="row" style={{justifyContent: 'space-between', fontSize: 12, fontFamily: 'var(--mono)'}}>
+                  <span>{i + 1}. {entry.name}</span>
+                  <span className="muted">{entry.total}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="grid-3" style={{gap: 14, marginTop: 14}}>
-        <div className="box" style={{gridColumn: 'span 2'}}>
-          <div className="box-title"><h3>Selected actor</h3><span className="meta">—</span></div>
-          <EmptyState
-            label="no actor selected"
-            hint="click a token to surface stat block (CR/AC/HP/Spd/DC/Atk), reaction watch, AI tactic suggestions, action budget."
-          />
-        </div>
-        <div className="box">
-          <div className="box-title"><h3>Party HP</h3><span className="meta">—</span></div>
-          <EmptyState label="party state pending" hint="bind to mm-party + mm-character HP." />
-        </div>
-      </div>
-
-      <div className="section-title">Cards in flight</div>
-      <div className="grid-3" style={{gap: 14}}>
-        {(['Queued', 'Rolling now', 'Resolved'] as const).map(lane => (
-          <div key={lane} className="box" style={{padding: 0, minHeight: 180}}>
-            <div className="box-title" style={{padding:'10px 12px', margin: 0, borderBottom:'1px solid var(--rule)'}}>
-              <h3>{lane}</h3>
-              <span className="meta">—</span>
-            </div>
-            <div style={{padding: 12}}>
-              <EmptyState label={`${lane.toLowerCase()} pile empty`} hint="cards land here once players roll on their sheets." />
-            </div>
+      {/* Round log */}
+      {rounds.length > 0 && (
+        <>
+          <div className="section-title">Round log</div>
+          <div className="col" style={{gap: 10}}>
+            {rounds.map((r) => (
+              <div key={r.roundNumber} className="box" style={{padding: 10}}>
+                <div className="row" style={{justifyContent: 'space-between', marginBottom: 6}}>
+                  <h4 style={{margin: 0, fontSize: 13}}>Round {r.roundNumber}</h4>
+                  {r.combatOver && <span className="chip sm">combat ends</span>}
+                </div>
+                <div className="col" style={{gap: 3}}>
+                  {r.turns.map((t, i) => (
+                    <div key={i} style={{fontSize: 12, fontFamily: 'var(--mono)', color: t.action === 'attack' ? 'var(--ink)' : 'var(--ink-2)'}}>
+                      {t.description}
+                      {t.mobIntent?.action && t.action !== 'attack' && (
+                        <span className="muted" style={{marginLeft: 6}}>· mob-ai: {t.mobIntent.action}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-
-      {/* round controls */}
-      <div className="row" style={{justifyContent:'space-between', marginTop: 18, padding: '12px 16px',
-                                    border: '1px solid var(--rule)', background: 'var(--paper-2)'}}>
-        <div className="row" style={{gap: 14, alignItems:'center'}}>
-          <span className="stat muted">no active round</span>
-        </div>
-        <div className="row" style={{gap: 6}}>
-          <button className="btn sm" disabled>undo last</button>
-          <button className="btn sm" disabled>pause</button>
-          <button className="btn sm" disabled>DM secret roll</button>
-          <button className="btn primary" disabled>advance turn →</button>
-          <button className="btn" disabled>end round ↻</button>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   )
 }

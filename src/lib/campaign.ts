@@ -3,6 +3,8 @@
  * Wraps /api/campaign/* endpoints.
  */
 
+import { authFetch } from './auth-fetch'
+
 export interface CreateCampaignInput {
   name: string
   slug?: string
@@ -20,7 +22,7 @@ export interface CreateCampaignResult {
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),

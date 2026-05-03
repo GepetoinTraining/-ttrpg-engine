@@ -31,7 +31,7 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   monthlyReadinessTick,
   monthlyArmyUpkeep,
@@ -41,9 +41,9 @@ import {
   type DiplomaticRelation,
   type ArmyUpkeepResult,
   type DiplomaticDriftResult,
-} from './warfare.js'
-import type { Drives } from './intent.js'
-import type { TP, MilitaryRules } from './tp.js'
+} from './warfare'
+import type { Drives } from './intent'
+import type { TP, MilitaryRules } from './tp'
 
 // ============================================================
 // MM_WARFARE

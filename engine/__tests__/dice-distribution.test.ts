@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mfDice } from '../mf-dice.js'
+import { mfDice } from '../mf-dice'
 
 /**
  * Distribution sanity tests — empirical verification that mfDice produces

@@ -25,9 +25,17 @@
  */
 
 import { z } from 'zod'
-import { mfDice, type DiceFormula, type DiceResult, type DiceReceipt } from './mf-dice.js'
-import { mmCombatAttack, type AttackAction, type AttackResult, type AttackReceiptChain } from './mm-combat.js'
-import { type CycleDelta, ZERO_DELTA, addDeltas, type Receipt } from './types.js'
+import { mfDice, type DiceFormula, type DiceResult, type DiceReceipt } from './mf-dice'
+import { mmCombatAttack, type AttackAction, type AttackResult, type AttackReceiptChain } from './mm-combat'
+import { type CycleDelta, ZERO_DELTA, addDeltas, type Receipt } from './types'
+import {
+  decideMobIntent,
+  type MobBehavior,
+  type MobIntent,
+  type CombatContext,
+  type PositionedTarget,
+  type BehaviorPrimitive,
+} from './mob-ai'
 
 // ============================================================
 // COMBATANT — A participant in combat
@@ -64,6 +72,27 @@ export const CombatantSchema = z.object({
 
   /** Status */
   status: z.enum(['active', 'unconscious', 'dead', 'fled']).default('active'),
+
+  /**
+   * Optional 2D position. When present, mob-ai uses it for distance-based
+   * decisions (kite zone, FLEE direction, ally proximity for HIVEMIND).
+   * When absent, positional checks are skipped — combat reduces to plain
+   * "everyone is in range of each other".
+   */
+  position: z.object({ x: z.number(), y: z.number() }).optional(),
+
+  /**
+   * Optional mob behavior profile. When present, this combatant's turn
+   * is driven by `decideMobIntent` from mob-ai.ts (per W3.1) instead of
+   * the simple "attack the first enemy" fallback. Players + party-side
+   * combatants typically leave this undefined (they get target overrides
+   * or use the simple AI for testing).
+   */
+  mobBehavior: z.object({
+    objective: z.string(),
+    temperament: z.string(),
+    adaptations: z.array(z.unknown()).default([]),
+  }).optional(),
 })
 export type Combatant = z.infer<typeof CombatantSchema>
 
@@ -86,11 +115,13 @@ export interface InitiativeEntry {
 export interface TurnResult {
   combatantId: string
   combatantName: string
-  action: 'attack' | 'skip' | 'none'
+  action: 'attack' | 'skip' | 'none' | 'flee' | 'move' | 'idle'
   targetId?: string
   targetName?: string
   attackResult?: AttackResult
   attackReceipts?: AttackReceiptChain
+  /** mob-ai decision (when this turn was driven by mob behavior). */
+  mobIntent?: MobIntent
   description: string
 }
 
@@ -260,14 +291,69 @@ export class MMScene {
         continue
       }
 
-      // Find target
-      const targetId = targetOverrides?.get(combatant.id) ?? this.selectTarget(combatant)
+      // ── Mob-AI dispatch (W3.1) ──
+      // If this combatant carries a mobBehavior, run decideMobIntent to
+      // pick action + target. The intent maps to:
+      //   ATTACK_MELEE / ATTACK_RANGED → fall through to attack pipeline
+      //   FLEE   → status='fled', skip
+      //   IDLE   → no action this turn
+      //   APPROACH / STRAFE / FLANK / BLOCK → "move" turn (no attack)
+      //   PHASE / SACRIFICE / SPAWN → v1: treat as idle
+      let mobIntent: MobIntent | undefined
+      let mobOverrideTargetId: string | undefined
+      if (combatant.mobBehavior) {
+        const ctx = this.buildCombatContext(combatant)
+        const d20 = (mfDice({ count: 1, sides: 20, modifier: 0 }, attackSeed++).output.rolls[0])
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        mobIntent = decideMobIntent(combatant.mobBehavior as any, ctx, d20)
+        mobOverrideTargetId = mobIntent.targetId
+
+        // Non-attack intents → emit turn and continue.
+        if (mobIntent.action === 'FLEE') {
+          combatant.status = 'fled'
+          turns.push({
+            combatantId: combatant.id,
+            combatantName: combatant.name,
+            action: 'flee',
+            mobIntent,
+            description: `${combatant.name} breaks and flees! (${mobIntent.reason ?? 'morale broken'})`,
+          })
+          continue
+        }
+        if (mobIntent.action === 'IDLE' || mobIntent.action === 'PHASE' || mobIntent.action === 'SACRIFICE' || mobIntent.action === 'SPAWN' || mobIntent.action === 'BLOCK') {
+          turns.push({
+            combatantId: combatant.id,
+            combatantName: combatant.name,
+            action: 'idle',
+            mobIntent,
+            description: `${combatant.name} holds position (${mobIntent.action.toLowerCase()}${mobIntent.reason ? ': ' + mobIntent.reason : ''})`,
+          })
+          continue
+        }
+        if (mobIntent.action === 'APPROACH' || mobIntent.action === 'STRAFE' || mobIntent.action === 'FLANK') {
+          turns.push({
+            combatantId: combatant.id,
+            combatantName: combatant.name,
+            action: 'move',
+            targetId: mobOverrideTargetId,
+            targetName: mobOverrideTargetId ? this.state.combatants.get(mobOverrideTargetId)?.name : undefined,
+            mobIntent,
+            description: `${combatant.name} ${mobIntent.action.toLowerCase()}s${mobOverrideTargetId ? ' toward ' + this.state.combatants.get(mobOverrideTargetId)?.name : ''}`,
+          })
+          continue
+        }
+        // ATTACK_MELEE / ATTACK_RANGED → fall through with mob's chosen target
+      }
+
+      // Find target — mob-ai's choice overrides default.
+      const targetId = mobOverrideTargetId ?? targetOverrides?.get(combatant.id) ?? this.selectTarget(combatant)
 
       if (!targetId) {
         turns.push({
           combatantId: combatant.id,
           combatantName: combatant.name,
           action: 'none',
+          mobIntent,
           description: `${combatant.name} has no valid targets`,
         })
         continue
@@ -332,6 +418,7 @@ export class MMScene {
         targetName: target.name,
         attackResult: result,
         attackReceipts: receipts,
+        mobIntent,
         description: desc,
       })
 
@@ -369,6 +456,50 @@ export class MMScene {
       }
     }
     return null
+  }
+
+  /**
+   * Build a CombatContext snapshot for mob-ai. When combatants carry no
+   * `position`, fakes a deterministic spread by side so distance-based
+   * decisions still resolve coherently (without actually modeling movement).
+   */
+  private buildCombatContext(self: Combatant): CombatContext {
+    const enemySide = self.side === 'party' ? 'enemy' : 'party'
+    const positionFor = (c: Combatant): { x: number; y: number } => {
+      if (c.position) return c.position
+      // Default: party at x=0, enemies at x=5; y by id-hash so it's stable.
+      const baseX = c.side === 'party' ? 0 : 5
+      let h = 0
+      for (let i = 0; i < c.id.length; i++) h = (h * 31 + c.id.charCodeAt(i)) & 0x7fffffff
+      return { x: baseX, y: (h % 5) - 2 }
+    }
+    const enemies: PositionedTarget[] = []
+    const allies: PositionedTarget[] = []
+    for (const c of this.state.combatants.values()) {
+      if (c.id === self.id) continue
+      if (c.status !== 'active') continue
+      const target: PositionedTarget = {
+        id: c.id,
+        pos: positionFor(c),
+        hpPercent: c.hpMax > 0 ? c.hpCurrent / c.hpMax : 0,
+        threat: 0.5, // simplified — no per-enemy threat tracking yet
+      }
+      if (c.side === enemySide) enemies.push(target)
+      else if (c.side === self.side) allies.push(target)
+    }
+    const inLineOfSight: Record<string, boolean> = {}
+    for (const e of enemies) inLineOfSight[e.id] = true
+
+    return {
+      selfId: self.id,
+      selfPos: positionFor(self),
+      selfHpPercent: self.hpMax > 0 ? self.hpCurrent / self.hpMax : 0,
+      selfRange: { melee: 1, ranged: 0 },
+      enemies,
+      allies,
+      isInTerritory: true,
+      inLineOfSight,
+    }
   }
 
   /**

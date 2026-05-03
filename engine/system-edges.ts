@@ -20,9 +20,9 @@
  *                                   via mfHerdPredation (Δ.0.5 wiring)
  */
 
-import { mfHerdPredation } from './mf-herd-life.js'
-import { type WildHerd, getSpecies } from './wild-fauna.js'
-import type { MonsterActorState } from './monster-actor.js'
+import { mfHerdPredation } from './mf-herd-life'
+import { type WildHerd, getSpecies } from './wild-fauna'
+import type { MonsterActorState } from './monster-actor'
 
 // ============================================================
 // 1. ECOLOGY → HUSBANDRY: Monster Predation

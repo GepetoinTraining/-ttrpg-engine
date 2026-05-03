@@ -1,195 +1,109 @@
-# TTRPG Engine
+# TTRPG Engine — `docs/`
 
-A full-stack tabletop RPG campaign management system. **141k lines of TypeScript** built in 7 hours across 2 commits.
+A solo-and-table TTRPG engine — D&D 5e-shaped, but engineered as a **persistent shared world** with multi-tenant accounts, deterministic worldline reconciliation, and append-only history. Architecture is closer to EVE Online's economy than to a chat-bot DM, dressed in the UX of a tabletop helper.
 
-> **Note:** The game engine library is at `/bend/src/engine/index.ts` - this is the barrel export for all game mechanics (grid, rules, narrative, assets, simulation, etc.)
+> **Start here:** [`CLAUDE.md`](../CLAUDE.md) at the repo root is the canonical orientation doc — full project structure, cert hierarchy, world-state flow, common tasks. This README is a brief overview + a map into `docs/`.
 
-## Project Status: Wiring Incomplete
+## Four play modes
 
-The architecture is complete. The backend (55k lines) and frontend (20k lines) are fully scaffolded with types, schemas, and UI. What's missing is the **glue code** - the actual query function implementations that connect routers to the database.
+- **player** — at a table with a human DM
+- **dm** — running someone's table (the "god lens")
+- **gm-ai** — solo with AI as DM
+- **dmless** — pure clockwork solo, no AI, world ticks autonomously
 
-### What's Done
-- 34 database tables defined in migrations
-- 13 tRPC routers with all procedures defined
-- Turso client connection code
-- WebSocket realtime infrastructure (types, handlers)
-- Frontend components wired to tRPC hooks
-- Clerk auth integration structure
-- Gemini AI client structure
-- Zod schema contracts in middleware layer
+## Core principles (non-negotiable)
 
-### What's Missing (The Glue)
+1. **No topology = no existence.** Every entity has a numeric seed; the seed's prime factorization is its identity. The same math (φ, ζ, M^n trajectory) authenticates accounts, characters, and signs in-world receipts.
+2. **Observation is the only writer.** World content derived from the seed needs no row. Persistence happens *only* when interaction changes state. The append-only `.tpb` is canonical; `.tp` and `mm_states` are caches regenerable from the log.
+3. **Client computes, server appends.** Browser runs the engine math, produces `WorldTPBAction[]` + receipts, pushes a flywheel slot. Server validates shape (no engine compute), inserts. Hourly cron drains slots into the canonical ledger.
+4. **Math is the gate; signatures are forensic.** Receipts are dual-signed (account × character) but the validator does NOT verify them on the happy path — only on detected divergence, dispute, or audit.
+5. **DM is a viewing mode, not a permission.** Persona (`player | dm | gm-ai | dmless`) is baked into the character cert at chargen and never user-toggled afterward.
 
-1. **DB Query Functions** - Routers call functions that don't exist yet:
-   - `getNode()`, `getParty()`, `getCampaignParties()`, `createParty()`, `updateParty()`, `deleteParty()`
-   - `getHierarchy()`, `getNodesByType()`, `getSiblings()`
-   - `getEdgesFrom()`, `getEdgesTo()`, `getConnectedNodes()`
-   
-2. **`createRealtimeServer()` factory** - `index.ts` imports this but `realtime/server.ts` only exports individual handlers
+## Status
 
-3. **`.env` files** - No credentials for Turso, Clerk, Gemini, Vercel Blob
+Live snapshot:
 
-4. **Some import path fixes** in `db/seeds/*.ts` files
+| Metric | Count |
+|---|---|
+| Engine source files | ~117 (.ts, in `engine/`) |
+| Engine tests | 101 files (~1856+ tests) |
+| Other tests | 11 files (`src/lib/*.test.ts`) |
+| DB tables | 131 across 12 layers |
+| UI surfaces | 52 (in `src/components/design/surfaces/`) |
+| API routes | 47 (under `src/app/api/`) |
 
----
+Engine **L0–L6 complete** (Physical → Hub Services). Frontend is workspace-grouped (Home / Player / DM / Table) with persona-driven view configs. Wave-4 persistence (`tpb_entries` log + `mm_states` cache + cron) is live. Routing pass landed: client-side `engine-client.ts` produces actions, `POST /api/world/slot/push` queues them, hourly drain copies into `tpb_entries`.
 
-## Architecture
+**Pending:** railgun spectrum subscription (currently 5 s polling on `/api/world/log`); Tier 3+ surface design; mm-scene combat integration with mob-ai; DM-as-shard-host V2 (full local Clockwork during sessions).
+
+## Architecture at a glance
 
 ```
-/bend (55k lines)                    /fend (20k lines)
-├── src/                             ├── src/
-│   ├── index.ts      [entry]        │   ├── app.tsx        [entry]
-│   ├── api/                         │   ├── api/
-│   │   ├── router.ts [13 routers]   │   │   ├── trpc.ts    [client]
-│   │   └── routers/  [5.4k lines]   │   │   └── websocket.ts
-│   ├── db/                          │   ├── routes/        [19 routes]
-│   │   ├── client.ts [Turso]        │   ├── components/    [44 files, 10k lines]
-│   │   ├── migrations.ts [schema]   │   ├── hooks/         [6 hooks]
-│   │   └── queries/  [INCOMPLETE]   │   ├── stores/        [Zustand]
-│   ├── realtime/                    │   └── styles/        [Phi tensor UI]
-│   │   ├── server.ts [handlers]     │
-│   │   └── types.ts  [30+ msg types]│
-│   ├── middleware/   [Zod contracts]│
-│   ├── auth/         [Clerk]        │
-│   ├── ai/           [Gemini]       │
-│   ├── engine/       [game logic]   │
-│   └── world/        [graph types]  │
+src/                       — Next 16 app router
+├── app/api/               — route handlers (server-only; no engine compute except cron)
+├── components/design/     — workspace shell (DMHelperApp.tsx) + 52 surfaces
+├── lib/                   — engine-client.ts, useWorld hook, IDB helpers, world-tpb bridge
+├── auth/                  — topology auth math (browser-safe: φ, ζ, M^n)
+├── db/                    — Drizzle schema (131 tables) + Turso client
+└── game/                  — worldgen + spatial layer (hex, being migrated to square)
+
+engine/                    — pure-compute engine, ZERO DB imports anywhere
+├── tp.ts, tpb.ts          — topology pointer + append-only history
+├── tpb-world.ts           — WorldTPBAction Zod union (canonical wire format)
+├── clockwork.ts           — 7-layer dependency-ordered tick crank
+├── mf-{dice,check,damage} — atomic 2×2 matrix functions, return {output, receipt}
+└── mm-*.ts                — ~40 per-domain MM adapters (weather → narrative)
+
+archive/                   — pre-Next.js bend/ + fend/ (DO NOT REFERENCE)
 ```
 
----
-
-## Key Files to Read
-
-### Understanding the Architecture
-1. `/bend/src/middleware/index.ts` - Architecture diagram and data flow docs (500 lines of comments)
-2. `/bend/src/db/migrations.ts` - All 34 table schemas (~1200 lines)
-3. `/bend/src/api/router.ts` - Main router combining 13 sub-routers
-
-### What Needs Implementation
-1. `/bend/src/db/queries/campaigns.ts` - Has some functions, missing `getParty`, `createParty`, etc.
-2. `/bend/src/db/queries/nodes.ts` - Has `getNodes()`, missing `getNode()` (singular)
-3. `/bend/src/db/queries/edges.ts` - Has `getEdges()`, missing `getEdgesFrom()`, `getEdgesTo()`
-4. `/bend/src/realtime/server.ts` - Has handlers, missing `createRealtimeServer()` factory
-
-### The Routers (what calls the missing functions)
-- `/bend/src/api/routers/party.ts` - Calls missing party functions
-- `/bend/src/api/routers/world.ts` - Calls missing node/edge functions
-- `/bend/src/api/routers/economy.ts` - Calls missing `getNode()`
-
----
-
-## Database Schema (34 Tables)
-
-**Core:** campaigns, campaign_memberships, campaign_invites, users
-
-**World Graph:** world_nodes, world_edges, factions, faction_relations, deities
-
-**Characters:** characters, character_features, inventory_items, conditions
-
-**NPCs:** npcs, npc_relationships, agents, agent_memories
-
-**Sessions:** sessions, session_events, combats, combat_participants, combat_log
-
-**Other:** parties, party_members, quests, quest_objectives, downtime_periods, downtime_actions, followers, economic_events, trade_routes, sync_log, audit_log
-
----
-
-## Tech Stack
+## Tech stack
 
 | Layer | Technology |
-|-------|------------|
-| Frontend | React 18, Vite, TanStack Router/Query |
-| Backend | Bun, tRPC v11 |
-| Database | Turso (libSQL/SQLite) |
-| Auth | Clerk |
-| Realtime | WebSocket |
-| AI | Google Gemini |
-| Storage | Vercel Blob |
-| Validation | Zod |
+|---|---|
+| Frontend | Next.js 16 (App Router, Turbopack), React 19.2 |
+| Backend | Next.js route handlers (no separate server) |
+| Database | Turso (libSQL/SQLite) via Drizzle 0.45 |
+| Validation | Zod 4 (schemas shared client + server) |
+| Test | Vitest 4 |
+| 3D | three.js / `@react-three/fiber` / drei |
+| PDF import | `pdfjs-dist` (D&D Beyond importer) |
 
----
+No tRPC, no Clerk, no separate Bun server, no email/password. Auth = geolocation + server datetime → seed → primes → ζ; account certs live in IndexedDB.
 
-## Type Errors Summary
-
-Running `bunx tsc --noEmit` shows ~160 real errors (plus ~200 unused variable warnings). Main categories:
-
-1. **Missing exports** - Routers import functions that don't exist in query files
-2. **API mismatches** - GeminiClient interface changed, Clerk `verifyToken` doesn't exist
-3. **Schema mismatches** - Some Zod schemas have conflicting definitions
-
-The unused variable errors (TS6133) can be ignored - they're just `ctx` parameters that aren't used yet.
-
----
-
-## To Make It Run
-
-### Minimum Viable Path (Campaign List → View)
-
-1. Add `getNode()` to `/bend/src/db/queries/nodes.ts`:
-```typescript
-export async function getNode(id: string) {
-  return queryOne<WorldNode>('SELECT * FROM world_nodes WHERE id = ?', [id]);
-}
-```
-
-2. Add party functions to `/bend/src/db/queries/campaigns.ts`:
-```typescript
-export async function getParty(id: string) { ... }
-export async function getCampaignParties(campaignId: string) { ... }
-export async function createParty(input: CreatePartyInput) { ... }
-export async function updateParty(id: string, input: UpdatePartyInput) { ... }
-export async function deleteParty(id: string) { ... }
-```
-
-3. Add `createRealtimeServer()` factory to `/bend/src/realtime/server.ts`:
-```typescript
-export function createRealtimeServer(wss: WebSocketServer, config: RealtimeConfig) {
-  // Wire up the existing handlers
-  wss.on('connection', (ws, req) => handleConnect(...));
-  return { wss, broadcast: broadcastToRoom, ... };
-}
-```
-
-4. Create `/bend/.env`:
-```
-TURSO_DATABASE_URL=libsql://your-db.turso.io
-TURSO_AUTH_TOKEN=your-token
-CLERK_SECRET_KEY=sk_test_...
-GOOGLE_AI_API_KEY=...
-```
-
-5. Create `/fend/.env`:
-```
-VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
-```
-
----
-
-## Development
+## Running locally
 
 ```bash
-# Install
-bun install
-
-# Run backend (port 3001 HTTP, 3002 WS)
-cd bend && bun run dev
-
-# Run frontend (port 3003)
-cd fend && bun run dev
+npm install
+npm run dev            # Next dev server with turbopack
+npm run test           # vitest one-shot
+npm run test:watch     # vitest watch mode
+npm run db:push        # apply schema to local DB
+npm run db:studio      # drizzle-kit studio
 ```
 
----
+`CRON_SECRET` env var gates `/api/cron/*` in production (Vercel Cron sends `Authorization: Bearer ${CRON_SECRET}`).
 
-## Ports
+## Key docs
 
-| Service | Port |
-|---------|------|
-| Backend HTTP (tRPC) | 3001 |
-| Backend WebSocket | 3002 |
-| Frontend (Vite) | 3003 |
+Read in this order when first picking up the engine:
 
----
+1. **[`mm_topology.md`](mm_topology.md)** — 6 mermaid diagrams of MM ↔ TP topology. Read FIRST for engine work.
+2. **[`MM-MF-TP-TPB.md`](MM-MF-TP-TPB.md)** — File-system spec. Receipts as side-effects of the .mf matrix forward pass; branch/diff for .tpb; theorem 1 (every computation is its own proof).
+3. **[`mm_nesting.md`](mm_nesting.md)** — Two-tree (world + player) hierarchy, tick cadences.
+4. **[`tp_schema.md`](tp_schema.md)** — TP node types + 16 κ domains.
+5. **[`db-schema.md`](db-schema.md)** — Table reference for the 131-table schema.
+6. **[`clockwork_api.md`](clockwork_api.md)** + [`clockwork_wiring.md`](clockwork_wiring.md) — Clockwork registration + cadence.
+7. **[`railgun-bridge.md`](railgun-bridge.md)** — Flywheel / cert / envelope / orbit primitives (subscription transport, not yet built).
+8. **[`views_handoff_to_design.md`](views_handoff_to_design.md)** — Tier-by-tier surface roadmap.
+
+Reference / archival:
+
+- [`mm_cycles.md`](mm_cycles.md), [`mf_simulation.md`](mf_simulation.md), [`tp_mapping.md`](tp_mapping.md) — older spec material.
+- [`gm-orchestrator-audit.md`](gm-orchestrator-audit.md) — GM mode audit.
+- [`PROGRESS.md`](PROGRESS.md), [`MEMORY_TOPOLOGY_PLAN.md`](MEMORY_TOPOLOGY_PLAN.md) — historical roadmap notes.
+- [`ui_elements_for_design.md`](ui_elements_for_design.md) — design handoff UI inventory.
 
 ## License
 
-Private - All rights reserved
+Private — All rights reserved.

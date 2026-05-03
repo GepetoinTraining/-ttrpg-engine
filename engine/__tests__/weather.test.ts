@@ -8,7 +8,7 @@ import {
   generateWeather,
   calculateWeatherModifiers,
   weeklyWeatherTick,
-} from '../weather.js'
+} from '../weather'
 
 // ============================================================
 // SEASONS

@@ -19,7 +19,7 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   resolvePerformance,
   patronBenefit,
@@ -30,8 +30,8 @@ import {
   type VenueCategory,
   type PerformanceType,
   type CulturalScore,
-} from './entertainment.js'
-import type { TP, CultureRules } from './tp.js'
+} from './entertainment'
+import type { TP, CultureRules } from './tp'
 
 export interface MMEntertainmentDomainState {
   settlementId: string

@@ -18,7 +18,7 @@
  */
 
 import { z } from 'zod'
-import { type TP } from './tp.js'
+import { type TP } from './tp'
 
 // ============================================================
 // PENDING DELTA — Accumulated potential between ticks

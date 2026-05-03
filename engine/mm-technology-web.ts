@@ -32,16 +32,16 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   type TechBlob,
   TECH_SEED_BLOBS,
   getSeedBlob,
   generateHubHints,
-} from './technology-web.js'
-import { mfStudyTech } from './mf-study-tech.js'
-import { type Tier } from './tier.js'
-import type { TP, KnowledgeRules } from './tp.js'
+} from './technology-web'
+import { mfStudyTech } from './mf-study-tech'
+import { type Tier } from './tier'
+import type { TP, KnowledgeRules } from './tp'
 
 // ============================================================
 // MM_TECHNOLOGY_WEB STATE

@@ -41,6 +41,8 @@ import Calendar from './surfaces/Calendar'
 import TPEditor from './surfaces/TPEditor'
 import Lore from './surfaces/Lore'
 import Spells from './surfaces/Spells'
+import Studies from './surfaces/Studies'
+import Tactical from './surfaces/Tactical'
 import Dungeon from './surfaces/Dungeon'
 import Weather from './surfaces/Weather'
 import Quests from './surfaces/Quests'
@@ -123,6 +125,8 @@ const SURFACES: { id: string; num: string; label: string; Comp: SurfaceComp }[] 
   { id: 'character-select', num: '46', label: 'Character select', Comp: CharacterSelect },
   { id: 'map', num: '47', label: 'Map · square voxel grid', Comp: Map },
   { id: 'world', num: '48', label: 'World · live dashboard', Comp: WorldDashboard },
+  { id: 'studies', num: '49', label: 'Studies · research', Comp: Studies },
+  { id: 'tactical', num: '50', label: 'Tactical · DM combat canvas', Comp: Tactical },
 ]
 
 // Surfaces visitable without a verified cert. Everything else gates to #auth.
@@ -167,7 +171,7 @@ const WORKSPACES: WorkspaceDef[] = [
     categories: [
       { label: 'Live world', surfaceIds: ['play', 'combat', 'cards', 'cards-demo'] },
       { label: 'Character', surfaceIds: ['player', 'sheet', 'spells', 'attunement', 'companions', 'chargen'] },
-      { label: 'Slow life', surfaceIds: ['actions', 'farms', 'herds', 'deposits', 'materials'] },
+      { label: 'Slow life', surfaceIds: ['actions', 'studies', 'farms', 'herds', 'deposits', 'materials'] },
       { label: 'Field guide', surfaceIds: ['bestiary', 'lore', 'rumors'] },
     ],
   },
@@ -177,7 +181,7 @@ const WORKSPACES: WorkspaceDef[] = [
     glyph: '◆',
     landingSurfaceId: 'dm',
     categories: [
-      { label: 'Console', surfaceIds: ['dm', 'play', 'recap'] },
+      { label: 'Console', surfaceIds: ['dm', 'play', 'tactical', 'recap'] },
       { label: 'World', surfaceIds: ['settlement', 'calendar', 'weather', 'locations', 'tp'] },
       { label: 'People', surfaceIds: ['roster', 'villain'] },
       { label: 'Factions', surfaceIds: ['diplomacy', 'reputation', 'warfare'] },

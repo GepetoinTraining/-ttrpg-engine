@@ -28,10 +28,10 @@
  */
 
 import { z } from 'zod'
-import { mfDice, type DiceFormula, type DiceResult, type DiceReceipt } from './mf-dice.js'
-import { mfCheck, type CheckParams, type CheckResult, type CheckReceipt } from './mf-check.js'
-import { mfDamage, type DamageInput, type TargetState, type DamageResult, type DamageReceipt } from './mf-damage.js'
-import { type CycleDelta, type Receipt, ZERO_DELTA, addDeltas } from './types.js'
+import { mfDice, type DiceFormula, type DiceResult, type DiceReceipt } from './mf-dice'
+import { mfCheck, type CheckParams, type CheckResult, type CheckReceipt } from './mf-check'
+import { mfDamage, type DamageInput, type TargetState, type DamageResult, type DamageReceipt } from './mf-damage'
+import { type CycleDelta, type Receipt, ZERO_DELTA, addDeltas } from './types'
 
 // ============================================================
 // ATTACK ACTION PARAMS — What we need to resolve an attack

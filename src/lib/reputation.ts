@@ -2,6 +2,8 @@
  * Browser-side reputation client.
  */
 
+import { authFetch } from './auth-fetch'
+
 export interface RepRow {
   factionId: string
   factionName: string
@@ -30,7 +32,7 @@ export interface RepMatrix {
 }
 
 export async function loadCharacterReputation(characterId: string): Promise<RepMatrix> {
-  const res = await fetch(`/api/reputation/character/${characterId}`)
+  const res = await authFetch(`/api/reputation/character/${characterId}`)
   if (!res.ok) throw new Error(`${res.status}`)
   return res.json()
 }
@@ -52,7 +54,7 @@ export async function applyReputationDelta(input: {
   worldDay?: number
   partyId?: string
 }): Promise<DeltaResult> {
-  const res = await fetch('/api/reputation/delta', {
+  const res = await authFetch('/api/reputation/delta', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(input),

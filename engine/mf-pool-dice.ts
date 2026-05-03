@@ -17,8 +17,8 @@
  * and provides convenience methods for common D&D dice operations.
  */
 
-import { MFPool, type PoolConfig } from './mf-pool.js'
-import { mfDice, type DiceFormula, type DiceResult, type DiceReceipt } from './mf-dice.js'
+import { MFPool, type PoolConfig } from './mf-pool'
+import { mfDice, type DiceFormula, type DiceResult, type DiceReceipt } from './mf-dice'
 
 // ============================================================
 // DICE POOL CONFIGURATION

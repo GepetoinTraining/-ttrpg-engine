@@ -24,14 +24,14 @@ import {
   resolveSellItem,
   getAvailableInteractions,
   PlayerIntentSchema,
-} from '../interactions.js'
-import { MaterialMasteryStore } from '../material-mastery.js'
-import { ClaimRegistry, resetClaimIdCounter, createClaim } from '../claims.js'
-import { COMMODITIES, DepositSchema, type Deposit } from '../production-chain.js'
-import { createHerd, getSpecies, type Species } from '../husbandry.js'
-import { type FarmPlot } from '../agriculture.js'
-import { createSettlementMarket, type CommodityPrice } from '../market.js'
-import { TP, type WorldNode } from '../tp.js'
+} from '../interactions'
+import { MaterialMasteryStore } from '../material-mastery'
+import { ClaimRegistry, resetClaimIdCounter, createClaim } from '../claims'
+import { COMMODITIES, DepositSchema, type Deposit } from '../production-chain'
+import { createHerd, getSpecies, type Species } from '../husbandry'
+import { type FarmPlot } from '../agriculture'
+import { createSettlementMarket, type CommodityPrice } from '../market'
+import { TP, type WorldNode } from '../tp'
 
 function makeDeposit(overrides: Partial<Deposit> = {}): Deposit {
   return DepositSchema.parse({

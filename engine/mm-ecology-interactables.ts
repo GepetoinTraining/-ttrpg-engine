@@ -28,13 +28,13 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   type Rarity,
   ECOLOGY_INTERACTABLES,
   interactablesByBiome,
-} from './ecology-interactables.js'
-import type { TP, EcologyRules } from './tp.js'
+} from './ecology-interactables'
+import type { TP, EcologyRules } from './tp'
 
 // ============================================================
 // REGEN RATES — toward biome baseline density per day

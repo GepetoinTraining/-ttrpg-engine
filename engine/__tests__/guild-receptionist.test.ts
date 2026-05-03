@@ -22,7 +22,7 @@ import {
   UNSETTLING_GREETINGS,
   MANAGER_QUOTES,
   ADVENTURER_RANK_ORDER,
-} from '../guild-receptionist.js'
+} from '../guild-receptionist'
 
 // ============================================================
 // THE ETERNAL RECEPTIONIST

@@ -25,8 +25,8 @@ import {
   type ArchetypePurpose,
   getArchetype,
   deriveSlots,
-} from './tool-archetypes.js'
-import { SeededRNG } from './hub-topology.js'
+} from './tool-archetypes'
+import { SeededRNG } from './hub-topology'
 
 // ============================================================
 // CONTEXT + RECEIPT

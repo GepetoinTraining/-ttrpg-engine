@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { MMLore } from '../mm-lore.js'
-import { createRumor, type Library, type KnowledgeEntry } from '../lore.js'
+import { MMLore } from '../mm-lore'
+import { createRumor, type Library, type KnowledgeEntry } from '../lore'
 
 function fakeLibrary(over: Partial<Library> = {}): Library {
   return {

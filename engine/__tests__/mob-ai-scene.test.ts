@@ -21,8 +21,8 @@ import {
   type BehaviorPrimitive,
   type Temperament,
   type MobObjective,
-} from '../mob-ai.js'
-import type { Adaptation } from '../adaptation.js'
+} from '../mob-ai'
+import type { Adaptation } from '../adaptation'
 
 // ============================================================
 // COMBAT SCENE — minimal turn-based simulator

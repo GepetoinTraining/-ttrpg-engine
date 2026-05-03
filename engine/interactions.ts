@@ -29,36 +29,36 @@ import {
   type Deposit,
   type Commodity,
   type QualityLevel,
-} from './production-chain.js'
+} from './production-chain'
 import {
   slaughter as slaughterFn,
   totalHead,
   type Herd,
   type Species,
-} from './husbandry.js'
-import { CROP_DATA, type FarmPlot, type CropType } from './agriculture.js'
-import { type SettlementMarket } from './market.js'
+} from './husbandry'
+import { CROP_DATA, type FarmPlot, type CropType } from './agriculture'
+import { type SettlementMarket } from './market'
 import {
   MaterialMasteryStore,
   depositVisibilityFor,
   maskedResourceName,
   type DepositVisibility,
   type KnowledgeLevel,
-} from './material-mastery.js'
+} from './material-mastery'
 import {
   type Tier,
   TIER_MULTIPLIERS,
   compareTier,
-} from './tier.js'
-import type { TP } from './tp.js'
-import type { WorldTPBAction } from './tpb-world.js'
+} from './tier'
+import type { TP } from './tp'
+import type { WorldTPBAction } from './tpb-world'
 import {
   ClaimRegistry,
   createClaim,
   ClaimTargetTypeSchema,
   type ClaimTargetType,
   type Claim,
-} from './claims.js'
+} from './claims'
 
 // ============================================================
 // PLAYER INTENT — discriminated union

@@ -22,15 +22,15 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   calculateHarvest,
   CROP_DATA,
   type FarmPlot,
   type HarvestResult,
   type CropType,
-} from './agriculture.js'
-import type { TP, WeatherRules } from './tp.js'
+} from './agriculture'
+import type { TP, WeatherRules } from './tp'
 
 export interface MMAgricultureDomainState {
   plot: FarmPlot

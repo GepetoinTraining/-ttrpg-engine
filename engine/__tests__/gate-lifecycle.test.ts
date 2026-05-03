@@ -4,22 +4,22 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { TP, type WorldNode } from '../tp.js'
+import { TP, type WorldNode } from '../tp'
 import {
   ecologyAt,
   writeAdaptationPool,
-} from '../ecology-pool.js'
-import { createAdaptationPool } from '../adaptation.js'
+} from '../ecology-pool'
+import { createAdaptationPool } from '../adaptation'
 import {
   createDungeonGateFromEcology,
   resetGateIdCounter,
-} from '../dungeon-gate.js'
+} from '../dungeon-gate'
 import {
   clearGateWithEcology,
   tickGateWithEcology,
   spawnMonsterActorWithEcology,
-} from '../gate-lifecycle.js'
-import { resetMonsterActorIdCounter } from '../monster-actor.js'
+} from '../gate-lifecycle'
+import { resetMonsterActorIdCounter } from '../monster-actor'
 
 const SEED = 12345
 

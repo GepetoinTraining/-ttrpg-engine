@@ -40,15 +40,15 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   type DungeonGate,
   type GateTickResult,
-} from './dungeon-gate.js'
+} from './dungeon-gate'
 import {
   tickGateWithEcology,
-} from './gate-lifecycle.js'
-import type { TP, EcologyRules } from './tp.js'
+} from './gate-lifecycle'
+import type { TP, EcologyRules } from './tp'
 
 // ============================================================
 // MM_DUNGEON_GATE STATE

@@ -20,9 +20,9 @@ import {
   TECH_TIER_DC,
   nextTier,
   generateHubHints,
-} from './technology-web.js'
-import { type Tier } from './tier.js'
-import { SeededRNG } from './hub-topology.js'
+} from './technology-web'
+import { type Tier } from './tier'
+import { SeededRNG } from './hub-topology'
 
 // ============================================================
 // CONTEXT + RECEIPT
@@ -117,7 +117,7 @@ const TIER_SLOT_GROWTH: Record<Tier, number> = {
   EX:  3,
 }
 
-import { TIER_ORDER } from './tier.js'
+import { TIER_ORDER } from './tier'
 
 function buildExpandedBlob(
   prior: TechBlob,

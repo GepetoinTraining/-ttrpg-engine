@@ -29,13 +29,13 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   weeklyMarketTick,
   type SettlementMarket,
   type MarketTickResult,
-} from './market.js'
-import type { TP } from './tp.js'
+} from './market'
+import type { TP } from './tp'
 
 export interface MMMarketDomainState {
   market: SettlementMarket

@@ -1,17 +1,17 @@
 import { describe, it, expect } from 'vitest'
-import { TP, type WorldNode } from '../tp.js'
+import { TP, type WorldNode } from '../tp'
 import {
   createGuild,
   resetGuildIdCounter,
   resetJobIdCounter,
-} from '../guild.js'
+} from '../guild'
 import {
   detectTownNeeds,
   generateQuestForChapter,
   isJobBoardThin,
   OPEN_JOB_THRESHOLD,
   PROFESSION_ADVANCEMENT_MATERIAL,
-} from '../guild-quest-generator.js'
+} from '../guild-quest-generator'
 
 function makeTP(): TP {
   const tp = new TP()

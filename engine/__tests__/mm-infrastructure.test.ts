@@ -3,11 +3,11 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { MMInfrastructure } from '../mm-infrastructure.js'
-import { Clockwork } from '../clockwork.js'
-import { TP, type WorldNode } from '../tp.js'
-import { createInfrastructure } from '../infrastructure-mm.js'
-import { addSeed, resetSeedIdCounter, resetPotentialIdCounter } from '../knowledge-pool.js'
+import { MMInfrastructure } from '../mm-infrastructure'
+import { Clockwork } from '../clockwork'
+import { TP, type WorldNode } from '../tp'
+import { createInfrastructure } from '../infrastructure-mm'
+import { addSeed, resetSeedIdCounter, resetPotentialIdCounter } from '../knowledge-pool'
 
 beforeEach(() => {
   resetSeedIdCounter()

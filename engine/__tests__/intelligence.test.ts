@@ -8,7 +8,7 @@ import {
   buildConstraintsPrompt,
   type KnowledgeEntry, type KnowledgeBoundary, type AgentMemory,
   type IdentityAnchor, type ContextSection,
-} from '../intelligence.js'
+} from '../intelligence'
 
 // ============================================================
 // HELPERS

@@ -30,7 +30,7 @@
  */
 
 import { z } from 'zod'
-import type { DepositType, DepositQuality } from './production-chain.js'
+import type { DepositType, DepositQuality } from './production-chain'
 
 // ============================================================
 // TERRAIN — What the land IS

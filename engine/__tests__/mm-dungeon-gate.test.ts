@@ -6,27 +6,27 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { TP, type WorldNode, type EcologyRules } from '../tp.js'
+import { TP, type WorldNode, type EcologyRules } from '../tp'
 import {
   MMDungeonGate,
   computeDangerLevel,
   computeDominantThreats,
-} from '../mm-dungeon-gate.js'
+} from '../mm-dungeon-gate'
 import {
   ecologyAt,
   writeAdaptationPool,
-} from '../ecology-pool.js'
+} from '../ecology-pool'
 import {
   createDungeonGateFromEcology,
   resetGateIdCounter,
   type DungeonGate,
-} from '../dungeon-gate.js'
-import { MMGuild } from '../mm-guild.js'
+} from '../dungeon-gate'
+import { MMGuild } from '../mm-guild'
 import {
   createGuild,
   resetGuildIdCounter,
   resetJobIdCounter,
-} from '../guild.js'
+} from '../guild'
 
 const SEED = 12345
 

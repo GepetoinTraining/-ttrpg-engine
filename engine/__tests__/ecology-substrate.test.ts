@@ -9,18 +9,18 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { TP, type WorldNode } from '../tp.js'
-import { ecologyAt, writeAdaptationPool } from '../ecology-pool.js'
-import { createAdaptationPool, reportClear } from '../adaptation.js'
+import { TP, type WorldNode } from '../tp'
+import { ecologyAt, writeAdaptationPool } from '../ecology-pool'
+import { createAdaptationPool, reportClear } from '../adaptation'
 import {
   createDungeonGateFromEcology,
   resetGateIdCounter,
-} from '../dungeon-gate.js'
+} from '../dungeon-gate'
 import {
   createMonsterActorFromEcology,
   resetMonsterActorIdCounter,
-} from '../monster-actor.js'
-import { speciesInfo } from '../biome-fauna.js'
+} from '../monster-actor'
+import { speciesInfo } from '../biome-fauna'
 
 const SEED = 12345
 

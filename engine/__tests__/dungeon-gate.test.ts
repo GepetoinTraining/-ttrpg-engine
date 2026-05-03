@@ -9,7 +9,7 @@ import {
   activateGate, resetGateIdCounter,
   GATE_TIER_CONFIG, GATE_SPECIES_TABLE,
   type DungeonGate,
-} from '../dungeon-gate.js'
+} from '../dungeon-gate'
 
 beforeEach(() => {
   resetGateIdCounter()

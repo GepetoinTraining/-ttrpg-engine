@@ -20,15 +20,15 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   weeklyServicesTick,
   type ServiceProvider,
   type ServiceContract,
   type RiskContract,
   type ServicesTickResult,
-} from './services.js'
-import type { TP } from './tp.js'
+} from './services'
+import type { TP } from './tp'
 
 export interface MMServicesDomainState {
   hubId: string

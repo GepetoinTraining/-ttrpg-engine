@@ -21,14 +21,14 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   weeklyWeatherTick,
   type Climate,
   type WeatherState,
   type WeatherModifiers,
-} from './weather.js'
-import type { TP, WeatherRules } from './tp.js'
+} from './weather'
+import type { TP, WeatherRules } from './tp'
 
 export interface MMWeatherDomainState {
   climate: Climate

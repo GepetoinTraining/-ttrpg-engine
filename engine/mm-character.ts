@@ -22,8 +22,8 @@
  */
 
 import { z } from 'zod'
-import { type CycleDelta, ZERO_DELTA, addDeltas } from './types.js'
-import { type Combatant } from './mm-scene.js'
+import { type CycleDelta, ZERO_DELTA, addDeltas } from './types'
+import { type Combatant } from './mm-scene'
 
 // ============================================================
 // ABILITY SCORES — The 6 core attributes

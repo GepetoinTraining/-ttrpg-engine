@@ -20,7 +20,7 @@ import {
   type KnowledgePool,
   type HubContext,
   type InfrastructurePotential,
-} from '../knowledge-pool.js'
+} from '../knowledge-pool'
 
 // ============================================================
 // TEST FIXTURES

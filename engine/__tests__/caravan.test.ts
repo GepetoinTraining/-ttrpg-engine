@@ -10,7 +10,7 @@ import {
   advanceCaravanDay,
   unloadCaravan,
   type CargoItem,
-} from '../caravan.js'
+} from '../caravan'
 
 // ============================================================
 // CARAVAN PROFILES

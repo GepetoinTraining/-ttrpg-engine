@@ -23,8 +23,8 @@ import {
   type Action, type Advisor, type Drives,
   type Resources, type Demerits,
   HORIZON_CONFIG,
-} from '../intent.js'
-import { MMActor, type ActorDomainState } from '../mm-actor.js'
+} from '../intent'
+import { MMActor, type ActorDomainState } from '../mm-actor'
 
 // ============================================================
 // HELPERS

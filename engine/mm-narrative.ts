@@ -23,7 +23,7 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   calculateProgress,
   suggestNextBeat,
@@ -34,8 +34,8 @@ import {
   type PacingSuggestion,
   type PacingBias,
   type BeatType,
-} from './narrative.js'
-import type { TP } from './tp.js'
+} from './narrative'
+import type { TP } from './tp'
 
 export interface MMNarrativeDomainState {
   campaignId: string

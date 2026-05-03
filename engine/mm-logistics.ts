@@ -24,13 +24,13 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   tickShipment,
   type Shipment,
   type ShipmentTickResult,
-} from './logistics.js'
-import type { TP } from './tp.js'
+} from './logistics'
+import type { TP } from './tp'
 
 export interface MMShipmentDomainState {
   shipment: Shipment

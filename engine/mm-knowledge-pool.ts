@@ -26,7 +26,7 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   tickKnowledgePool,
   STANDARD_POTENTIALS,
@@ -34,8 +34,8 @@ import {
   type HubContext,
   type KnowledgeTickResult,
   type InfrastructurePotential,
-} from './knowledge-pool.js'
-import type { TP, KnowledgeRules } from './tp.js'
+} from './knowledge-pool'
+import type { TP, KnowledgeRules } from './tp'
 
 export interface MMKnowledgePoolDomainState {
   pool: KnowledgePool

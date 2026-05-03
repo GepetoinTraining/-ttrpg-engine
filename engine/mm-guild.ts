@@ -40,7 +40,7 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   type Guild,
   type GuildChapter,
@@ -51,13 +51,13 @@ import {
   type CaravanArrivalDigest,
   type DigestResult,
   tickGuildChapter,
-} from './guild.js'
+} from './guild'
 import {
   generateQuestForChapter,
   isJobBoardThin,
   type TownNeed,
-} from './guild-quest-generator.js'
-import type { TP, GuildRules } from './tp.js'
+} from './guild-quest-generator'
+import type { TP, GuildRules } from './tp'
 
 // ============================================================
 // HELPERS

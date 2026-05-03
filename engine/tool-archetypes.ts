@@ -18,7 +18,7 @@
  */
 
 import { z } from 'zod'
-import { SeededRNG } from './hub-topology.js'
+import { SeededRNG } from './hub-topology'
 
 // ============================================================
 // MATERIAL DOMAIN — where a slot pulls from

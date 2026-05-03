@@ -27,10 +27,17 @@ import {
   type TpbLogEntryClient,
 } from './world-client'
 import { EngineClient } from './engine-client'
+import { subscribeSpectrum } from './spectrum-client'
 import { listCharacters, type CharacterListItem } from './character'
 import { listNPCs, type NPCSummary } from './world-detail'
 import { loadQuests } from './narrative'
 import type { DiceFormula } from '../../engine/mf-dice'
+import type {
+  StartStudyValue,
+  CompleteStudyValue,
+  ChopTreeArgs,
+  ChopTreeOutcome,
+} from '../../engine/study'
 
 const LOG_POLL_MS = 5000
 const LOG_LIMIT = 50
@@ -58,6 +65,14 @@ export interface UseWorldState {
 }
 
 export interface UseWorldApi extends UseWorldState {
+  /**
+   * Direct access to the EngineClient instance. Surfaces that want full
+   * math reach (mfDice / mfCheck / mfDamage / tp.resolve / observeNode)
+   * should use this rather than the convenience wrappers below.
+   *
+   * Null until hydration completes.
+   */
+  engine: EngineClient | null
   /** Imperative — produce a transport action set + buffer locally */
   transport: (destNodeId: string, daysAdvanced?: number) => void
   /** Imperative — observe current or specified node */
@@ -66,6 +81,12 @@ export interface UseWorldApi extends UseWorldState {
   roll: (formula: DiceFormula, seed?: number) => ReturnType<EngineClient['roll']> | null
   /** Imperative — apply slow-life intent */
   applyIntent: (intent: string, params?: Record<string, unknown>) => void
+  /** Imperative — start a study (writeKappa with typed StartStudyValue) */
+  startStudy: (value: StartStudyValue) => void
+  /** Imperative — claim a completed study (writeKappa with typed CompleteStudyValue) */
+  completeStudy: (value: CompleteStudyValue) => void
+  /** Imperative — resolve a chop-tree action; returns the outcome synchronously */
+  chopTree: (args: ChopTreeArgs) => ChopTreeOutcome | null
   /** Push buffered actions to the server's slot. Resolves with slotId. */
   push: () => Promise<void>
   /** Discard buffered actions without pushing */
@@ -131,11 +152,19 @@ export function useWorld(): UseWorldApi {
           return
         }
 
-        engineRef.current = new EngineClient({
+        const eng = new EngineClient({
           account,
           character,
           worldDay: worldStatus.worldDay,
           partyNodeId: worldStatus.partyNodeId,
+        })
+        engineRef.current = eng
+
+        // Hydrate local TP from canonical log (best-effort — surfaces that
+        // need TP reads gate on `engine.isHydrated()`).
+        eng.hydrate().catch(() => {
+          // Replay endpoint may be empty / unauthorized; surfaces fall back
+          // to direct fetch helpers in that case.
         })
 
         // Fire nearbyNpcs separately — needs partyNodeId we just got
@@ -172,22 +201,39 @@ export function useWorld(): UseWorldApi {
     }
   }, [])
 
-  // ── Log polling ──
+  // ── Spectrum subscription (W3.4) ──
+  // Replaces the legacy 5s log poll. Subscribes to /api/world/spectrum via
+  // SSE and prepends each new envelope to `state.log`. Falls back to
+  // polling internally if SSE is unavailable.
   React.useEffect(() => {
     if (state.loading || state.error) return
     let cancelled = false
-    const id = setInterval(async () => {
-      try {
-        const log = await fetchWorldLog(LOG_LIMIT)
+    let lastSeenId = 0
+    if (state.log.length > 0) lastSeenId = state.log[0].id
+
+    const sub = subscribeSpectrum({
+      sinceId: lastSeenId,
+      onEnvelope: (env) => {
         if (cancelled) return
-        setState((s) => ({ ...s, log }))
-      } catch {
-        // best-effort; surface errors via the next manual refresh
-      }
-    }, LOG_POLL_MS)
+        setState((s) => {
+          const entry: TpbLogEntryClient = {
+            id: env.id,
+            worldDay: env.worldDay,
+            realTs: env.realTs,
+            action: env.action,
+          }
+          // Newest-first; cap at LOG_LIMIT.
+          const next = [entry, ...s.log.filter((e) => e.id !== env.id)].slice(0, LOG_LIMIT)
+          return { ...s, log: next }
+        })
+      },
+      onError: () => {
+        // best-effort — fallback path inside spectrum-client polls /api/world/log
+      },
+    })
     return () => {
       cancelled = true
-      clearInterval(id)
+      sub.close()
     }
   }, [state.loading, state.error])
 
@@ -242,6 +288,31 @@ export function useWorld(): UseWorldApi {
     [tickPendingCount],
   )
 
+  const startStudy = React.useCallback(
+    (value: StartStudyValue) => {
+      engineRef.current?.startStudy(value)
+      tickPendingCount()
+    },
+    [tickPendingCount],
+  )
+
+  const completeStudy = React.useCallback(
+    (value: CompleteStudyValue) => {
+      engineRef.current?.completeStudy(value)
+      tickPendingCount()
+    },
+    [tickPendingCount],
+  )
+
+  const chopTree = React.useCallback(
+    (args: ChopTreeArgs): ChopTreeOutcome | null => {
+      const r = engineRef.current?.chopTree(args)
+      tickPendingCount()
+      return r?.result ?? null
+    },
+    [tickPendingCount],
+  )
+
   const push = React.useCallback(async () => {
     const eng = engineRef.current
     if (!eng) return
@@ -250,7 +321,7 @@ export function useWorld(): UseWorldApi {
     // Refresh server state after push so partyNodeId/worldDay sync.
     try {
       const ws = await fetchWorldState()
-      eng.hydrate({ worldDay: ws.worldDay, partyNodeId: ws.partyNodeId })
+      eng.hydrateState({ worldDay: ws.worldDay, partyNodeId: ws.partyNodeId })
       setState((s) => ({ ...s, worldStatus: ws }))
     } catch {
       // ignore; next manual refresh will catch up
@@ -272,7 +343,7 @@ export function useWorld(): UseWorldApi {
       ])
       const eng = engineRef.current
       if (eng) {
-        eng.hydrate({ worldDay: worldStatus.worldDay, partyNodeId: worldStatus.partyNodeId })
+        eng.hydrateState({ worldDay: worldStatus.worldDay, partyNodeId: worldStatus.partyNodeId })
       }
       // nearbyNpcs refetch happens via the partyNodeId effect when worldStatus updates
       setState((s) => ({ ...s, worldStatus, log, partyMembers: charList, arcs: quests, error: null }))
@@ -286,10 +357,14 @@ export function useWorld(): UseWorldApi {
 
   return {
     ...state,
+    engine: engineRef.current,
     transport,
     observe,
     roll,
     applyIntent,
+    startStudy,
+    completeStudy,
+    chopTree,
     push,
     discardPending,
     refresh,

@@ -20,15 +20,15 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   yearlyPantheonTick,
   type Pantheon,
   type ClergyMember,
   type Temple,
   type FaithTickResult,
-} from './religion.js'
-import type { TP, ReligionRules } from './tp.js'
+} from './religion'
+import type { TP, ReligionRules } from './tp'
 
 export interface MMReligionDomainState {
   pantheon: Pantheon

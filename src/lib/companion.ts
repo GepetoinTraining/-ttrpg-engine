@@ -2,6 +2,8 @@
  * Browser-side companion helpers.
  */
 
+import { authFetch } from './auth-fetch'
+
 export interface Companion {
   id: string
   name: string
@@ -25,7 +27,7 @@ export interface Companion {
 export async function listCompanions(characterId?: string): Promise<{ companions: Companion[] }> {
   const params = new URLSearchParams()
   if (characterId) params.set('characterId', characterId)
-  const res = await fetch(`/api/companion/list?${params}`)
+  const res = await authFetch(`/api/companion/list?${params}`)
   if (!res.ok) throw new Error(`${res.status}`)
   return res.json()
 }

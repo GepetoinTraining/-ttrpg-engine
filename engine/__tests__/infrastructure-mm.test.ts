@@ -19,8 +19,8 @@ import {
   STANDARD_PROFESSIONS,
   GUILD_FORMATION_RULES,
   type InfrastructureState,
-} from '../infrastructure-mm.js'
-import { addSeed, resetSeedIdCounter, resetPotentialIdCounter } from '../knowledge-pool.js'
+} from '../infrastructure-mm'
+import { addSeed, resetSeedIdCounter, resetPotentialIdCounter } from '../knowledge-pool'
 
 let state: InfrastructureState
 

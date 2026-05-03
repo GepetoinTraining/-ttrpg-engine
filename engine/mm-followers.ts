@@ -27,9 +27,9 @@
  *   - Global followers participate in downtime/intel
  */
 
-import { MMNPC, type NPCDataInput, type NPCService, type Disposition } from './mm-npc.js'
-import { type Combatant } from './mm-scene.js'
-import { type CycleDelta, ZERO_DELTA, addDeltas } from './types.js'
+import { MMNPC, type NPCDataInput, type NPCService, type Disposition } from './mm-npc'
+import { type Combatant } from './mm-scene'
+import { type CycleDelta, ZERO_DELTA, addDeltas } from './types'
 
 // ============================================================
 // LOYALTY EVENT — Something that affects loyalty

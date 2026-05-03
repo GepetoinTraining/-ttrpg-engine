@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { MMSettlement, type SettlementState } from '../mm-settlement.js'
+import { MMSettlement, type SettlementState } from '../mm-settlement'
 
 // ============================================================
 // HELPERS

@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { TP, type WorldNode, type ReligionRules } from '../tp.js'
-import { MMReligion } from '../mm-religion.js'
+import { TP, type WorldNode, type ReligionRules } from '../tp'
+import { MMReligion } from '../mm-religion'
 import {
   type Pantheon,
   type Deity,
   type ClergyMember,
   type Temple,
-} from '../religion.js'
+} from '../religion'
 
 function makeTP(): TP {
   const tp = new TP()

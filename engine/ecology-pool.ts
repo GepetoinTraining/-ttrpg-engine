@@ -28,18 +28,18 @@
  * (gate clear, respawn) — observation-driven, never on a heartbeat.
  */
 
-import type { TP, EcologyRules } from './tp.js'
+import type { TP, EcologyRules } from './tp'
 import {
   type AdaptationPool,
   createAdaptationPool,
-} from './adaptation.js'
+} from './adaptation'
 import {
   type BiomeType,
   type GateType,
   biomeAt,
   faunaAt,
   selectMonsterSpecies,
-} from './biome-fauna.js'
+} from './biome-fauna'
 import type { EcologyEntry } from '../src/game/regionFeatures'
 
 // ============================================================

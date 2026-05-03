@@ -2,6 +2,7 @@
 'use client'
 
 import React from 'react'
+import { authFetch } from '@/lib/auth-fetch'
 
 // surfaces/TPEditor.tsx — World mutation audit + .tp editor.
 // READ-ONLY wiring: /api/tp/tree returns the live topology (world → regions →
@@ -10,7 +11,7 @@ import React from 'react'
 // include — flagged for a Phase 3 schema decision.
 
 async function loadTree(): Promise<any> {
-  const res = await fetch('/api/tp/tree')
+  const res = await authFetch('/api/tp/tree')
   if (!res.ok) throw new Error(`${res.status}`)
   return res.json()
 }

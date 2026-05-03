@@ -32,7 +32,7 @@ import {
   type EcologySkill,
   type InteractableSpecies,
   type InteractionTemplate,
-} from './ecology-interactables.js'
+} from './ecology-interactables'
 
 // ============================================================
 // COMMON SHAPES

@@ -69,7 +69,7 @@ import {
   type Contract,
   type ContractParty,
   type KinshipLink,
-} from '../social.js'
+} from '../social'
 
 // ── Helpers ──
 

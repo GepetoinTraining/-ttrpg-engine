@@ -8,6 +8,8 @@
 
 // Note: redeclared here so client bundle doesn't pull world-state.ts (which
 // imports the engine and is server-only).
+import { authFetch } from './auth-fetch'
+
 export type TimeMode = 'instant' | 'travel' | 'days'
 
 export interface TransportResultClient {
@@ -48,7 +50,7 @@ export interface TpbLogEntryClient {
 }
 
 export async function fetchWorldState(): Promise<WorldStatusClient> {
-  const res = await fetch('/api/world/state', { cache: 'no-store' })
+  const res = await authFetch('/api/world/state', { cache: 'no-store' })
   if (!res.ok) throw new Error(`state ${res.status}`)
   return res.json() as Promise<WorldStatusClient>
 }
@@ -58,7 +60,7 @@ export async function transportParty(
   timeMode: TimeMode,
   days?: number,
 ): Promise<TransportResultClient> {
-  const res = await fetch('/api/world/transport', {
+  const res = await authFetch('/api/world/transport', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ destNodeId, timeMode, days }),
@@ -75,7 +77,7 @@ export async function transportParty(
  * cron schedule does this autonomously via vercel.json).
  */
 export async function cronTick(days: number = 1): Promise<CronTickResultClient> {
-  const res = await fetch(`/api/cron/tick?days=${encodeURIComponent(String(days))}`, {
+  const res = await authFetch(`/api/cron/tick?days=${encodeURIComponent(String(days))}`, {
     method: 'POST',
   })
   if (!res.ok) {
@@ -89,10 +91,37 @@ export async function cronTick(days: number = 1): Promise<CronTickResultClient> 
  * Read the most recent N TPB log entries — for live event feeds.
  */
 export async function fetchWorldLog(limit: number = 50): Promise<TpbLogEntryClient[]> {
-  const res = await fetch(`/api/world/log?limit=${encodeURIComponent(String(limit))}`, {
+  const res = await authFetch(`/api/world/log?limit=${encodeURIComponent(String(limit))}`, {
     cache: 'no-store',
   })
   if (!res.ok) throw new Error(`log ${res.status}`)
   const j = (await res.json()) as { entries: TpbLogEntryClient[] }
+  return j.entries
+}
+
+/**
+ * Read a slice of TPB entries for client-side replay / hydration. Used by
+ * `EngineClient.hydrate()` to rebuild the local TP from the canonical log.
+ */
+export interface TpbReplayEntryClient {
+  id: number
+  worldDay: number
+  realTs: string | null
+  action: { type: string; [k: string]: unknown }
+}
+
+export async function fetchWorldReplay(opts: {
+  fromDay?: number
+  toDay?: number
+  limit?: number
+} = {}): Promise<TpbReplayEntryClient[]> {
+  const params = new URLSearchParams()
+  if (opts.fromDay !== undefined) params.set('fromDay', String(opts.fromDay))
+  if (opts.toDay !== undefined) params.set('toDay', String(opts.toDay))
+  if (opts.limit !== undefined) params.set('limit', String(opts.limit))
+  const qs = params.toString()
+  const res = await authFetch(`/api/world/replay${qs ? '?' + qs : ''}`, { cache: 'no-store' })
+  if (!res.ok) throw new Error(`replay ${res.status}`)
+  const j = (await res.json()) as { entries: TpbReplayEntryClient[] }
   return j.entries
 }

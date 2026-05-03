@@ -19,7 +19,7 @@ import {
   getSpeciesForTerrain,
   dailyFeedCost,
   spaceRequired,
-} from '../husbandry.js'
+} from '../husbandry'
 
 const d20s = [10, 12, 15, 8, 14, 11, 13, 9, 16, 7]
 

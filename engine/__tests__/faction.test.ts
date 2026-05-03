@@ -10,7 +10,7 @@ import {
   calculateProductionBonus, calculateFactionPriceModifier,
   tickFaction, resetFactionIdCounter,
   type Faction,
-} from '../faction.js'
+} from '../faction'
 
 beforeEach(() => {
   resetFactionIdCounter()

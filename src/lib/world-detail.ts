@@ -2,8 +2,10 @@
  * Browser-side helpers for settlement / npc / market / spells data.
  */
 
+import { authFetch } from './auth-fetch'
+
 async function getJson<T>(url: string): Promise<T> {
-  const res = await fetch(url)
+  const res = await authFetch(url)
   if (!res.ok) {
     let msg = `${res.status}`
     try {

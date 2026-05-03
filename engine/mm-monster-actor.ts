@@ -32,7 +32,7 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   type MonsterActorState,
   type AdvancementResult,
@@ -41,10 +41,10 @@ import {
   shouldChallenge,
   generateChallengerCR,
   resolveLeadershipChallenge,
-} from './monster-actor.js'
-import { applyMonsterHunt } from './system-edges.js'
-import type { WildHerd } from './wild-fauna.js'
-import type { TP, EcologyRules } from './tp.js'
+} from './monster-actor'
+import { applyMonsterHunt } from './system-edges'
+import type { WildHerd } from './wild-fauna'
+import type { TP, EcologyRules } from './tp'
 
 // ============================================================
 // MM_MONSTER_ACTOR STATE

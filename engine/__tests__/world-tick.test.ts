@@ -11,7 +11,7 @@ import {
   createWorldClock,
   CADENCE_DAYS,
   type TickSystem,
-} from '../world-tick.js'
+} from '../world-tick'
 
 let engine: WorldTickEngine
 

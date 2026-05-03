@@ -63,7 +63,7 @@ export const PROVIDER_CATALOG: Record<ProviderType, ServiceType[]> = {
 // MERCHANT TIER GATES — Higher tier = more services
 // ============================================================
 
-import type { MerchantTier } from './market.js'
+import type { MerchantTier } from './market'
 
 /** Minimum tier required to offer each service */
 export const SERVICE_TIER_GATES: Record<ServiceType, MerchantTier> = {

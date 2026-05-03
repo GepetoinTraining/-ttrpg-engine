@@ -5,9 +5,9 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { MMWeather } from '../mm-weather.js'
-import { Clockwork } from '../clockwork.js'
-import { TP, type WorldNode, type WeatherRules } from '../tp.js'
+import { MMWeather } from '../mm-weather'
+import { Clockwork } from '../clockwork'
+import { TP, type WorldNode, type WeatherRules } from '../tp'
 
 function makeTP(): TP {
   const tp = new TP()

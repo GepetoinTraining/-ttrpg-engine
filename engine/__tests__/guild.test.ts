@@ -12,7 +12,7 @@ import {
   resetGuildIdCounter, resetPartyIdCounter, resetJobIdCounter,
   ADVENTURER_RANKS,
   type NPCAdventurerParty, type NPCPartyMember, type Guild,
-} from '../guild.js'
+} from '../guild'
 
 beforeEach(() => {
   resetGuildIdCounter()

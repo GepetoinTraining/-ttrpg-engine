@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none" color="#1f1b16">
+  
+  <rect width="100" height="100" fill="#a09080"></rect>
+  
+  <rect x="20" y="0" width="60" height="100" fill="#8a7868" opacity="0.6"></rect>
+  
+  {[4,8,12,16].map((x,i) =&gt; &#39;&#39;)}
+  <ellipse cx="6" cy="12" rx="4" ry="3" fill="#807060" stroke="#6a5a48" stroke-width="0.6" transform="rotate(20 6 12)"></ellipse>
+  <ellipse cx="12" cy="28" rx="5" ry="3" fill="#908070" stroke="#6a5a48" stroke-width="0.6" transform="rotate(-15 12 28)"></ellipse>
+  <ellipse cx="8" cy="46" rx="4" ry="2" fill="#807060" stroke="#6a5a48" stroke-width="0.5"></ellipse>
+  <ellipse cx="14" cy="64" rx="5" ry="3" fill="#908070" stroke="#6a5a48" stroke-width="0.6" transform="rotate(25 14 64)"></ellipse>
+  <ellipse cx="6" cy="80" rx="4" ry="3" fill="#807060" stroke="#6a5a48" stroke-width="0.6"></ellipse>
+  <ellipse cx="14" cy="92" rx="5" ry="2" fill="#908070" stroke="#6a5a48" stroke-width="0.5"></ellipse>
+  <ellipse cx="88" cy="8" rx="5" ry="3" fill="#908070" stroke="#6a5a48" stroke-width="0.6" transform="rotate(-20 88 8)"></ellipse>
+  <ellipse cx="94" cy="24" rx="4" ry="3" fill="#807060" stroke="#6a5a48" stroke-width="0.6"></ellipse>
+  <ellipse cx="86" cy="42" rx="5" ry="2" fill="#908070" stroke="#6a5a48" stroke-width="0.5" transform="rotate(15 86 42)"></ellipse>
+  <ellipse cx="92" cy="60" rx="4" ry="3" fill="#807060" stroke="#6a5a48" stroke-width="0.6" transform="rotate(-10 92 60)"></ellipse>
+  <ellipse cx="88" cy="76" rx="5" ry="3" fill="#908070" stroke="#6a5a48" stroke-width="0.6"></ellipse>
+  <ellipse cx="94" cy="90" rx="4" ry="2" fill="#807060" stroke="#6a5a48" stroke-width="0.5"></ellipse>
+</svg>

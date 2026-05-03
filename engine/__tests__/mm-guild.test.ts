@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { TP, type WorldNode, type GuildRules } from '../tp.js'
-import { MMGuild } from '../mm-guild.js'
+import { TP, type WorldNode, type GuildRules } from '../tp'
+import { MMGuild } from '../mm-guild'
 import {
   createGuild,
   createNPCParty,
@@ -15,7 +15,7 @@ import {
   resetPartyIdCounter,
   resetJobIdCounter,
   type CaravanArrivalDigest,
-} from '../guild.js'
+} from '../guild'
 
 function makeTP(): TP {
   const tp = new TP()

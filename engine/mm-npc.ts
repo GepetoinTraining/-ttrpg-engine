@@ -26,9 +26,9 @@ import { z } from 'zod'
 import { 
   CharacterDataSchema, type CharacterDataInput, type Ability,
   SKILL_ABILITIES, type Skill, type DerivedStats,
-} from './mm-character.js'
-import { type Combatant } from './mm-scene.js'
-import { type CycleDelta, ZERO_DELTA, addDeltas } from './types.js'
+} from './mm-character'
+import { type Combatant } from './mm-scene'
+import { type CycleDelta, ZERO_DELTA, addDeltas } from './types'
 
 // ============================================================
 // NPC-SPECIFIC SCHEMAS

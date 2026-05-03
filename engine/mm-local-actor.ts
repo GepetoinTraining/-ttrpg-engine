@@ -32,7 +32,7 @@ import { z } from 'zod'
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   type Drives, DrivesSchema,
   type Goal, GoalSchema,
@@ -41,8 +41,8 @@ import {
   type Horizon, HORIZON_CONFIG,
   optionsFromInt, abilityMod,
   resolveAction, scoreOption,
-} from './intent.js'
-import { DicePool } from './mf-pool-dice.js'
+} from './intent'
+import { DicePool } from './mf-pool-dice'
 
 // ============================================================
 // LOCAL RESOURCES — Smaller scale than territory actors

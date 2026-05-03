@@ -30,14 +30,14 @@ import {
   CHUNK_LOAD_RADIUS,
   MAX_CACHED_CHUNKS,
   HUB_SIZE_CONFIG,
-} from './hub-schema.js'
+} from './hub-schema'
 
 import {
   SeededRNG,
   generateChunkLayout,
   generateDistrictLayout,
   Lot,
-} from './hub-topology.js'
+} from './hub-topology'
 
 // ============================================
 // CHUNK MANAGER

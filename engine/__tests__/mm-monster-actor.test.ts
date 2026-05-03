@@ -6,19 +6,19 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { TP, type WorldNode, type EcologyRules } from '../tp.js'
+import { TP, type WorldNode, type EcologyRules } from '../tp'
 import {
   MMMonsterActor,
   computeMonsterDanger,
   contributeDanger,
-} from '../mm-monster-actor.js'
+} from '../mm-monster-actor'
 import {
   createMonsterActor,
   resetMonsterActorIdCounter,
   type MonsterActorState,
-} from '../monster-actor.js'
-import { generateQuestForChapter } from '../guild-quest-generator.js'
-import { createGuild, resetGuildIdCounter, resetJobIdCounter } from '../guild.js'
+} from '../monster-actor'
+import { generateQuestForChapter } from '../guild-quest-generator'
+import { createGuild, resetGuildIdCounter, resetJobIdCounter } from '../guild'
 
 function makeTP(): TP {
   const tp = new TP()

@@ -23,19 +23,19 @@
  * eventual MMDungeonGate) call THESE rather than the primitives directly.
  */
 
-import type { TP } from './tp.js'
+import type { TP } from './tp'
 import {
   type DungeonGate,
   type ClearAttemptResult,
   type GateTickResult,
   attemptClearGate,
   tickDungeonGate,
-} from './dungeon-gate.js'
+} from './dungeon-gate'
 import {
   type MonsterActorState,
   createMonsterActorFromEcology,
   type MonsterActorFromEcologyInput,
-} from './monster-actor.js'
+} from './monster-actor'
 import {
   type Adaptation,
   reportClear,
@@ -43,11 +43,11 @@ import {
   selectAdaptations,
   adaptationCountForGate,
   combineModifiers,
-} from './adaptation.js'
+} from './adaptation'
 import {
   getAdaptationPool,
   writeAdaptationPool,
-} from './ecology-pool.js'
+} from './ecology-pool'
 
 // ============================================================
 // CLEAR — players (or NPCs) try to clear the gate

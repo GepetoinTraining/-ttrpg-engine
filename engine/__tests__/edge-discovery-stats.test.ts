@@ -16,7 +16,7 @@ import {
   createWorldEdge, beginTraversal, tickTraversal,
   resetEdgeIdCounter, resetSiteIdCounter,
   type WorldEdge, type DiscoveredSite, type TerrainType,
-} from '../world-edge.js'
+} from '../world-edge'
 
 // Helper: run many traversals with DUAL d20 and collect stats
 function runTraversalBatch(

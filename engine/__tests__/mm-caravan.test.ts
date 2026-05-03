@@ -13,13 +13,13 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { MMCaravan, caravanEntityId, type SegmentInfo } from '../mm-caravan.js'
-import { Clockwork } from '../clockwork.js'
-import { TP, type WorldNode } from '../tp.js'
-import { createCaravan, loadCargo, departCaravan, type CargoItem } from '../caravan.js'
-import { createRumor, type Library } from '../lore.js'
-import { createVault } from '../banking.js'
-import { MMBanking, resetShipmentIdCounter } from '../mm-banking.js'
+import { MMCaravan, caravanEntityId, type SegmentInfo } from '../mm-caravan'
+import { Clockwork } from '../clockwork'
+import { TP, type WorldNode } from '../tp'
+import { createCaravan, loadCargo, departCaravan, type CargoItem } from '../caravan'
+import { createRumor, type Library } from '../lore'
+import { createVault } from '../banking'
+import { MMBanking, resetShipmentIdCounter } from '../mm-banking'
 
 beforeEach(() => resetShipmentIdCounter())
 

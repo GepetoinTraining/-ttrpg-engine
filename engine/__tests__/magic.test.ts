@@ -28,7 +28,7 @@ import {
   type CasterState,
   type Spell,
   type MagicDifficulty,
-} from '../magic.js'
+} from '../magic'
 
 // ── Helper: minimal caster ──
 function makeCaster(overrides: Partial<CasterState> = {}): CasterState {

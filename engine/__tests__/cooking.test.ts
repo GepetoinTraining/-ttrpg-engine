@@ -9,7 +9,7 @@ import {
   FUEL_DATA, CUISINE_DATA, MEAL_QUALITY_EFFECTS,
   cookMeal, calculateFoodMorale,
   type CookingFuel, type CuisineRegion, type HubFoodState,
-} from '../cooking.js'
+} from '../cooking'
 
 // ============================================================
 // FUEL TYPES

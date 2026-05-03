@@ -17,11 +17,11 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { Clockwork, type DailyTickResult } from '../clockwork.js'
-import { MMSettlement } from '../mm-settlement.js'
-import { MMActor } from '../mm-actor.js'
-import { MMLocalActor } from '../mm-local-actor.js'
-import { TP, type WorldNode } from '../tp.js'
+import { Clockwork, type DailyTickResult } from '../clockwork'
+import { MMSettlement } from '../mm-settlement'
+import { MMActor } from '../mm-actor'
+import { MMLocalActor } from '../mm-local-actor'
+import { TP, type WorldNode } from '../tp'
 
 // ============================================================
 // SETUP — Uses exact Zod types from intent.ts

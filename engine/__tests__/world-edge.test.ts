@@ -12,7 +12,7 @@ import {
   claimSegment, upgradeRoad, setPatrol, unlockFastTravel,
   createWorldEdge, resetEdgeIdCounter, resetSiteIdCounter,
   type WorldEdge, type OwnershipSegment, type TraversalState,
-} from '../world-edge.js'
+} from '../world-edge'
 
 beforeEach(() => {
   resetEdgeIdCounter()

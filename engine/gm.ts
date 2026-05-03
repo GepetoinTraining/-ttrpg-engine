@@ -22,8 +22,8 @@
 import type {
   CampaignNarrative, Beat, BeatType, Quest, Arc,
   PacingBias, PacingSuggestion, Villain, Patron, Conflict,
-} from './narrative.js'
-import { suggestNextBeat, calculateProgress } from './narrative.js'
+} from './narrative'
+import { suggestNextBeat, calculateProgress } from './narrative'
 
 // ============================================================
 // SIMULATION DEPTH — What systems are active per campaign

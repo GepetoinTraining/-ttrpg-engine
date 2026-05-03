@@ -13,11 +13,11 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { mfDice, mfDiceInverse, type DiceFormula } from '../mf-dice.js'
-import { mfCheck, mfCheckInverse, type CheckParams } from '../mf-check.js'
-import { mfDamage, mfDamageInverse, type DamageInput, type TargetState } from '../mf-damage.js'
-import { mmCombatAttack, type AttackAction } from '../mm-combat.js'
-import { TPB } from '../tpb.js'
+import { mfDice, mfDiceInverse, type DiceFormula } from '../mf-dice'
+import { mfCheck, mfCheckInverse, type CheckParams } from '../mf-check'
+import { mfDamage, mfDamageInverse, type DamageInput, type TargetState } from '../mf-damage'
+import { mmCombatAttack, type AttackAction } from '../mm-combat'
+import { TPB } from '../tpb'
 
 // ============================================================
 // MF_DICE TESTS
@@ -481,7 +481,7 @@ describe('TPB', () => {
 // TP INDEX TESTS
 // ============================================================
 
-import { TP, type WorldNode } from '../tp.js'
+import { TP, type WorldNode } from '../tp'
 
 describe('TP (topology pointer)', () => {
   // Build a mini world tree for testing:
@@ -658,7 +658,7 @@ describe('TP (topology pointer)', () => {
 // MM_SCENE TESTS (Combat Encounter)
 // ============================================================
 
-import { MMScene, type Combatant } from '../mm-scene.js'
+import { MMScene, type Combatant } from '../mm-scene'
 
 describe('MM_scene (combat encounter)', () => {
   // A classic encounter: 2 fighters vs 3 goblins
@@ -846,7 +846,7 @@ describe('MM_scene (combat encounter)', () => {
 // MM_ADVENTURE TESTS (Scene Card System)
 // ============================================================
 
-import { MMSession, type SceneCard } from '../mm-session.js'
+import { MMSession, type SceneCard } from '../mm-session'
 
 describe('MM_adventure (scene card system)', () => {
   function createTestCards(): SceneCard[] {
@@ -1091,7 +1091,7 @@ describe('MM_adventure (scene card system)', () => {
 // MM_CHARACTER TESTS
 // ============================================================
 
-import { MMCharacter, type CharacterDataInput } from '../mm-character.js'
+import { MMCharacter, type CharacterDataInput } from '../mm-character'
 
 describe('MM_character (character state machine)', () => {
   function createFighter(): CharacterDataInput {
@@ -1207,7 +1207,7 @@ describe('MM_character (character state machine)', () => {
 // MM_PARTY TESTS
 // ============================================================
 
-import { MMParty } from '../mm-party.js'
+import { MMParty } from '../mm-party'
 
 describe('MM_party (party container)', () => {
   function createParty(): MMParty {
@@ -1312,7 +1312,7 @@ describe('MM_party (party container)', () => {
 // MM_ADVENTURE TESTS (Campaign Container)
 // ============================================================
 
-import { MMAdventure } from '../mm-adventure.js'
+import { MMAdventure } from '../mm-adventure'
 
 describe('MM_adventure (campaign container)', () => {
   function createCampaign(): MMAdventure {
@@ -1426,7 +1426,7 @@ describe('MM_adventure (campaign container)', () => {
 // MM_NPC TESTS
 // ============================================================
 
-import { MMNPC } from '../mm-npc.js'
+import { MMNPC } from '../mm-npc'
 
 function createTestNPC(overrides: Record<string, unknown> = {}) {
   return new MMNPC({
@@ -1549,7 +1549,7 @@ describe('MM_npc (NPC state machine)', () => {
 // MM_FOLLOWERS TESTS
 // ============================================================
 
-import { MMFollowers } from '../mm-followers.js'
+import { MMFollowers } from '../mm-followers'
 
 describe('MM_followers (local + global container)', () => {
   function createFollowers() {

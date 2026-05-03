@@ -4,11 +4,11 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { MMHusbandry, herdEntityId } from '../mm-husbandry.js'
-import { Clockwork } from '../clockwork.js'
-import { TP, type WorldNode } from '../tp.js'
-import { createHerd, getSpecies, type Species } from '../husbandry.js'
-import { ClaimRegistry, createClaim, resetClaimIdCounter } from '../claims.js'
+import { MMHusbandry, herdEntityId } from '../mm-husbandry'
+import { Clockwork } from '../clockwork'
+import { TP, type WorldNode } from '../tp'
+import { createHerd, getSpecies, type Species } from '../husbandry'
+import { ClaimRegistry, createClaim, resetClaimIdCounter } from '../claims'
 
 function makeTP(): TP {
   const tp = new TP()

@@ -23,7 +23,7 @@
  */
 
 import { z } from 'zod'
-import type { Receipt } from './types.js'
+import type { Receipt } from './types'
 
 // ============================================================
 // DAMAGE TYPE — The 13 D&D 5e damage types

@@ -23,7 +23,7 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   monthlySocialTick,
   type Contract,
@@ -31,8 +31,8 @@ import {
   type Title,
   type KinshipLink,
   type SocialTickResult,
-} from './social.js'
-import type { TP, SocialRules } from './tp.js'
+} from './social'
+import type { TP, SocialRules } from './tp'
 
 export interface MMSocialDomainState {
   jurisdictionId: string

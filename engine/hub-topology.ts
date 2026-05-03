@@ -24,7 +24,7 @@ import {
   HubSize,
   HUB_SIZE_CONFIG,
   DISTRICT_ADJACENCY,
-} from './hub-schema.js'
+} from './hub-schema'
 
 // ============================================
 // SEEDED RNG (FNV-1a + LCG)

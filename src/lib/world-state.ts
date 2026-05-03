@@ -21,9 +21,9 @@
 import { eq } from 'drizzle-orm'
 import { db } from '@/db/connection'
 import { worlds, tpbEntries } from '@/db/schema'
-import { TP, type WorldNode } from '../../engine/tp'
+import { TP } from '../../engine/tp'
 import { Clockwork } from '../../engine/clockwork'
-import { MMTechnologyWeb } from '../../engine/mm-technology-web'
+import { buildBaseTp, registerCanonicalMMs } from '../../engine/world-bootstrap'
 import { applyKappaLog } from './kappa-log'
 import {
   attachWriteLog,
@@ -56,22 +56,8 @@ export interface WorldState {
  * property strictly true and avoids cross-request stale-cache bugs.
  */
 
-function buildDefaultTp(): TP {
-  const tp = new TP()
-  const nodes: WorldNode[] = [
-    { id: 'toril',             type: 'planet',     name: 'Toril',             parentId: null,      dataStatic: {} },
-    { id: 'faerun',            type: 'continent',  name: 'Faerûn',            parentId: 'toril',   dataStatic: {} },
-    { id: 'cormyr',            type: 'kingdom',    name: 'Cormyr',            parentId: 'faerun',  dataStatic: {} },
-    { id: 'suzail',            type: 'settlement', name: 'Suzail',            parentId: 'cormyr',  dataStatic: { settlement: { scale: 'city', population: 53000 } } },
-    { id: 'wheloon',           type: 'settlement', name: 'Wheloon',           parentId: 'cormyr',  dataStatic: { settlement: { scale: 'town', population: 4500 } } },
-    { id: 'marsember',         type: 'settlement', name: 'Marsember',         parentId: 'cormyr',  dataStatic: { settlement: { scale: 'town', population: 8000 } } },
-    { id: 'high_road_25',      type: 'edge_site',  name: 'High Road · mile 25', parentId: 'cormyr',  dataStatic: {} },
-    { id: 'cormanthor_portal', type: 'poi',        name: 'Cormanthor Portal', parentId: 'faerun',  dataStatic: {} },
-    { id: 'sunset_vault',      type: 'poi',        name: 'Sunset Vault',      parentId: 'cormyr',  dataStatic: {} },
-  ]
-  tp.loadNodes(nodes)
-  return tp
-}
+// (TP construction moved to engine/world-bootstrap.ts so client + server share
+// one source of truth. `buildBaseTp()` is the canonical builder.)
 
 /**
  * Hydrate κ from the canonical tpb_entries log. The audit log IS the
@@ -110,37 +96,16 @@ async function getOrBootstrapRow() {
 }
 
 /**
- * Settlement node IDs the static TP currently exposes — used to register
- * per-settlement MMs (mm-technology-web, future mm-* hub services).
- *
- * When the per-region-table architecture lands, this becomes a query against
- * the region tables. For now it's the static set baked into buildDefaultTp().
- */
-const SETTLEMENT_NODE_IDS = ['suzail', 'wheloon', 'marsember'] as const
-
-/**
- * Register the new Phase-2 MMs into a clockwork. Called per-request after
- * Clockwork construction. Layer 6 HUB SERVICES, weekly cadence — fires when
- * the weekly delta hits 7-day threshold. Resolves are observation-driven.
- */
-function registerHubServiceMMs(clockwork: Clockwork, worldDay: number): void {
-  for (const nodeId of SETTLEMENT_NODE_IDS) {
-    const techWeb = new MMTechnologyWeb({ settlementNodeId: nodeId, worldDay })
-    clockwork.register(techWeb, 6, 'weekly')
-  }
-}
-
-/**
- * Hydrate the live world from DB. Per request: rebuild TP from static nodes,
- * replay κ from audit log, register Phase-2 MMs into the Clockwork at the
- * DB's current day.
+ * Hydrate the live world from DB. Per request: rebuild TP from static nodes
+ * (via shared `buildBaseTp`), replay κ from audit log, register canonical
+ * MMs into the Clockwork at the DB's current day.
  */
 export async function getWorldState(): Promise<WorldState> {
   const row = await getOrBootstrapRow()
-  const tp = buildDefaultTp()
+  const tp = buildBaseTp()
   await hydrateKappaFromLog(tp)
   const clockwork = new Clockwork(tp, row.currentDay)
-  registerHubServiceMMs(clockwork, row.currentDay)
+  registerCanonicalMMs(clockwork, row.currentDay)
   return {
     tp,
     clockwork,

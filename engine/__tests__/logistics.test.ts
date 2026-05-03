@@ -11,7 +11,7 @@ import {
   tickShipment, recommendTransport,
   resetShipmentIdCounter,
   type TransportMode, type DangerLevel,
-} from '../logistics.js'
+} from '../logistics'
 
 beforeEach(() => resetShipmentIdCounter())
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { TP, type WorldNode } from '../tp.js'
-import { MMNpcAgenda } from '../mm-npc-agenda.js'
-import { createNPCAgenda, resetAgendaIdCounter } from '../npc-agenda.js'
+import { TP, type WorldNode } from '../tp'
+import { MMNpcAgenda } from '../mm-npc-agenda'
+import { createNPCAgenda, resetAgendaIdCounter } from '../npc-agenda'
 
 function makeTP(): TP {
   const tp = new TP()

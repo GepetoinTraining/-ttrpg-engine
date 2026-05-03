@@ -5,10 +5,10 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { MMWater } from '../mm-water.js'
-import { Clockwork } from '../clockwork.js'
-import { TP, type WorldNode, type WaterRules } from '../tp.js'
-import { createWaterLevel, type WaterBody } from '../water.js'
+import { MMWater } from '../mm-water'
+import { Clockwork } from '../clockwork'
+import { TP, type WorldNode, type WaterRules } from '../tp'
+import { createWaterLevel, type WaterBody } from '../water'
 
 function makeTP(): TP {
   const tp = new TP()

@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { TP, type WorldNode } from '../tp.js'
+import { TP, type WorldNode } from '../tp'
 import {
   getAdaptationPool,
   writeAdaptationPool,
   regionForNode,
   ecologyAt,
-} from '../ecology-pool.js'
-import { createAdaptationPool, reportClear, evolvePool } from '../adaptation.js'
+} from '../ecology-pool'
+import { createAdaptationPool, reportClear, evolvePool } from '../adaptation'
 
 const SEED = 12345
 

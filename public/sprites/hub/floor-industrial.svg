@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none" color="#1f1b16">
+  
+  <rect width="100" height="100" fill="#5a5040"></rect>
+  
+  <rect x="2" y="2" width="28" height="18" fill="#6a5a48" stroke="#3a342c" stroke-width="1"></rect>
+  <rect x="32" y="2" width="34" height="18" fill="#5e5040" stroke="#3a342c" stroke-width="1"></rect>
+  <rect x="68" y="2" width="30" height="18" fill="#6a5a48" stroke="#3a342c" stroke-width="1"></rect>
+  <rect x="2" y="22" width="46" height="16" fill="#5e5040" stroke="#3a342c" stroke-width="1"></rect>
+  <rect x="50" y="22" width="48" height="16" fill="#6a5a48" stroke="#3a342c" stroke-width="1"></rect>
+  <rect x="2" y="40" width="30" height="18" fill="#6a5a48" stroke="#3a342c" stroke-width="1"></rect>
+  <rect x="34" y="40" width="32" height="18" fill="#5e5040" stroke="#3a342c" stroke-width="1"></rect>
+  <rect x="68" y="40" width="30" height="18" fill="#6a5a48" stroke="#3a342c" stroke-width="1"></rect>
+  <rect x="2" y="60" width="48" height="16" fill="#5e5040" stroke="#3a342c" stroke-width="1"></rect>
+  <rect x="52" y="60" width="46" height="16" fill="#6a5a48" stroke="#3a342c" stroke-width="1"></rect>
+  <rect x="2" y="78" width="30" height="20" fill="#6a5a48" stroke="#3a342c" stroke-width="1"></rect>
+  <rect x="34" y="78" width="34" height="20" fill="#5e5040" stroke="#3a342c" stroke-width="1"></rect>
+  <rect x="70" y="78" width="28" height="20" fill="#6a5a48" stroke="#3a342c" stroke-width="1"></rect>
+  
+  <rect width="100" height="100" fill="rgba(20,16,10,0.18)"></rect>
+  
+  <ellipse cx="72" cy="54" rx="12" ry="7" fill="#3a2c18" opacity="0.55"></ellipse>
+</svg>

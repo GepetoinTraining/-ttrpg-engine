@@ -3,16 +3,16 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { MMShipment, shipmentEntityId } from '../mm-logistics.js'
-import { Clockwork } from '../clockwork.js'
-import { TP, type WorldNode } from '../tp.js'
+import { MMShipment, shipmentEntityId } from '../mm-logistics'
+import { Clockwork } from '../clockwork'
+import { TP, type WorldNode } from '../tp'
 import {
   createShipment,
   addToManifest,
   dispatchShipment,
   resetShipmentIdCounter,
   type Shipment,
-} from '../logistics.js'
+} from '../logistics'
 
 beforeEach(() => resetShipmentIdCounter())
 

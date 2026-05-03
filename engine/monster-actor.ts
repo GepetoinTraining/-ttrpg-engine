@@ -26,8 +26,8 @@ import {
   selectAdaptations,
   combineModifiers,
   evolvePool,
-} from './adaptation.js'
-import { deriveBaseCR } from './biome-fauna.js'
+} from './adaptation'
+import { deriveBaseCR } from './biome-fauna'
 
 // ============================================================
 // EXPANSION ACTION — What the leader does each month

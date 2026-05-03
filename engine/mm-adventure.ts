@@ -34,15 +34,15 @@
  */
 
 import { z } from 'zod'
-import { MMSession, type SceneCard, type HookThread, type WorldMutation } from './mm-session.js'
-import { MMParty } from './mm-party.js'
-import { MMFollowers } from './mm-followers.js'
-import { type CharacterDataInput } from './mm-character.js'
-import { type NPCDataInput } from './mm-npc.js'
-import { TP, type WorldNode, type WorldEdge } from './tp.js'
-import { TPB } from './tpb.js'
-import { type CycleDelta, ZERO_DELTA, addDeltas } from './types.js'
-import { Clockwork, type ObservationResult } from './clockwork.js'
+import { MMSession, type SceneCard, type HookThread, type WorldMutation } from './mm-session'
+import { MMParty } from './mm-party'
+import { MMFollowers } from './mm-followers'
+import { type CharacterDataInput } from './mm-character'
+import { type NPCDataInput } from './mm-npc'
+import { TP, type WorldNode, type WorldEdge } from './tp'
+import { TPB } from './tpb'
+import { type CycleDelta, ZERO_DELTA, addDeltas } from './types'
+import { Clockwork, type ObservationResult } from './clockwork'
 
 // ============================================================
 // DOWNTIME ACTIVITY — What characters do between sessions

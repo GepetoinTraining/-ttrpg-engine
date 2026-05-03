@@ -26,7 +26,7 @@ import {
   selectAdaptations,
   evolvePool,
   combineModifiers,
-} from './adaptation.js'
+} from './adaptation'
 
 // ============================================================
 // GATE TYPE — What kind of dungeon this is

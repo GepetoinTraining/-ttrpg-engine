@@ -12,11 +12,11 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { MFPool, type PoolConfig } from '../mf-pool.js'
+import { MFPool, type PoolConfig } from '../mf-pool'
 import {
   DicePool, createDicePools, createDiceGrindFn, POOL_SIZES,
-} from '../mf-pool-dice.js'
-import type { DiceFormula } from '../mf-dice.js'
+} from '../mf-pool-dice'
+import type { DiceFormula } from '../mf-dice'
 
 // ============================================================
 // MF_POOL GENERIC TESTS

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { MMNarrative } from '../mm-narrative.js'
-import type { CampaignNarrative, Arc, Quest, Beat, Objective, RabbitHole } from '../narrative.js'
+import { MMNarrative } from '../mm-narrative'
+import type { CampaignNarrative, Arc, Quest, Beat, Objective, RabbitHole } from '../narrative'
 
 function obj(over: Partial<Objective> = {}): Objective {
   return {

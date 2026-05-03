@@ -32,7 +32,7 @@ import {
   FORMATION_FORAGE_MOD,
   defaultFormationFor,
   isViable,
-} from './wild-fauna.js'
+} from './wild-fauna'
 
 // ============================================================
 // COMMON SHAPES

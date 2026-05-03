@@ -18,8 +18,8 @@
  * eventual `engine-client.ts` will POST them to /api/world/append.
  */
 
-import type { TP } from './tp.js'
-import type { WorldTPBAction } from './tpb-world.js'
+import type { TP } from './tp'
+import type { WorldTPBAction } from './tpb-world'
 
 // ============================================================
 // WRITE CAPTURE

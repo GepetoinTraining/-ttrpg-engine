@@ -8,7 +8,7 @@ import {
   createClaim,
   resetClaimIdCounter,
   ClaimSchema,
-} from '../claims.js'
+} from '../claims'
 
 beforeEach(() => resetClaimIdCounter())
 

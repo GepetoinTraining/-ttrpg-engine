@@ -22,8 +22,8 @@
  */
 
 import { z } from 'zod'
-import type { DiceResult } from './mf-dice.js'
-import type { Receipt } from './types.js'
+import type { DiceResult } from './mf-dice'
+import type { Receipt } from './types'
 
 // ============================================================
 // CHECK TYPE — What kind of check is this?

@@ -19,9 +19,9 @@
  *   - Party holds shared resources characters can't hold individually
  */
 
-import { MMCharacter, type CharacterDataInput, type DerivedStats, type Ability } from './mm-character.js'
-import { type Combatant } from './mm-scene.js'
-import { type CycleDelta, ZERO_DELTA, addDeltas } from './types.js'
+import { MMCharacter, type CharacterDataInput, type DerivedStats, type Ability } from './mm-character'
+import { type Combatant } from './mm-scene'
+import { type CycleDelta, ZERO_DELTA, addDeltas } from './types'
 
 // ============================================================
 // PARTY STATE

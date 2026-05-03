@@ -7,7 +7,7 @@ import {
   generateSeeder, stampRoom, stampAll,
   respawnSeeder, evaluateSeeder,
   type DungeonSeeder, type StampedRoom,
-} from '../dungeon-mf.js'
+} from '../dungeon-mf'
 
 // ============================================================
 // SEEDER GENERATION

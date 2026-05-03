@@ -17,6 +17,7 @@
 'use client'
 
 import * as React from 'react'
+import { authFetch } from './auth-fetch'
 
 export interface HubRuntimeState {
   id: string
@@ -75,7 +76,7 @@ function getOrCreateSessionId(): string {
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
@@ -92,7 +93,7 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
 }
 
 async function getJson<T>(url: string): Promise<T> {
-  const res = await fetch(url)
+  const res = await authFetch(url)
   if (!res.ok) throw new Error(`${res.status}`)
   return res.json() as Promise<T>
 }

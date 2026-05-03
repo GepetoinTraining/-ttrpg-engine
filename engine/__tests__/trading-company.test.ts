@@ -27,7 +27,7 @@ import {
   COMPANY_TIER_REQUIREMENTS,
   ROAD_ASSET_COSTS,
   SEED_COMPANY_NAMES,
-} from '../trading-company.js'
+} from '../trading-company'
 
 // ============================================================
 // CREATION & PROMOTION

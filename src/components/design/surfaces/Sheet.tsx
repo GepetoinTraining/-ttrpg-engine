@@ -10,6 +10,7 @@ import {
   type CharacterListItem,
   type CharacterInventory,
 } from '@/lib/character'
+import { loadSpells } from '@/lib/world-detail'
 import { useSession } from '@/lib/session-context'
 import { EmptyState, FidelityBadge } from './_chips'
 
@@ -64,6 +65,14 @@ export default function Sheet() {
   React.useEffect(() => {
     if (!activeCharacterId) return
     loadInventory(activeCharacterId).then(setInventory).catch(() => setInventory(null))
+  }, [activeCharacterId])
+
+  // Spells list — same pattern; the Spells surface (#25) is the deeper detail
+  // view, this is the quick-cast strip.
+  const [spells, setSpells] = React.useState<any | null>(null)
+  React.useEffect(() => {
+    if (!activeCharacterId) return
+    loadSpells(activeCharacterId).then(setSpells).catch(() => setSpells(null))
   }, [activeCharacterId])
 
   const pickCharacter = (id: string) => {
@@ -335,17 +344,11 @@ export default function Sheet() {
       </div>
 
       <div className="box" style={{borderTop:'none', borderTopLeftRadius: 0, borderTopRightRadius: 0}}>
-        {tab === 'actions' && (
-          <EmptyState
-            label="actions panel pending"
-            hint="bind to engine/mm-character.ts derived actions: attacks (weapons + sneak/extra), bonus actions (cunning/two-weapon), reactions (uncanny dodge/OAs), use-object."
-          />
+        {tab === 'actions' && sheet && (
+          <ActionsPanel sheet={sheet} inventory={inventory} />
         )}
         {tab === 'spells' && (
-          <EmptyState
-            label="spell panel pending"
-            hint="bind via /api/character/[id]/spells (Spells surface 25 already wired) — surface a quick-cast strip here."
-          />
+          <SpellsPanel spells={spells} />
         )}
         {tab === 'inventory' && (
           inventory && inventory.totals.items > 0 ? (
@@ -424,6 +427,110 @@ export default function Sheet() {
           />
         )}
       </div>
+    </div>
+  )
+}
+
+// ── ActionsPanel ───────────────────────────────────────────────────────────
+// Derives action list from sheet (for the basic attack) + inventory items
+// flagged as weapons.
+function ActionsPanel({ sheet, inventory }: { sheet: SheetData; inventory: CharacterInventory | null }) {
+  const dexMod = sheet.modifiers.dexterity ?? 0
+  const strMod = sheet.modifiers.strength ?? 0
+  const profBonus = sheet.proficiencyBonus
+
+  const weaponItems = inventory?.inventories
+    .flatMap((inv) => inv.containers)
+    .flatMap((c) => c.items)
+    .filter((it) => /weapon|sword|axe|bow|dagger|mace|staff|spear|hammer/.test((it.category ?? '').toLowerCase())) ?? []
+
+  const baseAttackBonus = strMod + profBonus
+  const baseDamage = `1d8${strMod >= 0 ? '+' : ''}${strMod}`
+
+  return (
+    <div>
+      <div className="row" style={{ gap: 14, marginBottom: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        <span className="stat">PB <b>+{profBonus}</b></span>
+        <span className="stat">STR <b>{strMod >= 0 ? '+' : ''}{strMod}</b></span>
+        <span className="stat">DEX <b>{dexMod >= 0 ? '+' : ''}{dexMod}</b></span>
+      </div>
+      <div className="section-title" style={{marginTop: 0}}>Standard actions</div>
+      <table className="inv">
+        <thead><tr><th>action</th><th>attack</th><th>damage</th><th>notes</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>Basic Attack</b></td>
+            <td className="stat">+{baseAttackBonus}</td>
+            <td className="stat">{baseDamage}</td>
+            <td className="tiny muted">unarmed / improvised</td>
+          </tr>
+          {weaponItems.length === 0 ? null : weaponItems.map((w) => (
+            <tr key={w.id}>
+              <td><b>{w.name}</b> {w.magical && <span className="chip sm gold" style={{marginLeft: 4, fontSize: 9}}>magical</span>}</td>
+              <td className="stat">+{baseAttackBonus}</td>
+              <td className="stat">{baseDamage}</td>
+              <td className="tiny muted">{w.category}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {weaponItems.length === 0 && (
+        <div className="tiny muted" style={{marginTop: 8}}>
+          Equip a weapon (Inventory tab) to see weapon attacks here. Attack/damage formulas use STR + PB heuristically; engine/mm-character.ts derived actions land in v2.
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── SpellsPanel ────────────────────────────────────────────────────────────
+function SpellsPanel({ spells }: { spells: any | null }) {
+  if (!spells) {
+    return <EmptyState label="no spells data" hint="bind via /api/character/[id]/spells. The character may not have spell slots." />
+  }
+  const slots: Array<{ level: number; current: number; max: number }> = spells.slots ?? []
+  const prepared: Array<{ id: string; name: string; level: number; school?: string }> = spells.prepared ?? spells.spells ?? []
+  const cantrips = prepared.filter((s) => s.level === 0)
+  const leveled = prepared.filter((s) => s.level > 0)
+
+  return (
+    <div>
+      {slots.length > 0 && (
+        <div className="row" style={{ gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+          {slots.map((slot) => (
+            <span key={slot.level} className="chip sm">
+              L{slot.level} <b>{slot.current}</b>/<span className="muted">{slot.max}</span>
+            </span>
+          ))}
+        </div>
+      )}
+      {cantrips.length > 0 && (
+        <>
+          <div className="section-title" style={{marginTop: 0}}>Cantrips</div>
+          <ul className="kvs">
+            {cantrips.map((s) => (
+              <li key={s.id}>
+                <b>{s.name}</b> {s.school && <span className="tiny muted">· {s.school}</span>}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {leveled.length > 0 && (
+        <>
+          <div className="section-title">Prepared / known</div>
+          <ul className="kvs">
+            {leveled.map((s) => (
+              <li key={s.id}>
+                <span className="chip sm">L{s.level}</span> <b>{s.name}</b> {s.school && <span className="tiny muted">· {s.school}</span>}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {cantrips.length === 0 && leveled.length === 0 && (
+        <EmptyState label="no spells prepared" hint="cast or prepare spells via the Spells surface (#25)." />
+      )}
     </div>
   )
 }

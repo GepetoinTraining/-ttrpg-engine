@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" color="#1f1b16">
+
+  
+  <rect x="20" y="28" width="60" height="44" fill="#f4efe4"></rect>
+  <line x1="20" y1="42" x2="80" y2="42" stroke="#4a4338"></line>
+  <line x1="20" y1="56" x2="80" y2="56" stroke="#4a4338"></line>
+  
+  <rect x="24" y="30" width="6" height="12" fill="#a8442a" stroke="#1f1b16" stroke-width="0.6"></rect>
+  <rect x="40" y="30" width="6" height="12" fill="#b08838" stroke="#1f1b16" stroke-width="0.6" transform="rotate(15 43 36)"></rect>
+  <rect x="56" y="32" width="6" height="10" fill="#3a5d7a" stroke="#1f1b16" stroke-width="0.6"></rect>
+  <rect x="26" y="44" width="14" height="6" fill="#4d6a3a" stroke="#1f1b16" stroke-width="0.6"></rect>
+  <rect x="62" y="46" width="6" height="10" fill="#a8442a" stroke="#1f1b16" stroke-width="0.6"></rect>
+  
+  <rect x="30" y="76" width="8" height="3" fill="#4a4338" stroke="#1f1b16" stroke-width="0.5" transform="rotate(-20 34 77)"></rect>
+  <rect x="58" y="78" width="8" height="3" fill="#4a4338" stroke="#1f1b16" stroke-width="0.5" transform="rotate(35 62 79)"></rect>
+
+</svg>

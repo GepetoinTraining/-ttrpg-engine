@@ -28,13 +28,13 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   type MineLayer,
   applyDailyDepletion,
   createSurfaceLayer,
-} from './mining-layers.js'
-import type { TP, InfrastructureRules } from './tp.js'
+} from './mining-layers'
+import type { TP, InfrastructureRules } from './tp'
 
 // ============================================================
 // MM_MINING_LAYERS STATE

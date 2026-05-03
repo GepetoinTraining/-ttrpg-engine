@@ -20,7 +20,7 @@
  */
 
 import { z } from 'zod'
-import type { Receipt } from './types.js'
+import type { Receipt } from './types'
 
 // ============================================================
 // DICE FORMULA — K (the constant)

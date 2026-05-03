@@ -11,7 +11,7 @@ import {
   tierDown,
   tierFromCR,
   tierFromLevel,
-} from '../tier.js'
+} from '../tier'
 
 describe('Tier — universal scale', () => {
   it('TIER_ORDER is monotonic F → EX (10 steps)', () => {

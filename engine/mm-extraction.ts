@@ -24,13 +24,13 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   tickExtraction,
   type Deposit,
   type Extraction,
-} from './production-chain.js'
-import type { TP } from './tp.js'
+} from './production-chain'
+import type { TP } from './tp'
 
 export interface MMExtractionDomainState {
   extraction: Extraction

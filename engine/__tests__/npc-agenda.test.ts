@@ -10,7 +10,7 @@ import {
   calculateCombatRating, deriveEconomicRole,
   resolveConversation, tickAgenda,
   type NPCAgenda, type Disposition, type Need,
-} from '../npc-agenda.js'
+} from '../npc-agenda'
 
 beforeEach(() => {
   resetAgendaIdCounter()

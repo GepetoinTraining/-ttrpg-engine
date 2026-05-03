@@ -18,7 +18,7 @@ import {
   fileClaim,
   expireRiskContract,
   weeklyServicesTick,
-} from '../services.js'
+} from '../services'
 
 // ============================================================
 // PROVIDER CATALOG

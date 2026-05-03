@@ -84,6 +84,16 @@ export const ClaimSchema = z.object({
 })
 export type Claim = z.infer<typeof ClaimSchema>
 
+/**
+ * Claim target types that count as "I have a place to study here." A study
+ * needs a fixed bench/forge/plot — building, workshop, deposit, farm_plot,
+ * or a whole settlement (rare; royal grant). `edge_segment` (toll road) and
+ * `herd` (cattle) don't qualify.
+ */
+export const STUDY_ELIGIBLE_TARGET_TYPES: readonly ClaimTargetType[] = [
+  'building', 'workshop', 'deposit', 'farm_plot', 'node',
+] as const
+
 // ============================================================
 // REGISTRY — fast lookup by target / claimant / node
 // ============================================================
@@ -163,6 +173,36 @@ export class ClaimRegistry {
   findAtNode(nodeId: string): Claim[] {
     const ids = this.byNode.get(nodeId) ?? new Set()
     return Array.from(ids).map(id => this.claims.get(id)!).filter(Boolean)
+  }
+
+  /**
+   * Active claims held by `claimantId` located at `nodeId`. Intersects the
+   * `byClaimant` and `byNode` indexes, filtered to status === 'active'.
+   * Useful for "what does this character own here right now."
+   */
+  findActiveByClaimantAtNode(claimantId: string, nodeId: string): Claim[] {
+    const claimantIds = this.byClaimant.get(claimantId)
+    const nodeIds = this.byNode.get(nodeId)
+    if (!claimantIds || !nodeIds) return []
+    const out: Claim[] = []
+    for (const id of claimantIds) {
+      if (!nodeIds.has(id)) continue
+      const c = this.claims.get(id)
+      if (c && c.status === 'active') out.push(c)
+    }
+    return out
+  }
+
+  /**
+   * Active claims held by `claimantId` at `nodeId` whose target type is
+   * eligible for hosting a study (see `STUDY_ELIGIBLE_TARGET_TYPES`).
+   * The Studies surface uses this to gate the start-study form — the player
+   * must own a building / workshop / deposit / farm_plot / node here to
+   * begin a new study (rest-inn-area eligibility is a separate path).
+   */
+  findStudyEligible(claimantId: string, nodeId: string): Claim[] {
+    return this.findActiveByClaimantAtNode(claimantId, nodeId)
+      .filter(c => STUDY_ELIGIBLE_TARGET_TYPES.includes(c.targetType))
   }
 
   /**

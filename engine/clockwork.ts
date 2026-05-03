@@ -31,8 +31,8 @@
  *   More players = richer world detail.
  */
 
-import { type ISimulatedMM, type ResolveResult } from './mm-simulated.js'
-import { type TP } from './tp.js'
+import { type ISimulatedMM, type ResolveResult } from './mm-simulated'
+import { type TP } from './tp'
 
 // ============================================================
 // CADENCES
@@ -146,8 +146,41 @@ export class Clockwork {
    */
   private layers: Map<string, MMRegistration>[] = []
 
+  /**
+   * Hub activity tracking — per Pedro 2026-05-02:
+   *   "this only happens where a player has spent time in"
+   *   "16 days out of 30 played to use the server compute, because believe
+   *    me this is a heavier load"
+   *
+   * Maps `hubId → Set<dayNumber>` of distinct world days the player was
+   * observed at the hub. The set is opportunistically pruned on each
+   * `markHubActive` to bound memory at the active window. A hub is "active"
+   * (server-compute-enabled) when cumulative presence within the window
+   * meets `ACTIVE_HUB_THRESHOLD_DAYS`. Player IDB carries hubs with lighter
+   * presence; the server only spends ticks where the player has invested
+   * enough to justify the heavier load.
+   *
+   * **Default OFF.** When the gate is disabled (the default) all hub-bound
+   * MMs tick regardless. Enable via `setActiveHubGate(true)` for the
+   * production behavior. Tests that register MMs without seeding visits
+   * rely on the gate being off, OR on `setActiveHubThreshold(1)` to make a
+   * single observation count.
+   */
+  private hubVisitDays = new Map<string, Set<number>>()
+  private activeHubGateEnabled = false
+  /** Instance threshold — defaults from the static constant; settable per-instance for tests + per-campaign tuning. */
+  private activeHubThresholdDays: number = Clockwork.ACTIVE_HUB_THRESHOLD_DAYS
+  /** Instance window — defaults from the static constant; settable per-instance. */
+  private activeHubWindowDays: number = Clockwork.ACTIVE_HUB_WINDOW_DAYS
+
   /** Number of dependency layers. Treat as architectural constant. */
   static readonly NUM_LAYERS = 7
+
+  /** Default lookback window for hub-active filter (in days). */
+  static readonly ACTIVE_HUB_WINDOW_DAYS = 30
+
+  /** Default cumulative-presence threshold within the window (in days). */
+  static readonly ACTIVE_HUB_THRESHOLD_DAYS = 16
 
   constructor(tp: TP, worldDay: number = 0, config?: Partial<ClockworkConfig>) {
     this.tp = tp
@@ -156,6 +189,130 @@ export class Clockwork {
     for (let i = 0; i < Clockwork.NUM_LAYERS; i++) {
       this.layers.push(new Map())
     }
+  }
+
+  // ── Hub activity tracking ──
+
+  /**
+   * Toggle the active-hub gate. Default off. When enabled, hub-bound MMs
+   * (those with `state.nodeId`) only tick if their hub has been observed
+   * within the activity window.
+   */
+  setActiveHubGate(enabled: boolean): void {
+    this.activeHubGateEnabled = enabled
+  }
+
+  /** Returns whether the gate is currently enforcing the active-hub filter. */
+  isActiveHubGateEnabled(): boolean {
+    return this.activeHubGateEnabled
+  }
+
+  /**
+   * Override the cumulative-presence threshold. Defaults to
+   * `ACTIVE_HUB_THRESHOLD_DAYS` (16). Tests typically set this to 1 to make
+   * a single observation count; long-running campaigns may tune it down.
+   */
+  setActiveHubThreshold(days: number): void {
+    this.activeHubThresholdDays = Math.max(0, Math.floor(days))
+  }
+
+  /**
+   * Override the activity window. Defaults to `ACTIVE_HUB_WINDOW_DAYS` (30).
+   */
+  setActiveHubWindow(days: number): void {
+    this.activeHubWindowDays = Math.max(1, Math.floor(days))
+  }
+
+  /**
+   * Record that a hub has been observed by a player on a given world day.
+   * Adds the day to the hub's visit set, then prunes any visit days that
+   * have aged out of the active window. Idempotent on the same day.
+   */
+  markHubActive(hubId: string, day?: number): void {
+    const d = day ?? this.currentWorldDay
+    let set = this.hubVisitDays.get(hubId)
+    if (!set) {
+      set = new Set<number>()
+      this.hubVisitDays.set(hubId, set)
+    }
+    set.add(d)
+    this.pruneVisitDaysFor(hubId)
+  }
+
+  /**
+   * Is this hub currently active — i.e. has the player accumulated enough
+   * presence inside the window to justify server-side compute? Counts the
+   * visit days within `windowDays` and returns true when the count meets
+   * `thresholdDays`. Both default to the instance's configured values.
+   */
+  isHubActive(
+    hubId: string,
+    windowDays: number = this.activeHubWindowDays,
+    thresholdDays: number = this.activeHubThresholdDays,
+  ): boolean {
+    const set = this.hubVisitDays.get(hubId)
+    if (!set) return false
+    let count = 0
+    for (const d of set) {
+      if (this.currentWorldDay - d <= windowDays) count++
+    }
+    return count >= thresholdDays
+  }
+
+  /**
+   * List all hubs currently considered active by the cumulative-presence
+   * rule. Useful for debugging + monthly tick filter sanity checks.
+   */
+  getActiveHubs(
+    windowDays: number = this.activeHubWindowDays,
+    thresholdDays: number = this.activeHubThresholdDays,
+  ): string[] {
+    const out: string[] = []
+    for (const [hubId, set] of this.hubVisitDays) {
+      let count = 0
+      for (const d of set) {
+        if (this.currentWorldDay - d <= windowDays) count++
+      }
+      if (count >= thresholdDays) out.push(hubId)
+    }
+    return out
+  }
+
+  /**
+   * Manual purge of stale hubs — drops any hub whose entire visit set is
+   * older than `staleAfterDays`. Optional cleanup for long-running campaigns;
+   * `markHubActive` keeps the per-hub set bounded automatically.
+   */
+  pruneStaleHubs(staleAfterDays: number = 365): number {
+    let removed = 0
+    for (const [hubId, set] of this.hubVisitDays) {
+      let hasRecent = false
+      for (const d of set) {
+        if (this.currentWorldDay - d <= staleAfterDays) {
+          hasRecent = true
+          break
+        }
+      }
+      if (!hasRecent) {
+        this.hubVisitDays.delete(hubId)
+        removed++
+      }
+    }
+    return removed
+  }
+
+  /**
+   * Drop visit days outside the active window from a single hub's set.
+   * Called by `markHubActive` after each addition to keep memory bounded.
+   * If the set empties, the hub is removed from the map entirely.
+   */
+  private pruneVisitDaysFor(hubId: string): void {
+    const set = this.hubVisitDays.get(hubId)
+    if (!set) return
+    for (const d of set) {
+      if (this.currentWorldDay - d > this.activeHubWindowDays) set.delete(d)
+    }
+    if (set.size === 0) this.hubVisitDays.delete(hubId)
   }
 
   // ── Registration ──
@@ -270,11 +427,22 @@ export class Clockwork {
   /**
    * Fire all MMs at a given cadence across all layers (dependency order).
    * Non-observation-only MMs only.
+   *
+   * Hub-active filter (per Pedro 2026-05-02):
+   *   When `activeHubGateEnabled`, an MM declaring `state.nodeId` is
+   *   hub-bound and ticks only if that hub is active. World-tree MMs (no
+   *   `state.nodeId`) always tick. When the gate is disabled (default),
+   *   all MMs tick regardless — preserves backward compat with tests
+   *   that register MMs without calling `observeNode`.
    */
   private tickMMs(cadence: TickCadence, days: number, results: string[]): void {
     for (const layer of this.layers) {
       for (const [id, reg] of layer) {
         if (reg.cadence !== cadence || reg.observationOnly) continue
+        if (this.activeHubGateEnabled) {
+          const hubId = (reg.mm.state as { nodeId?: string }).nodeId
+          if (hubId && !this.isHubActive(hubId)) continue
+        }
         reg.mm.accumulatePotential(days, this.currentWorldDay, this.tp)
         results.push(id)
       }
@@ -316,9 +484,11 @@ export class Clockwork {
 
   /**
    * Resolve all MMs at a specific .tp node.
-   * Triggered when the party arrives at a location.
+   * Triggered when the party arrives at a location. Also marks the hub as
+   * active so subsequent monthly ticks fire for it (per Pedro 2026-05-02).
    */
   observeNode(nodeId: string): ObservationResult {
+    this.markHubActive(nodeId)
     const resolved: ResolveResult[] = []
     for (const layer of this.layers) {
       for (const [, reg] of layer) {

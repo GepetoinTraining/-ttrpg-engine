@@ -44,10 +44,10 @@
  */
 
 import { z } from 'zod'
-import { MMScene, type Combatant, type RoundResult } from './mm-scene.js'
-import { TP, type WorldNode, type WorldEdge } from './tp.js'
-import { TPB } from './tpb.js'
-import { type CycleDelta, ZERO_DELTA, addDeltas } from './types.js'
+import { MMScene, type Combatant, type RoundResult } from './mm-scene'
+import { TP, type WorldNode, type WorldEdge } from './tp'
+import { TPB } from './tpb'
+import { type CycleDelta, ZERO_DELTA, addDeltas } from './types'
 
 // ============================================================
 // CARD TYPES — Atomic beats of gameplay

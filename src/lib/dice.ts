@@ -3,6 +3,8 @@
  * Wraps /api/sim/roll which itself wraps engine/mf-dice.ts.
  */
 
+import { authFetch } from './auth-fetch'
+
 export interface DiceFormula {
   count: number
   sides: number
@@ -30,7 +32,7 @@ export async function rollDice(
   formula: DiceFormula,
   options: { rollerId?: string; rollType?: string; worldDay?: number; seed?: number } = {}
 ): Promise<RollOutcome> {
-  const res = await fetch('/api/sim/roll', {
+  const res = await authFetch('/api/sim/roll', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({

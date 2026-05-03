@@ -3,9 +3,9 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { MMSocial } from '../mm-social.js'
-import { Clockwork } from '../clockwork.js'
-import { TP, type WorldNode } from '../tp.js'
+import { MMSocial } from '../mm-social'
+import { Clockwork } from '../clockwork'
+import { TP, type WorldNode } from '../tp'
 import {
   createContract,
   createHousehold,
@@ -17,7 +17,7 @@ import {
   type Household,
   type Title,
   type KinshipLink,
-} from '../social.js'
+} from '../social'
 
 function makeTP(): TP {
   const tp = new TP()

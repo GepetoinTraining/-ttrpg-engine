@@ -4,7 +4,7 @@ import {
   resolveDeathSpawn,
   type MobBehavior,
   type CombatContext,
-} from '../mob-ai.js'
+} from '../mob-ai'
 
 function basicCtx(overrides: Partial<CombatContext> = {}): CombatContext {
   return {

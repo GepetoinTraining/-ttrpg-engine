@@ -24,7 +24,7 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   cookMeal,
   calculateFoodMorale,
@@ -35,8 +35,8 @@ import {
   type HubFoodState,
   type MealQuality,
   type MealIngredients,
-} from './cooking.js'
-import type { TP } from './tp.js'
+} from './cooking'
+import type { TP } from './tp'
 
 /** Commodity ids that count as food for cooking purposes. */
 const FOOD_COMMODITIES = new Set([

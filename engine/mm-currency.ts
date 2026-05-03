@@ -29,14 +29,14 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   weeklyExchangeTick,
   type CurrencySystem,
   type ExchangeRate,
   type ExchangeTickResult,
-} from './currency.js'
-import type { TP } from './tp.js'
+} from './currency'
+import type { TP } from './tp'
 
 export interface MMCurrencyDomainState {
   /** All currencies tracked by this MM (typically one per kingdom). */

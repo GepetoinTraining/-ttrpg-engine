@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none" color="#1f1b16">
+  
+  <rect width="100" height="100" fill="#a89070"></rect>
+  <defs>
+    <pattern id="mos" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="7" height="7" fill="#c4a870" stroke="#6a5030" stroke-width="0.5"></rect>
+      <rect x="9" y="0" width="7" height="7" fill="#a87840" stroke="#6a5030" stroke-width="0.5"></rect>
+      <rect x="0" y="9" width="7" height="7" fill="#b89060" stroke="#6a5030" stroke-width="0.5"></rect>
+      <rect x="9" y="9" width="7" height="7" fill="#c4a870" stroke="#6a5030" stroke-width="0.5"></rect>
+    </pattern>
+  </defs>
+  <rect width="100" height="100" fill="url(#mos)"></rect>
+  
+  <rect x="16" y="16" width="7" height="7" fill="#3a5d7a" stroke="#6a5030" stroke-width="0.5"></rect>
+  <rect x="48" y="0" width="7" height="7" fill="#3a5d7a" stroke="#6a5030" stroke-width="0.5"></rect>
+  <rect x="80" y="16" width="7" height="7" fill="#a8442a" stroke="#6a5030" stroke-width="0.5"></rect>
+  <rect x="32" y="48" width="7" height="7" fill="#a8442a" stroke="#6a5030" stroke-width="0.5"></rect>
+  <rect x="64" y="48" width="7" height="7" fill="#3a5d7a" stroke="#6a5030" stroke-width="0.5"></rect>
+  <rect x="16" y="80" width="7" height="7" fill="#a8442a" stroke="#6a5030" stroke-width="0.5"></rect>
+  <rect x="80" y="80" width="7" height="7" fill="#3a5d7a" stroke="#6a5030" stroke-width="0.5"></rect>
+  <rect x="48" y="80" width="7" height="7" fill="#a8442a" stroke="#6a5030" stroke-width="0.5"></rect>
+  <rect x="0" y="48" width="7" height="7" fill="#3a5d7a" stroke="#6a5030" stroke-width="0.5"></rect>
+</svg>

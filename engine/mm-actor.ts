@@ -19,7 +19,7 @@ import { z } from 'zod'
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   type Drives, DrivesSchema,
   type Goal, GoalSchema,
@@ -32,10 +32,10 @@ import {
   optionsFromInt, maxHorizon, abilityMod,
   computeModifiers, resolveAction, scoreOption,
   activeInitiative, reactiveInitiative,
-} from './intent.js'
-import { MFPool, type PoolConfig } from './mf-pool.js'
-import type { DiceResult } from './mf-dice.js'
-import { DicePool } from './mf-pool-dice.js'
+} from './intent'
+import { MFPool, type PoolConfig } from './mf-pool'
+import type { DiceResult } from './mf-dice'
+import { DicePool } from './mf-pool-dice'
 
 // ============================================================
 // SCHEME — An active MF loop (in-progress action)

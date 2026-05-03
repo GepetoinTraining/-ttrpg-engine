@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { MMLocalActor, type LocalActorDomainState } from '../mm-local-actor.js'
+import { MMLocalActor, type LocalActorDomainState } from '../mm-local-actor'
 
 // ============================================================
 // HELPERS

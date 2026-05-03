@@ -18,7 +18,7 @@
  */
 
 import { z } from 'zod'
-import type { Container, Item, Currency } from './inventory.js'
+import type { Container, Item, Currency } from './inventory'
 
 // ============================================================
 // TRANSPORT MODES

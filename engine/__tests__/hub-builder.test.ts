@@ -8,8 +8,8 @@ import {
   buildHub, SCALE_PARAMS, DEFAULT_DISTRICTS,
   resetContainerIdCounter,
   type HubScale, type DistrictTemplate,
-} from '../hub-builder.js'
-import { resetDepositIdCounter, resetExtractionIdCounter } from '../production-chain.js'
+} from '../hub-builder'
+import { resetDepositIdCounter, resetExtractionIdCounter } from '../production-chain'
 
 beforeEach(() => {
   resetContainerIdCounter()

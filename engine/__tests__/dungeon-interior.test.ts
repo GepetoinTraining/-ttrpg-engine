@@ -8,7 +8,7 @@ import {
   generateDungeonInterior, resolveRoom, resolveDungeon,
   resetInteriorIdCounter,
   type DungeonInterior, type DungeonRoom,
-} from '../dungeon-interior.js'
+} from '../dungeon-interior'
 
 beforeEach(() => {
   resetInteriorIdCounter()

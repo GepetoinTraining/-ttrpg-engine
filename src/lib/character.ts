@@ -4,6 +4,7 @@
  */
 
 import type { Ability } from '@/game/chargen'
+import { authFetch } from './auth-fetch'
 
 export interface ComposedSpellDraft {
   /** Player-typed name; ignored if compositionSeed already exists in ledger. */
@@ -62,7 +63,7 @@ export interface CharacterCreateResult {
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
-  const res = await fetch(url, {
+  const res = await authFetch(url, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
@@ -108,7 +109,7 @@ export interface SheetData {
 }
 
 export async function loadCharacterSheet(id: string): Promise<SheetData> {
-  const res = await fetch(`/api/character/${id}`)
+  const res = await authFetch(`/api/character/${id}`)
   if (!res.ok) {
     let msg = `${res.status}`
     try {
@@ -133,7 +134,7 @@ export interface CharacterListItem {
 }
 
 export async function listCharacters(): Promise<{ characters: CharacterListItem[] }> {
-  const res = await fetch('/api/character/list')
+  const res = await authFetch('/api/character/list')
   if (!res.ok) throw new Error(`${res.status}`)
   return res.json()
 }
@@ -143,7 +144,7 @@ export async function listCharacters(): Promise<{ characters: CharacterListItem[
 export async function importPdf(file: File): Promise<{ imported: any }> {
   const fd = new FormData()
   fd.append('pdf', file)
-  const res = await fetch('/api/character/import', { method: 'POST', body: fd })
+  const res = await authFetch('/api/character/import', { method: 'POST', body: fd })
   if (!res.ok) {
     let msg = `${res.status}`
     try {
@@ -206,7 +207,7 @@ export interface CharacterInventory {
 }
 
 export async function loadInventory(characterId: string): Promise<CharacterInventory> {
-  const res = await fetch(`/api/character/${characterId}/inventory`)
+  const res = await authFetch(`/api/character/${characterId}/inventory`)
   if (!res.ok) throw new Error(`${res.status}`)
   return res.json()
 }
@@ -227,7 +228,7 @@ export interface AttunementState {
 }
 
 export async function loadAttunement(characterId: string): Promise<AttunementState> {
-  const res = await fetch(`/api/character/${characterId}/attunement`)
+  const res = await authFetch(`/api/character/${characterId}/attunement`)
   if (!res.ok) throw new Error(`${res.status}`)
   return res.json()
 }
@@ -238,7 +239,7 @@ export async function attune(
   slotIndex: number,
   attunedDay = 0
 ): Promise<{ id: string; slotIndex: number; itemId: string }> {
-  const res = await fetch(`/api/character/${characterId}/attunement`, {
+  const res = await authFetch(`/api/character/${characterId}/attunement`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ itemId, slotIndex, attunedDay }),
@@ -255,7 +256,7 @@ export async function attune(
 }
 
 export async function unattune(characterId: string, slotIndex: number): Promise<{ slotIndex: number; freed: boolean }> {
-  const res = await fetch(`/api/character/${characterId}/attunement?slotIndex=${slotIndex}`, {
+  const res = await authFetch(`/api/character/${characterId}/attunement?slotIndex=${slotIndex}`, {
     method: 'DELETE',
   })
   if (!res.ok) throw new Error(`${res.status}`)

@@ -13,7 +13,7 @@ import {
   createDeposit, createExtraction,
   resetDepositIdCounter, resetExtractionIdCounter,
   type Deposit, type Extraction, type MarketPrice,
-} from '../production-chain.js'
+} from '../production-chain'
 
 beforeEach(() => {
   resetDepositIdCounter()

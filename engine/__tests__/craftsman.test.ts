@@ -24,7 +24,7 @@ import {
   resetCraftsmanSeq,
   SEED_RECIPES,
   CRAFT_RANK_ORDER,
-} from '../craftsman.js'
+} from '../craftsman'
 
 // ============================================================
 // CREATION

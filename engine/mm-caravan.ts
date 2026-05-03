@@ -30,23 +30,23 @@
 import {
   SimulatedMMBase,
   type PendingDelta,
-} from './mm-simulated.js'
+} from './mm-simulated'
 import {
   advanceCaravanDay,
   unloadCaravan,
   type Caravan,
   type CaravanDayResult,
   type UnloadResult,
-} from './caravan.js'
+} from './caravan'
 import {
   spreadRumor,
   knowledgeFlowTick,
   type Rumor,
   type KnowledgeFlowResult,
   type Library,
-} from './lore.js'
-import type { BullionShipment } from './mm-banking.js'
-import type { TP, WeatherRules } from './tp.js'
+} from './lore'
+import type { BullionShipment } from './mm-banking'
+import type { TP, WeatherRules } from './tp'
 
 // ============================================================
 // SEGMENT INFO — what each step of the journey looks like

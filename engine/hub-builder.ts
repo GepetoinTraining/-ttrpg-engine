@@ -22,10 +22,10 @@
  */
 
 import { z } from 'zod'
-import type { WorldNode } from './tp.js'
-import type { Container } from './inventory.js'
-import type { Deposit, Extraction, MarketPrice } from './production-chain.js'
-import { COMMODITIES, createDeposit, createExtraction } from './production-chain.js'
+import type { WorldNode } from './tp'
+import type { Container } from './inventory'
+import type { Deposit, Extraction, MarketPrice } from './production-chain'
+import { COMMODITIES, createDeposit, createExtraction } from './production-chain'
 
 // ============================================================
 // HUB SCALE

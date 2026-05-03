@@ -4,10 +4,10 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { MMMarket } from '../mm-market.js'
-import { Clockwork } from '../clockwork.js'
-import { TP, type WorldNode } from '../tp.js'
-import { createSettlementMarket, type SettlementMarket, type CommodityPrice } from '../market.js'
+import { MMMarket } from '../mm-market'
+import { Clockwork } from '../clockwork'
+import { TP, type WorldNode } from '../tp'
+import { createSettlementMarket, type SettlementMarket, type CommodityPrice } from '../market'
 
 function makeTP(): TP {
   const tp = new TP()

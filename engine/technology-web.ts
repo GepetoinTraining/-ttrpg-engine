@@ -21,7 +21,7 @@
  */
 
 import { z } from 'zod'
-import { TierSchema, TIER_ORDER, type Tier } from './tier.js'
+import { TierSchema, TIER_ORDER, type Tier } from './tier'
 
 // ============================================================
 // TIER LADDER — re-uses the canonical 10-step Tier scale

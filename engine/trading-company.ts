@@ -38,8 +38,8 @@
  *   Quarterly: strategic decisions (new routes, new branches, charters)
  */
 
-import { createVenue, type VenueType, type Venue, TIER_REQUIREMENTS, type MerchantTier } from './market.js'
-import { type Caravan, createCaravan, type CaravanType } from './caravan.js'
+import { createVenue, type VenueType, type Venue, TIER_REQUIREMENTS, type MerchantTier } from './market'
+import { type Caravan, createCaravan, type CaravanType } from './caravan'
 
 // ============================================================
 // TRADING COMPANY TIERS

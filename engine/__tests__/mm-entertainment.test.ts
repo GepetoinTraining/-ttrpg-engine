@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { TP, type WorldNode, type CultureRules } from '../tp.js'
-import { MMEntertainment } from '../mm-entertainment.js'
-import type { Performer, Patronage } from '../entertainment.js'
+import { TP, type WorldNode, type CultureRules } from '../tp'
+import { MMEntertainment } from '../mm-entertainment'
+import type { Performer, Patronage } from '../entertainment'
 
 function makeTP(): TP {
   const tp = new TP()

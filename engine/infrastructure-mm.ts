@@ -36,7 +36,7 @@ import {
   type KnowledgePool,
   type HubContext,
   type KnowledgeTickResult,
-} from './knowledge-pool.js'
+} from './knowledge-pool'
 
 // ============================================================
 // PROFESSION — An NPC occupation driven by knowledge

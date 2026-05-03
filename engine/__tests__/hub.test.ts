@@ -11,8 +11,8 @@ import {
   DISTRICT_ADJACENCY,
   CHUNK_LOAD_RADIUS,
   MAX_CACHED_CHUNKS,
-} from '../hub-schema.js'
-import type { HubSeed, HubObserverState } from '../hub-schema.js'
+} from '../hub-schema'
+import type { HubSeed, HubObserverState } from '../hub-schema'
 import {
   SeededRNG,
   NaturalTopology,
@@ -22,8 +22,8 @@ import {
   HybridTopology,
   generateChunkLayout,
   generateDistrictLayout,
-} from '../hub-topology.js'
-import { ChunkManager, HubGenerator } from '../hub-chunks.js'
+} from '../hub-topology'
+import { ChunkManager, HubGenerator } from '../hub-chunks'
 
 // ============================================================
 // SEEDED RNG — Determinism
