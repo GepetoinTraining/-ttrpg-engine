@@ -40,3 +40,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+docs/realms-of-shod-mapping.md
+docs/sectors-without-number-analysis.md

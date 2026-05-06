@@ -825,3 +825,361 @@ export function resetMonsterAbilities(abilities: MonsterAbility[]): void {
     if (a.maxUses !== undefined) a.usesRemaining = a.maxUses
   }
 }
+
+// ============================================================
+// SPELL CATALOG — D&D 5e learnable spells
+//
+// === REALMS-OF-SHOD ALIGNMENT: magic ===
+// See: docs/realms-of-shod-mapping.md
+// Downgrade: src/lib/realms-of-shod-export.ts toRealmsMagic()
+//
+// Each Spell here is a first-class catalog entry. The prime-
+// encoding system above defines the underlying composition math;
+// this catalog is the named, learnable surface that players and
+// NPCs reference. Both coexist — neither removes the other.
+// ============================================================
+
+export const SPELL_CATALOG: Spell[] = [
+  // ── Cantrips (level 0) ──
+  {
+    id: 'fire_bolt', name: 'Fire Bolt', level: 0, school: 'evocation',
+    elements: composeSpell({ Fire: 1, Ranged: 1, Instant: 1, Minor: 1 }) as unknown as Record<string, number>,
+    seed: composeSpell({ Fire: 1, Ranged: 1, Instant: 1, Minor: 1 }),
+    dice: '1d10', damageType: 'fire', range: 120, targets: 'single',
+    verbal: true, somatic: true,
+    classes: ['wizard', 'sorcerer', 'artificer'],
+  },
+  {
+    id: 'sacred_flame', name: 'Sacred Flame', level: 0, school: 'evocation',
+    elements: composeSpell({ Radiant: 1, Ranged: 1, Instant: 1, Minor: 1 }) as unknown as Record<string, number>,
+    seed: composeSpell({ Radiant: 1, Ranged: 1, Instant: 1, Minor: 1 }),
+    dice: '1d8', damageType: 'radiant', range: 60, targets: 'single',
+    saveAbility: 'dex', verbal: true, somatic: true,
+    classes: ['cleric'],
+  },
+  {
+    id: 'prestidigitation', name: 'Prestidigitation', level: 0, school: 'transmutation',
+    elements: composeSpell({ Illusion: 1, Touch: 1, Instant: 1, Minor: 1 }) as unknown as Record<string, number>,
+    seed: composeSpell({ Illusion: 1, Touch: 1, Instant: 1, Minor: 1 }),
+    range: 10, targets: 'area',
+    verbal: true, somatic: true,
+    classes: ['wizard', 'sorcerer', 'bard', 'warlock', 'artificer'],
+  },
+  {
+    id: 'mage_hand', name: 'Mage Hand', level: 0, school: 'conjuration',
+    elements: composeSpell({ Create: 1, Ranged: 1, Sustained: 1, Minor: 1 }) as unknown as Record<string, number>,
+    seed: composeSpell({ Create: 1, Ranged: 1, Sustained: 1, Minor: 1 }),
+    range: 30, targets: 'area', duration: '1 minute', concentration: false,
+    verbal: true, somatic: true,
+    classes: ['wizard', 'sorcerer', 'bard', 'warlock', 'artificer'],
+  },
+
+  // ── Level 1 ──
+  {
+    id: 'magic_missile', name: 'Magic Missile', level: 1, school: 'evocation',
+    elements: { Force: 3, Ranged: 1, Instant: 1, Lesser: 1 },
+    seed: composeSpell({ Force: 3, Ranged: 1, Instant: 1, Lesser: 1 }),
+    dice: '1d4+1', damageType: 'force', range: 120, targets: 'multiple',
+    verbal: true, somatic: true,
+    classes: ['wizard', 'sorcerer'],
+  },
+  {
+    id: 'cure_wounds', name: 'Cure Wounds', level: 1, school: 'evocation',
+    elements: { Healing: 2, Touch: 1, Instant: 1, Lesser: 1 },
+    seed: composeSpell({ Healing: 2, Touch: 1, Instant: 1, Lesser: 1 }),
+    dice: '1d8', range: 0, targets: 'single', duration: 'Instantaneous',
+    verbal: true, somatic: true,
+    classes: ['cleric', 'druid', 'paladin', 'ranger', 'bard', 'artificer'],
+  },
+  {
+    id: 'shield', name: 'Shield', level: 1, school: 'abjuration',
+    elements: { Abjuration: 2, Self: 1, Instant: 1, Lesser: 1 },
+    seed: composeSpell({ Abjuration: 2, Self: 1, Instant: 1, Lesser: 1 }),
+    range: 0, targets: 'self', duration: '1 round',
+    verbal: true, somatic: true,
+    classes: ['wizard', 'sorcerer'],
+  },
+  {
+    id: 'detect_magic', name: 'Detect Magic', level: 1, school: 'divination',
+    elements: { Divination: 2, Self: 1, Sustained: 1, Lesser: 1 },
+    seed: composeSpell({ Divination: 2, Self: 1, Sustained: 1, Lesser: 1 }),
+    range: 0, targets: 'area', duration: '10 minutes', concentration: true,
+    ritual: true, verbal: true, somatic: true,
+    classes: ['wizard', 'cleric', 'druid', 'bard', 'paladin', 'ranger', 'sorcerer', 'artificer'],
+  },
+  {
+    id: 'thunderwave', name: 'Thunderwave', level: 1, school: 'evocation',
+    elements: { Thunder: 2, Area: 1, Instant: 1, Lesser: 1 },
+    seed: composeSpell({ Thunder: 2, Area: 1, Instant: 1, Lesser: 1 }),
+    dice: '2d8', damageType: 'thunder', range: 0,
+    area: { shape: 'cube', size: 15 }, targets: 'area',
+    saveAbility: 'con', verbal: true, somatic: true,
+    classes: ['wizard', 'druid', 'bard', 'sorcerer'],
+  },
+  {
+    id: 'bless', name: 'Bless', level: 1, school: 'enchantment',
+    elements: { Buff: 2, Ranged: 1, Sustained: 1, Lesser: 1 },
+    seed: composeSpell({ Buff: 2, Ranged: 1, Sustained: 1, Lesser: 1 }),
+    range: 30, targets: 'multiple', duration: '1 minute', concentration: true,
+    verbal: true, somatic: true,
+    materials: [{ element: 'holy_water', quantity: 1, consumed: false }],
+    classes: ['cleric', 'paladin'],
+  },
+  {
+    id: 'identify', name: 'Identify', level: 1, school: 'divination',
+    elements: { Divination: 3, Touch: 1, Instant: 1, Lesser: 1 },
+    seed: composeSpell({ Divination: 3, Touch: 1, Instant: 1, Lesser: 1 }),
+    range: 0, targets: 'single', duration: 'Instantaneous',
+    ritual: true, verbal: true, somatic: true,
+    materials: [{ element: 'pearl', quantity: 1, consumed: false }, { element: 'owl_feather', quantity: 1, consumed: false }],
+    classes: ['wizard', 'bard', 'artificer'],
+  },
+  {
+    id: 'burning_hands', name: 'Burning Hands', level: 1, school: 'evocation',
+    elements: { Fire: 2, Cone: 1, Instant: 1, Lesser: 1 },
+    seed: composeSpell({ Fire: 2, Cone: 1, Instant: 1, Lesser: 1 }),
+    dice: '3d6', damageType: 'fire', range: 0,
+    area: { shape: 'cone', size: 15 }, targets: 'area',
+    saveAbility: 'dex', verbal: true, somatic: true,
+    classes: ['wizard', 'sorcerer'],
+  },
+
+  // ── Level 2 ──
+  {
+    id: 'misty_step', name: 'Misty Step', level: 2, school: 'conjuration',
+    elements: { Teleport: 2, Self: 1, Instant: 1, Lesser: 1 },
+    seed: composeSpell({ Teleport: 2, Self: 1, Instant: 1, Lesser: 1 }),
+    range: 30, targets: 'self', duration: 'Instantaneous',
+    verbal: true,
+    classes: ['wizard', 'sorcerer', 'warlock', 'paladin'],
+  },
+  {
+    id: 'invisibility', name: 'Invisibility', level: 2, school: 'illusion',
+    elements: { Illusion: 3, Touch: 1, Sustained: 1, Lesser: 1 },
+    seed: composeSpell({ Illusion: 3, Touch: 1, Sustained: 1, Lesser: 1 }),
+    range: 0, targets: 'single', duration: '1 hour', concentration: true,
+    verbal: true, somatic: true,
+    materials: [{ element: 'eyelash_gum', quantity: 1, consumed: false }],
+    classes: ['wizard', 'sorcerer', 'bard', 'warlock', 'artificer'],
+  },
+  {
+    id: 'hold_person', name: 'Hold Person', level: 2, school: 'enchantment',
+    elements: { Control: 3, Ranged: 1, Sustained: 1, Lesser: 1 },
+    seed: composeSpell({ Control: 3, Ranged: 1, Sustained: 1, Lesser: 1 }),
+    range: 60, targets: 'single', duration: '1 minute', concentration: true,
+    condition: 'paralyzed', saveAbility: 'wis',
+    verbal: true, somatic: true,
+    materials: [{ element: 'iron_bar', quantity: 1, consumed: false }],
+    classes: ['wizard', 'cleric', 'druid', 'bard', 'sorcerer', 'warlock', 'paladin'],
+  },
+  {
+    id: 'shatter', name: 'Shatter', level: 2, school: 'evocation',
+    elements: { Thunder: 3, Area: 1, Instant: 1, Lesser: 1 },
+    seed: composeSpell({ Thunder: 3, Area: 1, Instant: 1, Lesser: 1 }),
+    dice: '3d8', damageType: 'thunder', range: 60,
+    area: { shape: 'sphere', size: 10 }, targets: 'area',
+    saveAbility: 'con', verbal: true, somatic: true,
+    classes: ['wizard', 'sorcerer', 'bard', 'warlock'],
+  },
+  {
+    id: 'spiritual_weapon', name: 'Spiritual Weapon', level: 2, school: 'evocation',
+    elements: { Healing: 1, Force: 2, Ranged: 1, Sustained: 1, Lesser: 1 },
+    seed: composeSpell({ Healing: 1, Force: 2, Ranged: 1, Sustained: 1, Lesser: 1 }),
+    dice: '1d8', damageType: 'force', range: 60, targets: 'single',
+    duration: '1 minute', concentration: false,
+    verbal: true, somatic: true,
+    classes: ['cleric'],
+  },
+
+  // ── Level 3 ──
+  {
+    id: 'fireball', name: 'Fireball', level: 3, school: 'evocation',
+    elements: { Fire: 3, Area: 2, Ranged: 1, Instant: 1, Standard: 1 },
+    seed: composeSpell({ Fire: 3, Area: 2, Ranged: 1, Instant: 1, Standard: 1 }),
+    dice: '8d6', damageType: 'fire', range: 150,
+    area: { shape: 'sphere', size: 20 }, targets: 'area',
+    saveAbility: 'dex', verbal: true, somatic: true,
+    materials: [{ element: 'bat_guano', quantity: 1, consumed: false }],
+    classes: ['wizard', 'sorcerer'],
+  },
+  {
+    id: 'counterspell', name: 'Counterspell', level: 3, school: 'abjuration',
+    elements: { Abjuration: 3, Ranged: 1, Instant: 1, Standard: 1 },
+    seed: composeSpell({ Abjuration: 3, Ranged: 1, Instant: 1, Standard: 1 }),
+    range: 60, targets: 'single', duration: 'Instantaneous',
+    somatic: true,
+    classes: ['wizard', 'sorcerer', 'warlock'],
+  },
+  {
+    id: 'dispel_magic', name: 'Dispel Magic', level: 3, school: 'abjuration',
+    elements: { Abjuration: 3, Ranged: 1, Instant: 1, Standard: 1 },
+    seed: composeSpell({ Abjuration: 3, Ranged: 1, Instant: 1, Standard: 1 }),
+    range: 120, targets: 'single', duration: 'Instantaneous',
+    verbal: true, somatic: true,
+    classes: ['wizard', 'cleric', 'druid', 'bard', 'sorcerer', 'warlock', 'paladin'],
+  },
+  {
+    id: 'spirit_guardians', name: 'Spirit Guardians', level: 3, school: 'conjuration',
+    elements: { Summon: 3, Self: 1, Sustained: 1, Standard: 1 },
+    seed: composeSpell({ Summon: 3, Self: 1, Sustained: 1, Standard: 1 }),
+    dice: '3d8', damageType: 'radiant', range: 0,
+    area: { shape: 'sphere', size: 15 }, targets: 'area',
+    duration: '10 minutes', concentration: true, saveAbility: 'wis',
+    verbal: true, somatic: true,
+    materials: [{ element: 'holy_symbol', quantity: 1, consumed: false }],
+    classes: ['cleric'],
+  },
+
+  // ── Level 4 ──
+  {
+    id: 'greater_invisibility', name: 'Greater Invisibility', level: 4, school: 'illusion',
+    elements: { Illusion: 4, Touch: 1, Sustained: 1, Standard: 1 },
+    seed: composeSpell({ Illusion: 4, Touch: 1, Sustained: 1, Standard: 1 }),
+    range: 0, targets: 'single', duration: '1 minute', concentration: true,
+    verbal: true, somatic: true,
+    classes: ['wizard', 'sorcerer', 'bard'],
+  },
+  {
+    id: 'banishment', name: 'Banishment', level: 4, school: 'abjuration',
+    elements: { Abjuration: 4, Ranged: 1, Sustained: 1, Standard: 1 },
+    seed: composeSpell({ Abjuration: 4, Ranged: 1, Sustained: 1, Standard: 1 }),
+    range: 60, targets: 'single', duration: '1 minute', concentration: true,
+    saveAbility: 'cha', verbal: true, somatic: true,
+    materials: [{ element: 'distasteful_item', quantity: 1, consumed: false }],
+    classes: ['wizard', 'cleric', 'paladin', 'sorcerer', 'warlock'],
+  },
+
+  // ── Level 5 ──
+  {
+    id: 'cone_of_cold', name: 'Cone of Cold', level: 5, school: 'evocation',
+    elements: { Cold: 4, Cone: 1, Instant: 1, Standard: 1 },
+    seed: composeSpell({ Cold: 4, Cone: 1, Instant: 1, Standard: 1 }),
+    dice: '8d8', damageType: 'cold', range: 0,
+    area: { shape: 'cone', size: 60 }, targets: 'area',
+    saveAbility: 'con', verbal: true, somatic: true,
+    materials: [{ element: 'white_dragon_scale', quantity: 1, consumed: false }],
+    classes: ['wizard', 'sorcerer'],
+  },
+  {
+    id: 'hold_monster', name: 'Hold Monster', level: 5, school: 'enchantment',
+    elements: { Control: 4, Ranged: 1, Sustained: 1, Standard: 1 },
+    seed: composeSpell({ Control: 4, Ranged: 1, Sustained: 1, Standard: 1 }),
+    range: 90, targets: 'single', duration: '1 minute', concentration: true,
+    condition: 'paralyzed', saveAbility: 'wis',
+    verbal: true, somatic: true,
+    materials: [{ element: 'iron_chain', quantity: 1, consumed: false }],
+    classes: ['wizard', 'bard', 'sorcerer', 'warlock'],
+  },
+
+  // ── Level 6 ──
+  {
+    id: 'chain_lightning', name: 'Chain Lightning', level: 6, school: 'evocation',
+    elements: { Lightning: 4, Chain: 1, Instant: 1, Greater: 1 },
+    seed: composeSpell({ Lightning: 4, Chain: 1, Instant: 1, Greater: 1 }),
+    dice: '10d8', damageType: 'lightning', range: 150, targets: 'multiple',
+    saveAbility: 'dex', verbal: true, somatic: true,
+    materials: [{ element: 'fur', quantity: 1, consumed: false }],
+    classes: ['wizard', 'sorcerer'],
+  },
+
+  // ── Level 7 ──
+  {
+    id: 'reverse_gravity', name: 'Reverse Gravity', level: 7, school: 'transmutation',
+    elements: { Transform: 4, Area: 1, Sustained: 1, Greater: 1 },
+    seed: composeSpell({ Transform: 4, Area: 1, Sustained: 1, Greater: 1 }),
+    range: 100, targets: 'area', duration: '1 minute', concentration: true,
+    area: { shape: 'cylinder', size: 50 },
+    verbal: true, somatic: true,
+    materials: [{ element: 'lodestone', quantity: 1, consumed: false }],
+    classes: ['wizard', 'druid', 'sorcerer'],
+  },
+
+  // ── Level 8 ──
+  {
+    id: 'incendiary_cloud', name: 'Incendiary Cloud', level: 8, school: 'conjuration',
+    elements: { Fire: 4, Summon: 1, Area: 1, Sustained: 1, Supreme: 1 },
+    seed: composeSpell({ Fire: 4, Summon: 1, Area: 1, Sustained: 1, Supreme: 1 }),
+    dice: '10d8', damageType: 'fire', range: 150,
+    area: { shape: 'sphere', size: 20 }, targets: 'area',
+    duration: '1 minute', concentration: true, saveAbility: 'dex',
+    verbal: true, somatic: true,
+    classes: ['wizard', 'sorcerer', 'druid'],
+  },
+
+  // ── Level 9 ──
+  {
+    id: 'meteor_swarm', name: 'Meteor Swarm', level: 9, school: 'evocation',
+    elements: { Fire: 4, Area: 3, Ranged: 1, Instant: 1, Ultimate: 1 },
+    seed: composeSpell({ Fire: 4, Area: 3, Ranged: 1, Instant: 1, Ultimate: 1 }),
+    dice: '40d6', damageType: 'fire', range: 1000,
+    area: { shape: 'sphere', size: 40 }, targets: 'area',
+    saveAbility: 'dex', verbal: true, somatic: true,
+    classes: ['wizard', 'sorcerer'],
+  },
+  {
+    id: 'wish', name: 'Wish', level: 9, school: 'conjuration',
+    elements: { Create: 5, Self: 1, Instant: 1, Ultimate: 1 },
+    seed: composeSpell({ Create: 5, Self: 1, Instant: 1, Ultimate: 1 }),
+    range: 0, targets: 'area', duration: 'Instantaneous',
+    verbal: true,
+    classes: ['wizard', 'sorcerer'],
+  },
+  {
+    id: 'time_stop', name: 'Time Stop', level: 9, school: 'transmutation',
+    elements: { Transform: 5, Self: 1, Instant: 1, Ultimate: 1 },
+    seed: composeSpell({ Transform: 5, Self: 1, Instant: 1, Ultimate: 1 }),
+    range: 0, targets: 'self', duration: '1d4+1 rounds',
+    verbal: true,
+    classes: ['wizard', 'sorcerer'],
+  },
+  {
+    id: 'true_resurrection', name: 'True Resurrection', level: 9, school: 'necromancy',
+    elements: { Healing: 5, Touch: 1, Instant: 1, Ultimate: 1 },
+    seed: composeSpell({ Healing: 5, Touch: 1, Instant: 1, Ultimate: 1 }),
+    range: 0, targets: 'single', duration: 'Instantaneous',
+    verbal: true, somatic: true,
+    materials: [{ element: 'diamond', quantity: 1, consumed: true }],
+    classes: ['cleric', 'druid'],
+  },
+
+  // ── Utility ──
+  {
+    id: 'fly', name: 'Fly', level: 3, school: 'transmutation',
+    elements: { Transform: 2, Buff: 1, Touch: 1, Sustained: 1, Standard: 1 },
+    seed: composeSpell({ Transform: 2, Buff: 1, Touch: 1, Sustained: 1, Standard: 1 }),
+    range: 0, targets: 'single', duration: '10 minutes', concentration: true,
+    verbal: true, somatic: true,
+    materials: [{ element: 'wing_feather', quantity: 1, consumed: false }],
+    classes: ['wizard', 'sorcerer', 'warlock', 'artificer'],
+  },
+  {
+    id: 'animate_dead', name: 'Animate Dead', level: 3, school: 'necromancy',
+    elements: { Animate: 3, Touch: 1, Lasting: 1, Standard: 1 },
+    seed: composeSpell({ Animate: 3, Touch: 1, Lasting: 1, Standard: 1 }),
+    range: 10, targets: 'single', duration: '24 hours',
+    verbal: true, somatic: true,
+    materials: [{ element: 'bone_shard', quantity: 1, consumed: false }],
+    classes: ['wizard', 'cleric'],
+  },
+]
+
+/** Look up a spell by id. */
+export function getSpell(id: string): Spell | undefined {
+  return SPELL_CATALOG.find(s => s.id === id)
+}
+
+/** All spells at a given level (0 = cantrips). */
+export function spellsByLevel(level: number): Spell[] {
+  return SPELL_CATALOG.filter(s => s.level === level)
+}
+
+/** All spells of a given school. */
+export function spellsBySchool(school: SpellSchool): Spell[] {
+  return SPELL_CATALOG.filter(s => s.school === school)
+}
+
+/** All spells available to a character class. */
+export function spellsByClass(className: string): Spell[] {
+  return SPELL_CATALOG.filter(s => s.classes?.includes(className))
+}
+

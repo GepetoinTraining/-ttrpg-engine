@@ -47,6 +47,35 @@ export const ItemV2Schema = z.object({
     makerCertId: z.string().nullable(),
     worldDay: z.number().int(),
   }),
+
+  // === REALMS-OF-SHOD ALIGNMENT: heirloom / relic / artifact ===
+  // See: docs/realms-of-shod-mapping.md
+  // Downgrade: src/lib/realms-of-shod-export.ts toRealmsHeirloom / toRealmsRelic / toRealmsArtifact
+  //
+  // Three optional bags — whichever is populated determines the subtype:
+  //   lineageChain populated  → isHeirloom (an item with history of owners)
+  //   religiousSignificance   → isRelic    (sacred to a deity / faith event)
+  //   uniqueness              → isArtifact (one-of-a-kind, named, lore-bearing)
+  // An item may have all three (e.g. a Relic that became an Heirloom + has Artifact status).
+
+  /** Owner history for heirloom items (append-only chain). */
+  lineageChain: z.array(z.object({
+    holderId: z.string(),
+    fromDay: z.number().int(),
+    toDay: z.number().int().optional(),
+  })).optional(),
+
+  /** Religious significance for relic items. */
+  religiousSignificance: z.object({
+    deityId: z.string(),
+    originEvent: z.string().optional(),
+  }).optional(),
+
+  /** Uniqueness bag for artifact items. */
+  uniqueness: z.object({
+    loreText: z.string(),
+    magicalProperties: z.array(z.string()),
+  }).optional(),
 })
 export type ItemV2 = z.infer<typeof ItemV2Schema>
 
@@ -265,4 +294,25 @@ export function mfSmeltInverse(_output: SmeltOutput, receipt: SmeltReceipt): Sme
     makerCertId: '',
     d20: receipt.skillCheck.d20,
   }
+}
+
+// ============================================================
+// ITEM SUBTYPE PREDICATES
+//
+// === REALMS-OF-SHOD ALIGNMENT: heirloom / relic / artifact ===
+// ============================================================
+
+/** True when the item has a documented chain of previous owners. */
+export function isHeirloom(item: ItemV2): boolean {
+  return Array.isArray(item.lineageChain) && item.lineageChain.length > 0
+}
+
+/** True when the item carries religious significance tied to a deity. */
+export function isRelic(item: ItemV2): boolean {
+  return item.religiousSignificance !== undefined
+}
+
+/** True when the item has named magical properties making it one-of-a-kind. */
+export function isArtifact(item: ItemV2): boolean {
+  return item.uniqueness !== undefined
 }

@@ -1273,3 +1273,67 @@ export function getNamePool(culture: string): NamePool | null {
   return NAME_POOLS[culture] ?? null
 }
 
+// ============================================================
+// LAW ENTITY — Durable decree records
+//
+// === REALMS-OF-SHOD ALIGNMENT: law ===
+// See: docs/realms-of-shod-mapping.md
+// Downgrade: src/lib/realms-of-shod-export.ts toRealmsLaw()
+//
+// The κ.law domain in tp.ts holds the RUNTIME enforcement state
+// (enforcement level, special rules). This entity holds the
+// HISTORY — who passed what decree, on which day, and when it
+// was repealed. The κ override stays as the fast read-path;
+// the Law record is the audit trail that feeds into chronicles.
+// ============================================================
+
+export type LawStatus = 'active' | 'repealed' | 'suspended'
+
+export interface Law {
+  id: string
+  /** The .tp node whose jurisdiction this law governs */
+  jurisdictionNodeId: string
+  /** Human-readable text of the decree */
+  decree: string
+  /** World day the law took effect */
+  effectiveDay: number
+  /** World day the law was repealed (absent = still active) */
+  repealDay?: number
+  /** Entity (NPC or faction) that sponsored / passed the decree */
+  sponsorId: string
+  status: LawStatus
+}
+
+let _lawCounter = 0
+export function resetLawIdCounter(): void { _lawCounter = 0 }
+
+export function createLaw(
+  jurisdictionNodeId: string,
+  decree: string,
+  effectiveDay: number,
+  sponsorId: string,
+): Law {
+  return {
+    id: `law_${++_lawCounter}`,
+    jurisdictionNodeId,
+    decree,
+    effectiveDay,
+    sponsorId,
+    status: 'active',
+  }
+}
+
+export function repealLaw(law: Law, repealDay: number): void {
+  law.status = 'repealed'
+  law.repealDay = repealDay
+}
+
+export function suspendLaw(law: Law): void {
+  law.status = 'suspended'
+}
+
+/** All laws currently in effect at a given jurisdiction node. */
+export function getLawsAt(jurisdictionNodeId: string, laws: Law[]): Law[] {
+  return laws.filter(l => l.jurisdictionNodeId === jurisdictionNodeId && l.status === 'active')
+}
+

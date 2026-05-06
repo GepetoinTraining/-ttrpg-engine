@@ -42,6 +42,11 @@ export const FactionTypeSchema = z.enum([
   'government',    // City state, kingdom bureaucracy
   'tribal',        // Nomadic or indigenous
   'revolutionary', // Resistance, insurgency
+  // === REALMS-OF-SHOD ALIGNMENT: cult / sanctuary ===
+  // See: docs/realms-of-shod-mapping.md
+  // Downgrade: src/lib/realms-of-shod-export.ts toRealmsCult / toRealmsSanctuary
+  'cult',          // Secret religious/occult group — distinct from open 'religious' factions
+  'sanctuary',     // Refuge organization (temple-as-asylum, monastery, protected enclave)
 ])
 export type FactionType = z.infer<typeof FactionTypeSchema>
 
@@ -181,6 +186,17 @@ export const FactionSchema = z.object({
   foundedDay: z.number().int().default(0),
   /** Is this faction active? */
   active: z.boolean().default(true),
+
+  // === REALMS-OF-SHOD ALIGNMENT: cult ===
+  // Secrecy level — only meaningful when type === 'cult'.
+  // Changes how loyalty math propagates: hidden cults don't broadcast
+  // influence, can be hunted by inquisitions, recruit secretly.
+  secrecyLevel: z.enum(['open', 'discreet', 'hidden', 'forbidden']).optional(),
+
+  // === REALMS-OF-SHOD ALIGNMENT: sanctuary ===
+  // Protection covenant — only meaningful when type === 'sanctuary'.
+  refugeProtections: z.array(z.string()).optional(),
+  accessRules: z.string().optional(),
 })
 export type Faction = z.infer<typeof FactionSchema>
 

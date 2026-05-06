@@ -233,6 +233,53 @@ export type DiplomaticStatus =
   | 'alliance' | 'trade_pact' | 'non_aggression' | 'neutral'
   | 'rivalry' | 'cold_war' | 'war' | 'vassalage' | 'subjugation'
 
+// === REALMS-OF-SHOD ALIGNMENT: treaty ===
+// See: docs/realms-of-shod-mapping.md
+// Downgrade: src/lib/realms-of-shod-export.ts toRealmsTreaty()
+//
+// Promoted from `DiplomaticRelation.treaties: string[]` to a first-class
+// entity. Preserves the specific terms agreed, the signing day, and
+// dissolution provenance. Diplomatic intrigue becomes specific.
+
+export type TreatyStatus = 'active' | 'dissolved' | 'violated' | 'expired'
+
+export interface Treaty {
+  id: string
+  factionA: string
+  factionB: string
+  /** Plain-language terms of the treaty */
+  terms: string[]
+  signedDay: number
+  status: TreatyStatus
+  /** Faction or character that brokered this treaty */
+  sponsorId?: string
+}
+
+let _treatyCounter = 0
+export function resetTreatyIdCounter(): void { _treatyCounter = 0 }
+
+export function createTreaty(
+  factionA: string,
+  factionB: string,
+  terms: string[],
+  signedDay: number,
+  sponsorId?: string,
+): Treaty {
+  return {
+    id: `treaty_${++_treatyCounter}`,
+    factionA,
+    factionB,
+    terms,
+    signedDay,
+    status: 'active',
+    sponsorId,
+  }
+}
+
+export function dissolveTreaty(treaty: Treaty, reason: TreatyStatus = 'dissolved'): void {
+  treaty.status = reason
+}
+
 export interface DiplomaticRelation {
   id: string
   factionA: string
@@ -240,8 +287,8 @@ export interface DiplomaticRelation {
   status: DiplomaticStatus
   /** -100 (hatred) to +100 (devotion) */
   standing: number
-  /** Active treaties */
-  treaties: string[]
+  /** Active treaties (promoted from string[] to first-class Treaty entities) */
+  treaties: Treaty[]
   /** World day of last status change */
   lastChangedDay: number
 }
