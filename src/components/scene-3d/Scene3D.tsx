@@ -27,7 +27,9 @@ import { EntityMesh } from './EntityMesh'
 import { EntitySDFMesh } from './EntitySDFMesh'
 import { composeGoblin } from '../../lib/mold/goblin-instance'
 import { decodeEntity } from '../../lib/mold/goblin-mold'
-import { CreatureSizeIdx, BuildIdx, PoseFamily, Disposition, Intent } from '../../lib/disc/disc-spec'
+import {
+  CreatureSizeIdx, BuildIdx, PoseFamily, Disposition, Intent,
+} from '../../lib/disc/disc-spec'
 
 type RenderMode = 'primitive' | 'sdf' | 'both'
 
@@ -63,12 +65,16 @@ const TILE_PATTERN: string[] = [
 // SCENE
 // ============================================================
 
+const TILE_SIZE = 1   // 1 scene unit = 1 tile = 5 ft (D&D 5e standard)
+
 export function Scene3D(): React.ReactElement {
-  const [showDiscDebug, setShowDiscDebug] = useState(false)
+  const [discReveal, setDiscReveal] = useState(0)   // 0 = masked base, 1 = raw wedges
   const [poseFamily, setPoseFamily] = useState<PoseFamily>(PoseFamily.Combat)
   const [renderMode, setRenderMode] = useState<RenderMode>('sdf')
   const [sdfResolution, setSdfResolution] = useState(32)
   const [build, setBuild] = useState<BuildIdx>(BuildIdx.Slim)
+  const [size, setSize] = useState<CreatureSizeIdx>(CreatureSizeIdx.Small)
+  const [useBakedMold, setUseBakedMold] = useState(false)
 
   // Build the goblin's disc tensor from a designer-readable spec.
   // In production, this is what the world-roll function produces deterministically.
@@ -79,7 +85,7 @@ export function Scene3D(): React.ReactElement {
     ac: 13,
     attackMod: 4,
     baseXpAwarded: 50,
-    size: CreatureSizeIdx.Small,
+    size,
     build,
     poseFamily,
     poseProgress: 0.4,
@@ -91,7 +97,7 @@ export function Scene3D(): React.ReactElement {
     loyalty: 100,
     instanceSeed: 0xa3f7c1,
     rollDay: 142,
-  }), [poseFamily, build])
+  }), [poseFamily, build, size])
 
   // Round-trip test: decode the tensor and log it (visible in dev tools)
   const decoded = useMemo(() => decodeEntity(goblinTensor), [goblinTensor])
@@ -114,23 +120,36 @@ export function Scene3D(): React.ReactElement {
         />
         <directionalLight position={[-3, 4, -3]} intensity={0.4} color="#a0c0ff" />
 
-        {/* Tile floor */}
-        <TileFloor cols={5} rows={5} tileSize={1} tileSvgs={TILE_PATTERN} />
+        {/* Tile floor — tileSize is the metric for everything */}
+        <TileFloor cols={5} rows={5} tileSize={TILE_SIZE} tileSvgs={TILE_PATTERN} />
 
         {/* Goblin renderings — same disc, different mold pipelines */}
         {(renderMode === 'primitive' || renderMode === 'both') && (
           <EntityMesh
             tensor={goblinTensor}
-            position={renderMode === 'both' ? [-1.2, 0, 0] : [0, 0, 0]}
-            showDiscDebug={renderMode === 'primitive' && showDiscDebug}
+            position={renderMode === 'both' ? [-1.2 * TILE_SIZE, 0, 0] : [0, 0, 0]}
+            tileSize={TILE_SIZE}
+            discReveal={discReveal}
+            onBaseClick={(e) => {
+              e.stopPropagation()
+              // eslint-disable-next-line no-console
+              console.log('[Pick] primitive goblin base clicked at', e.point)
+            }}
           />
         )}
         {(renderMode === 'sdf' || renderMode === 'both') && (
           <EntitySDFMesh
             tensor={goblinTensor}
-            position={renderMode === 'both' ? [1.2, 0, 0] : [0, 0, 0]}
+            position={renderMode === 'both' ? [1.2 * TILE_SIZE, 0, 0] : [0, 0, 0]}
             resolution={sdfResolution}
-            showDiscDebug={renderMode === 'sdf' && showDiscDebug}
+            tileSize={TILE_SIZE}
+            discReveal={discReveal}
+            moldId={useBakedMold ? 'humanoid_test_v1' : undefined}
+            onBaseClick={(e) => {
+              e.stopPropagation()
+              // eslint-disable-next-line no-console
+              console.log('[Pick] sdf goblin base clicked at', e.point)
+            }}
           />
         )}
 
@@ -177,6 +196,24 @@ export function Scene3D(): React.ReactElement {
           ))}
         </div>
 
+        <div style={{ marginTop: 8, fontSize: 10, color: '#aaa' }}>
+          SIZE (footprint × visual scale, all in tiles)
+        </div>
+        <div style={{ marginTop: 4, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {([
+            ['Tiny',       CreatureSizeIdx.Tiny,       '0.4×'],
+            ['Small',      CreatureSizeIdx.Small,      '0.75×'],
+            ['Medium',     CreatureSizeIdx.Medium,     '1×'],
+            ['Large',      CreatureSizeIdx.Large,      '2×2'],
+            ['Huge',       CreatureSizeIdx.Huge,       '3×3'],
+            ['Gargantuan', CreatureSizeIdx.Gargantuan, '4×4'],
+          ] as const).map(([label, idx, badge]) => (
+            <button key={label} onClick={() => setSize(idx)} style={btnStyle(size === idx)}>
+              {label} <span style={{ opacity: 0.6 }}>{badge}</span>
+            </button>
+          ))}
+        </div>
+
         <div style={{ marginTop: 8, fontSize: 10, color: '#aaa' }}>RENDER MODE</div>
         <div style={{ marginTop: 4, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {(['primitive', 'sdf', 'both'] as RenderMode[]).map((mode) => (
@@ -200,17 +237,30 @@ export function Scene3D(): React.ReactElement {
                 </button>
               ))}
             </div>
+
+            <div style={{ marginTop: 8, fontSize: 10, color: '#aaa' }}>SDF SOURCE</div>
+            <div style={{ marginTop: 4, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <button onClick={() => setUseBakedMold(false)} style={btnStyle(!useBakedMold)}>
+                Hardcoded metaballs (Zac)
+              </button>
+              <button onClick={() => setUseBakedMold(true)} style={btnStyle(useBakedMold)}>
+                Baked mold (humanoid_test_v1.json)
+              </button>
+            </div>
           </>
         )}
 
-        <div style={{ marginTop: 8 }}>
-          <label style={{ cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={showDiscDebug}
-              onChange={e => setShowDiscDebug(e.target.checked)}
-            /> show wedge disc (debug)
-          </label>
+        <div style={{ marginTop: 8, fontSize: 10, color: '#aaa' }}>
+          BASE DISC: {discReveal === 0 ? 'masked (player view)' : discReveal === 1 ? 'raw wedges (debug)' : `${(discReveal * 100).toFixed(0)}% revealed`}
+        </div>
+        <div style={{ marginTop: 4 }}>
+          <input
+            type="range"
+            min={0} max={1} step={0.01}
+            value={discReveal}
+            onChange={e => setDiscReveal(parseFloat(e.target.value))}
+            style={{ width: '100%' }}
+          />
         </div>
       </div>
     </div>

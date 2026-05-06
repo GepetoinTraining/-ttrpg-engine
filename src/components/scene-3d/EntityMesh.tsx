@@ -4,54 +4,92 @@
  * ENTITY MESH — Renders a humanoid mold (decoded from a disc tensor)
  * ====================================================================
  *
- * Reads the disc tensor → decodes the entity → composes the mold pieces →
- * renders each piece as a Three.js primitive (sphere/box/cylinder/cone).
- * Wraps everything in a group so pose tilt + position can be applied at
- * the entity level.
+ * Reads disc tensor → decodes entity → composes mold pieces → renders each
+ * as a Three.js primitive. The mini's BASE (visible WedgeDisc) sits on the
+ * floor; the body parts sit above it inside a tilt-rotation group so pose
+ * adjustments don't tip the base.
  *
- * The hidden WedgeDisc rides along, so the entity's data is part of its
- * own draw call (the architectural piggyback).
+ * Sizing is metric: scale = tileSize × CREATURE_VISUAL_SCALE[entity.size].
+ * Change tileSize and everything (creature, weapon, base) scales coherently.
  */
 
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import type { DiscTensor } from '../../lib/disc/disc-codec'
-import { PoseFamily } from '../../lib/disc/disc-spec'
+import {
+  PoseFamily,
+  CREATURE_VISUAL_SCALE,
+  CREATURE_FOOTPRINT,
+  KIND_TINT,
+  snapOffsetForFootprint,
+} from '../../lib/disc/disc-spec'
 import { decodeEntity, composeMold, type MoldPiece } from '../../lib/mold/goblin-mold'
-import { WedgeDisc } from './WedgeDisc'
+import { WedgeDisc, baseTopY } from './WedgeDisc'
+import type { ThreeEvent } from '@react-three/fiber'
 
 interface EntityMeshProps {
   tensor: DiscTensor
   position?: [number, number, number]
-  /** If true, the wedge disc is visible above the entity for inspection */
-  showDiscDebug?: boolean
+  /** Size of one tile in scene units — sets the metric */
+  tileSize?: number
+  /** 0 = fully masked base (player view), 1 = revealed wedges (debug) */
+  discReveal?: number
+  /** Click on the mini base — for grid pick events */
+  onBaseClick?: (event: ThreeEvent<MouseEvent>) => void
 }
 
 export function EntityMesh({
   tensor,
   position = [0, 0, 0],
-  showDiscDebug = false,
+  tileSize = 1,
+  discReveal = 0,
+  onBaseClick,
 }: EntityMeshProps): React.ReactElement {
-  // Decode + compose are pure functions — memoize on the tensor identity
   const { entity, pieces } = useMemo(() => {
     const entity = decodeEntity(tensor)
     const pieces = composeMold(entity)
     return { entity, pieces }
   }, [tensor])
 
-  // Pose tilt — applied at the group level
+  // Metric scale — composeMold currently produces pieces in [-0.5..1.6] units;
+  // we treat that as "Medium-creature reference" and scale by the size factor.
+  // Final world scale = tileSize × CREATURE_VISUAL_SCALE[size]
+  const scale = tileSize * (CREATURE_VISUAL_SCALE[entity.size] ?? 1.0)
+  const footprint = CREATURE_FOOTPRINT[entity.size] ?? 1
+  const tint = KIND_TINT[entity.kind] ?? KIND_TINT[0]
+
+  // Grid-snap: even footprints anchor on the 4-tile shared corner;
+  // odd footprints anchor on a tile center. Applied to the entity position.
+  const snap = snapOffsetForFootprint(footprint, tileSize)
+  const snapped: [number, number, number] = [
+    position[0] + snap, position[1], position[2] + snap,
+  ]
+
+  // Pose tilt only applies to the body, NOT the base
   const tilt = entity.poseFamily === PoseFamily.Combat   ? 0.18
               : entity.poseFamily === PoseFamily.Sneaking ? 0.36
               : entity.poseFamily === PoseFamily.Dead     ? 1.45
               : 0
 
+  const bodyY = baseTopY(tileSize)  // mini stands on top of the cylinder
+
   return (
-    <group position={position} rotation={[tilt, 0, 0]}>
-      {pieces.map((piece, i) => (
-        <PieceMesh key={`${piece.name}-${i}`} piece={piece} />
-      ))}
-      {/* Hidden 64-wedge disc carrying the tensor as vertex colors */}
-      <WedgeDisc tensor={tensor} showDebug={showDiscDebug} />
+    <group position={snapped}>
+      {/* Mini base — 3D thin cylinder + codec stamp underneath */}
+      <WedgeDisc
+        tensor={tensor}
+        footprintTiles={footprint}
+        tileSize={tileSize}
+        tint={tint}
+        reveal={discReveal}
+        onClick={onBaseClick}
+      />
+      {/* Body — tilts with pose; sits at top of the base cylinder */}
+      <group position={[0, bodyY, 0]} rotation={[tilt, 0, 0]} scale={[scale, scale, scale]}>
+        {pieces.map((piece, i) => (
+          <PieceMesh key={`${piece.name}-${i}`} piece={piece} />
+        ))}
+      </group>
     </group>
   )
 }
@@ -66,9 +104,6 @@ function PieceMesh({ piece }: { piece: MoldPiece }): React.ReactElement {
     [piece.color.r, piece.color.g, piece.color.b]
   )
 
-  // Material settings drive a "plastic-mini" look:
-  // - Phong-like with low specular (matte)
-  // - Slight metalness if material === 'metal'
   const isMetal = piece.material === 'metal'
   const isCloth = piece.material === 'cloth' || piece.material === 'leather'
 
