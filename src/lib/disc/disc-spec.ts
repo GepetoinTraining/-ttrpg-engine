@@ -249,3 +249,70 @@ export enum Disposition {
 export enum Intent {
   None = 0, Attack = 1, Flee = 2, Patrol = 3, Wait = 4, Hunt = 5, Converse = 6, Sleep = 7,
 }
+
+// ============================================================
+// METRIC TABLES — tile-relative sizing
+// ============================================================
+//
+// THE GRID IS THE UNIT OF MEASURE. One tile = 5 ft (D&D 5e standard).
+// Creature size category determines:
+//   - footprint: how many tiles the creature occupies (movement, blocking, LOS)
+//   - visual scale: how tall/wide the rendered mesh is (× tileSize)
+//
+// Same category in both. Footprint and visual scale are bound by physics
+// (a Large creature is 2×2 squares because it's bigger than 1 tile).
+
+/** Tiles per side of the creature's footprint block (1 = 1×1, 2 = 2×2, etc.) */
+export const CREATURE_FOOTPRINT: Record<CreatureSizeIdx, number> = {
+  [CreatureSizeIdx.Tiny]:       1,   // counts as 1 for collision (sub-tile placement is positional)
+  [CreatureSizeIdx.Small]:      1,
+  [CreatureSizeIdx.Medium]:     1,
+  [CreatureSizeIdx.Large]:      2,   // 2×2 = 4 tiles
+  [CreatureSizeIdx.Huge]:       3,   // 3×3 = 9 tiles
+  [CreatureSizeIdx.Gargantuan]: 4,   // 4×4 = 16 tiles
+}
+
+/** Visual mesh scale, in multiples of tileSize. Medium = exactly 1 tile tall. */
+export const CREATURE_VISUAL_SCALE: Record<CreatureSizeIdx, number> = {
+  [CreatureSizeIdx.Tiny]:       0.40,
+  [CreatureSizeIdx.Small]:      0.75,  // goblin, halfling, gnome
+  [CreatureSizeIdx.Medium]:     1.00,  // human, elf, orc
+  [CreatureSizeIdx.Large]:      2.00,  // bear, ogre
+  [CreatureSizeIdx.Huge]:       3.00,  // hill giant
+  [CreatureSizeIdx.Gargantuan]: 4.00,  // adult dragon, tarrasque
+}
+
+/**
+ * Grid-snap offset for an entity's footprint.
+ *
+ *   - Odd footprint  (1×1, 3×3)   → anchored on a tile CENTER          → offset 0
+ *   - Even footprint (2×2, 4×4)   → anchored on a 4-tile SHARED CORNER → offset 0.5 × tileSize
+ *
+ * Apply to the entity's render position so the disc circle sits inside the
+ * boundary of the squares it claims, regardless of size category.
+ */
+export function snapOffsetForFootprint(footprint: number, tileSize: number): number {
+  return (footprint % 2 === 0) ? 0.5 * tileSize : 0
+}
+
+/**
+ * KIND → base-disc tint (RGB 0..1). The mini's base is masked with this
+ * color at render time so the player reads the creature's broad category
+ * at a glance: red = hostile monster, green = PC, blue = NPC, brown = beast.
+ *
+ * The actual 64-wedge data lives underneath; debug toggle reveals it.
+ *
+ * Phase-0 palette. Will get richer as designer conventions emerge
+ * (faction overlays, status-effect rings, stealth dimming, etc.).
+ */
+export const KIND_TINT: Record<Kind, [number, number, number]> = {
+  [Kind.Unknown]:    [0.50, 0.50, 0.55],   // neutral grey
+  [Kind.PC]:         [0.40, 0.80, 0.45],   // green — player-controlled
+  [Kind.NPC]:        [0.45, 0.65, 0.95],   // blue — civilian / friendly
+  [Kind.Monster]:    [0.85, 0.25, 0.20],   // red — hostile
+  [Kind.Beast]:      [0.62, 0.45, 0.30],   // brown — animal
+  [Kind.Construct]:  [0.65, 0.65, 0.72],   // metallic — golem / automaton
+  [Kind.Vegetation]: [0.40, 0.70, 0.30],   // plant green — awakened tree, etc.
+  [Kind.Item]:       [0.55, 0.45, 0.30],   // brown — loot pile
+  [Kind.Structure]:  [0.50, 0.48, 0.45],   // stone grey — building, statue
+}
