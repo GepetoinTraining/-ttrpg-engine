@@ -93,17 +93,23 @@ function readCampaignFromHash(): string | null {
 }
 
 /**
- * Read the certId param from the URL hash. Set by CharacterSelect when
- * launching chargen for an unattached character cert — chargen will
- * attach the new character row to this cert on commit.
+ * Read the certId param from the URL hash OR the URL search string.
+ * Hash form is set by CharacterSelect (`#chargen?certId=X`) when chargen
+ * is mounted inside the workspace shell. Search form is set by the
+ * `/onboarding/[token]` invite redemption flow when it lands the player
+ * on the standalone `/chargen?certId=X` route. Either way, chargen
+ * attaches the new character row to this cert on commit.
  */
 function readCertIdFromHash(): string | null {
   if (typeof window === 'undefined') return null
   const h = window.location.hash || ''
   const q = h.indexOf('?')
-  if (q === -1) return null
-  const params = new URLSearchParams(h.slice(q + 1))
-  return params.get('certId')
+  if (q !== -1) {
+    const fromHash = new URLSearchParams(h.slice(q + 1)).get('certId')
+    if (fromHash) return fromHash
+  }
+  const fromSearch = new URLSearchParams(window.location.search).get('certId')
+  return fromSearch
 }
 
 export default function Chargen() {
